@@ -68,7 +68,7 @@ public class AuthService {
 		// token will be emailed later
 	}
 
-	public void resetPassword(ResetPasswordRequest r) {
+	public void resetPassword(ResetPasswordRequest r) {	
 		User u = repo.findByResetToken(r.getResetToken())
 				.orElseThrow(() -> new InvalidTokenException("Invalid reset token"));
 

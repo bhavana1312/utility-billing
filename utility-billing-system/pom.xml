@@ -28,8 +28,8 @@
         <module>eureka-server</module>
         <module>api-gateway</module>
         <module>auth-service</module>
-        <!-- <module>utility-service</module>
-        <module>consumer-service</module>
+        <module>tariff-service</module>
+       <!-- <module>consumer-service</module>
         <module>meter-service</module>
         <module>billing-service</module>
         <module>payment-service</module>

@@ -16,7 +16,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error");
     }
     
-    @ExceptionHandler({UserNotFoundException.class,InvalidCredentialsException.class})
+    @ExceptionHandler({UserNotFoundException.class,InvalidCredentialsException.class,InvalidTokenException.class})
     public ResponseEntity<String> bad(RuntimeException e){
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
