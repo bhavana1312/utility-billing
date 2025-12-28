@@ -24,19 +24,19 @@ public class TariffController{
     }
 
     @GetMapping("/{utilityType}")
-    public ResponseEntity<TariffResponse> getActive(@PathVariable UtilityType utilityType){
+    public ResponseEntity<TariffResponse> getActive(@PathVariable("utilityType")  UtilityType utilityType){
         return ResponseEntity.ok(service.getActive(utilityType));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deactivate(@PathVariable String id){
+    public ResponseEntity<Void> deactivate(@PathVariable("id") String id){
         service.deactivate(id);
         return ResponseEntity.noContent().build();
     }
     
     @PutMapping("/{id}")
     public ResponseEntity<Void> update(
-            @PathVariable String id,
+            @PathVariable("id") String id,
             @Valid @RequestBody UpdateTariffRequest r){
         service.update(id,r);
         return ResponseEntity.noContent().build();
