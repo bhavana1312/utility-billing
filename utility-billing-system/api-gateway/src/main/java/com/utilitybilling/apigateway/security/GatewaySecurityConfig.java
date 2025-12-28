@@ -31,6 +31,8 @@ public class GatewaySecurityConfig {
 
 				// Public auth endpoints
 				.requestMatchers("/auth/**").permitAll()
+				
+				.requestMatchers("/internal/**").permitAll()
 
 				// Public consumer onboarding
 				.requestMatchers(HttpMethod.POST, "/consumer-requests").permitAll()
