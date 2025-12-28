@@ -39,7 +39,7 @@ public class ConsumerService {
 
 		c = consumerRepo.save(c);
 
-		authClient.createUser(new CreateAuthUserRequest(r.getEmail(), r.getEmail(), password, List.of("ROLE_USER")));
+		authClient.createUser(new CreateAuthUserRequest(r.getFullName(), r.getEmail(), password, List.of("ROLE_USER")));
 
 		r.setStatus("APPROVED");
 		r.setUpdatedAt(Instant.now());
