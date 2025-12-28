@@ -10,6 +10,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -23,13 +24,19 @@ public class AuthService {
 	public void register(RegisterRequest r) {
 		if (repo.existsByUsername(r.getUsername()))
 			throw new UserAlreadyExistsException("User already exists");
-
-		repo.save(User.builder().username(r.getUsername()).password(encoder.encode(r.getPassword())).roles(r.getRoles())
-				.enabled(true).createdAt(Instant.now()).passwordUpdatedAt(Instant.now()).build());
+		if (repo.existsByEmail(r.getEmail()))
+			throw new UserAlreadyExistsException("Email already exists");
+		
+		var roles = r.getRoles();
+		if (roles == null || roles.isEmpty()) {
+			roles = List.of("ROLE_USER");
+		}
+		repo.save(User.builder().username(r.getUsername()).email(r.getEmail()).password(encoder.encode(r.getPassword()))
+				.roles(roles).enabled(true).createdAt(Instant.now()).passwordUpdatedAt(Instant.now()).build());
 	}
 
 	public LoginResponse login(LoginRequest r) {
-		User u = repo.findByUsername(r.getUsername()).orElseThrow(() -> new UserNotFoundException());
+		User u = repo.findByUsername(r.getUsername()).orElseThrow(UserNotFoundException::new);
 
 		if (!encoder.matches(r.getPassword(), u.getPassword()))
 			throw new InvalidCredentialsException("Invalid credentials");
@@ -39,32 +46,39 @@ public class AuthService {
 
 	public void changePassword(String username, ChangePasswordRequest r) {
 		User u = repo.findByUsername(username).orElseThrow(UserNotFoundException::new);
+
 		if (!encoder.matches(r.getOldPassword(), u.getPassword()))
 			throw new InvalidCredentialsException("Wrong password");
+
+		if (encoder.matches(r.getNewPassword(), u.getPassword()))
+			throw new InvalidCredentialsException("New password must be different");
+
 		u.setPassword(encoder.encode(r.getNewPassword()));
 		u.setPasswordUpdatedAt(Instant.now());
 		repo.save(u);
 	}
 
-	public String forgotPassword(ForgotPasswordRequest r) {
-		User u = repo.findByUsername(r.getUsername()).orElseThrow(UserNotFoundException::new);
-		String token = UUID.randomUUID().toString();
-		u.setResetToken(token);
+	public void forgotPassword(ForgotPasswordRequest r) {
+		User u = repo.findByEmail(r.getEmail()).orElseThrow(UserNotFoundException::new);
+
+		u.setResetToken(UUID.randomUUID().toString());
 		u.setResetTokenExpiry(Instant.now().plusSeconds(900));
 		repo.save(u);
-		return token;
+
+		// token will be emailed later
 	}
 
 	public void resetPassword(ResetPasswordRequest r) {
-		User u = repo.findByResetToken(r.getResetToken()).orElseThrow(() -> new RuntimeException("Invalid token"));
+		User u = repo.findByResetToken(r.getResetToken())
+				.orElseThrow(() -> new InvalidTokenException("Invalid reset token"));
 
 		if (u.getResetTokenExpiry().isBefore(Instant.now()))
-			throw new RuntimeException("Token expired");
+			throw new InvalidTokenException("Reset token expired");
 
 		u.setPassword(encoder.encode(r.getNewPassword()));
+		u.setPasswordUpdatedAt(Instant.now());
 		u.setResetToken(null);
 		u.setResetTokenExpiry(null);
-		u.setPasswordUpdatedAt(Instant.now());
 		repo.save(u);
 	}
 }

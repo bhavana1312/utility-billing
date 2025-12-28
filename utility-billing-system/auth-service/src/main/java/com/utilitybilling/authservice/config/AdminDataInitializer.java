@@ -8,8 +8,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import java.time.Instant;
 import java.util.List;
-import java.util.Set;
 
 @Configuration
 @RequiredArgsConstructor
@@ -24,10 +24,14 @@ public class AdminDataInitializer{
             if(!userRepository.existsByUsername("admin")){
                 User admin=User.builder()
                         .username("admin")
+                        .email("22071a66d9@vnrvjiet.in")
                         .password(encoder.encode("Admin@123"))
                         .roles(List.of("ROLE_ADMIN"))
                         .enabled(true)
+                        .createdAt(Instant.now())
+                        .passwordUpdatedAt(Instant.now())
                         .build();
+
                 userRepository.save(admin);
             }
         };

@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
-public class AuthController {
+public class AuthController{
 
     private final AuthService service;
 
@@ -27,18 +27,22 @@ public class AuthController {
     }
 
     @PostMapping("/change-password")
-    public void change(@Valid @RequestBody ChangePasswordRequest r){
-        String user=SecurityContextHolder.getContext().getAuthentication().getName();
-        service.changePassword(user,r);
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void changePassword(@Valid @RequestBody ChangePasswordRequest r){
+//        String user=SecurityContextHolder.getContext().getAuthentication().getName();
+//        service.changePassword(user,r);
+    	service.changePassword(r.getUsername(), r);
     }
 
     @PostMapping("/forgot-password")
-    public String forgot(@Valid @RequestBody ForgotPasswordRequest r){
-        return service.forgotPassword(r);
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void forgotPassword(@Valid @RequestBody ForgotPasswordRequest r){
+        service.forgotPassword(r);
     }
 
     @PostMapping("/reset-password")
-    public void reset(@Valid @RequestBody ResetPasswordRequest r){
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void resetPassword(@Valid @RequestBody ResetPasswordRequest r){
         service.resetPassword(r);
     }
 }
