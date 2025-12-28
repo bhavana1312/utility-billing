@@ -11,48 +11,49 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 public class GatewaySecurityConfig {
 
-    private final JwtAuthenticationFilter jwtFilter;
+	private final JwtAuthenticationFilter jwtFilter;
 
-    public GatewaySecurityConfig(JwtAuthenticationFilter jwtFilter){
-        this.jwtFilter=jwtFilter;
-    }
+	public GatewaySecurityConfig(JwtAuthenticationFilter jwtFilter) {
+		this.jwtFilter = jwtFilter;
+	}
 
-    // ✅ 1️⃣ ACTUATOR SECURITY CHAIN (HIGHEST PRIORITY)
-    @Bean
-    @Order(0)
-    public SecurityFilterChain actuatorSecurity(HttpSecurity http)throws Exception{
-        return http
-                .securityMatcher("/actuator/**")
-                .csrf(csrf->csrf.disable())
-                .authorizeHttpRequests(auth->auth.anyRequest().permitAll())
-                .build();
-    }
+	@Bean
+	@Order(0)
+	public SecurityFilterChain actuatorSecurity(HttpSecurity http) throws Exception {
+		return http.securityMatcher("/actuator/**").csrf(csrf -> csrf.disable())
+				.authorizeHttpRequests(auth -> auth.anyRequest().permitAll()).build();
+	}
 
-    // ✅ 2️⃣ API SECURITY CHAIN (JWT + RBAC)
-    @Bean
-    @Order(1)
-    public SecurityFilterChain apiSecurity(HttpSecurity http)throws Exception{
-        return http
-                .csrf(csrf->csrf.disable())
-                .authorizeHttpRequests(auth->auth
+	@Bean
+	@Order(1)
+	public SecurityFilterChain apiSecurity(HttpSecurity http) throws Exception {
+		return http.csrf(csrf -> csrf.disable()).authorizeHttpRequests(auth -> auth
 
-                        .requestMatchers("/auth/**").permitAll()
+				// Public auth endpoints
+				.requestMatchers("/auth/**").permitAll()
 
-                        .requestMatchers(
-                                HttpMethod.POST,"/utilities/tariffs/**"
-                        ).hasRole("ADMIN")
+				// Public consumer onboarding
+				.requestMatchers(HttpMethod.POST, "/consumer-requests").permitAll()
 
-                        .requestMatchers(
-                                HttpMethod.PUT,"/utilities/tariffs/**"
-                        ).hasRole("ADMIN")
+				// Tariff – Admin only
+				.requestMatchers(HttpMethod.POST, "/utilities/tariffs/**").hasRole("ADMIN")
+				.requestMatchers(HttpMethod.PUT, "/utilities/tariffs/**").hasRole("ADMIN")
+				.requestMatchers(HttpMethod.DELETE, "/utilities/tariffs/**").hasRole("ADMIN")
 
-                        .requestMatchers(
-                                HttpMethod.DELETE,"/utilities/tariffs/**"
-                        ).hasRole("ADMIN")
+				// Consumer admin actions
+				.requestMatchers(HttpMethod.POST, "/consumers/from-request/**").hasRole("ADMIN")
+				.requestMatchers(HttpMethod.PUT, "/consumers/**").hasRole("ADMIN")
+				.requestMatchers(HttpMethod.DELETE, "/consumers/**").hasRole("ADMIN")
 
-                        .anyRequest().authenticated()
-                )
-                .addFilterBefore(jwtFilter,UsernamePasswordAuthenticationFilter.class)
-                .build();
-    }
+				// Consumer read
+				.requestMatchers(HttpMethod.GET, "/consumers/**").authenticated()
+
+				// Consumer request review (ADMIN)
+				.requestMatchers(HttpMethod.GET, "/consumer-requests/**").hasRole("ADMIN")
+				.requestMatchers(HttpMethod.PUT, "/consumer-requests/**").hasRole("ADMIN")
+
+				.anyRequest().authenticated()).addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+				.build();
+	}
+
 }
