@@ -1,5 +1,7 @@
 package com.utilitybilling.tariffservice.service;
 
+import org.springframework.stereotype.Service;
+
 import com.utilitybilling.tariffservice.dto.CreateTariffRequest;
 import com.utilitybilling.tariffservice.dto.TariffResponse;
 import com.utilitybilling.tariffservice.dto.UpdateTariffRequest;
@@ -8,10 +10,8 @@ import com.utilitybilling.tariffservice.exception.NotFoundException;
 import com.utilitybilling.tariffservice.model.Tariff;
 import com.utilitybilling.tariffservice.model.UtilityType;
 import com.utilitybilling.tariffservice.repository.TariffRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor

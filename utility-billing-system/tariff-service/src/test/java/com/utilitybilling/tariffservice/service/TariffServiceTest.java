@@ -117,10 +117,15 @@ class TariffServiceTest {
 
     @Test
     void update_inactiveTariff_throwsException() {
-        Tariff inactive=Tariff.builder().active(false).build();
+        Tariff inactive = Tariff.builder().active(false).build();
         when(repo.findById("1")).thenReturn(Optional.of(inactive));
 
-        assertThrows(BusinessException.class,
-                ()->service.update("1",new UpdateTariffRequest()));
+        UpdateTariffRequest request = new UpdateTariffRequest();
+
+        assertThrows(
+            BusinessException.class,
+            () -> service.update("1", request)
+        );
     }
+
 }
