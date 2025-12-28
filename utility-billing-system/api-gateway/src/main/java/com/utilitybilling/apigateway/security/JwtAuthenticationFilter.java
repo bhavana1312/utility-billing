@@ -1,8 +1,8 @@
 package com.utilitybilling.apigateway.security;
 
 import io.jsonwebtoken.*;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
+import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -11,44 +11,66 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import javax.crypto.SecretKey;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-	@Value("${jwt.secret}")
-	private String secret;
+    @Value("${jwt.secret}")
+    private String secret;
 
-	@Override
-	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-			throws IOException, ServletException {
+    private SecretKey getSigningKey(){
+        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    }
 
-		String header = request.getHeader("Authorization");
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request){
+        String path=request.getRequestURI();
+        return path.startsWith("/auth/")
+                || path.startsWith("/actuator/");
+    }
 
-		if (header != null && header.startsWith("Bearer ")) {
-			String token = header.substring(7);
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain chain)
+            throws IOException, ServletException {
 
-			try {
-				Claims claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
+        String header=request.getHeader("Authorization");
 
-				String username = claims.getSubject();
-				List<String> roles = claims.get("roles", List.class);
+        if(header!=null && header.startsWith("Bearer ")){
+            try{
+                String token=header.substring(7);
 
-				var authorities = roles.stream().map(SimpleGrantedAuthority::new).toList();
+                Claims claims = Jwts.parserBuilder()
+                        .setSigningKey(getSigningKey())   // ✅ FIX
+                        .build()
+                        .parseClaimsJws(token)
+                        .getBody();
 
-				var auth = new UsernamePasswordAuthenticationToken(username, null, authorities);
+                String username=claims.getSubject();
+                List<String> roles=claims.get("roles",List.class);
 
-				SecurityContextHolder.getContext().setAuthentication(auth);
+                var authorities=roles.stream()
+                        .map(SimpleGrantedAuthority::new)
+                        .toList();
 
-			} catch (JwtException e) {
-				response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-				return;
-			}
-		}
+                SecurityContextHolder.getContext().setAuthentication(
+                        new UsernamePasswordAuthenticationToken(
+                                username,null,authorities
+                        )
+                );
 
-		chain.doFilter(request, response);
-	}
+            }catch(JwtException e){
+                SecurityContextHolder.clearContext();
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            }
+        }
 
+        chain.doFilter(request,response);
+    }
 }

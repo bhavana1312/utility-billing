@@ -2,6 +2,7 @@ package com.utilitybilling.apigateway.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
@@ -16,24 +17,31 @@ public class GatewaySecurityConfig {
         this.jwtFilter=jwtFilter;
     }
 
+    // ✅ 1️⃣ ACTUATOR SECURITY CHAIN (HIGHEST PRIORITY)
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http)throws Exception{
+    @Order(0)
+    public SecurityFilterChain actuatorSecurity(HttpSecurity http)throws Exception{
+        return http
+                .securityMatcher("/actuator/**")
+                .csrf(csrf->csrf.disable())
+                .authorizeHttpRequests(auth->auth.anyRequest().permitAll())
+                .build();
+    }
+
+    // ✅ 2️⃣ API SECURITY CHAIN (JWT + RBAC)
+    @Bean
+    @Order(1)
+    public SecurityFilterChain apiSecurity(HttpSecurity http)throws Exception{
         return http
                 .csrf(csrf->csrf.disable())
                 .authorizeHttpRequests(auth->auth
 
-                        .requestMatchers(
-                                "/auth/login",
-                                "/auth/register",
-                                "/auth/forgot-password",
-                                "/auth/reset-password",
-                                "/actuator/**"
-                        ).permitAll()
+                        .requestMatchers("/auth/**").permitAll()
 
                         .requestMatchers(
                                 HttpMethod.POST,"/utilities/tariffs/**"
                         ).hasRole("ADMIN")
-                        
+
                         .requestMatchers(
                                 HttpMethod.PUT,"/utilities/tariffs/**"
                         ).hasRole("ADMIN")
