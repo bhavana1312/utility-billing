@@ -184,10 +184,15 @@ class AuthServiceTest {
 	}
 
 	@Test
-	void changePassword_userNotFound(){
+	void changePassword_userNotFound() {
 	    when(repo.findByUsername("user")).thenReturn(Optional.empty());
-	    assertThrows(UserNotFoundException.class,
-	            ()->service.changePassword("user",new ChangePasswordRequest()));
+
+	    ChangePasswordRequest request = new ChangePasswordRequest();
+
+	    assertThrows(
+	            UserNotFoundException.class,
+	            () -> service.changePassword("user", request)
+	    );
 	}
 
 	@Test
