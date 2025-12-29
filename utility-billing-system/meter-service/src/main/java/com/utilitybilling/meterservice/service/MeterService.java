@@ -18,6 +18,11 @@ public class MeterService {
 	private final MeterReadingRepository readingRepo;
 
 	public void requestConnection(CreateConnectionRequest request) {
+		
+		boolean exists = connectionRepo.existsByConsumerIdAndStatusIn(request.getConsumerId(), List.of("PENDING", "APPROVED"));
+
+		if (exists)
+			throw new IllegalStateException("Consumer request already exists");
 		ConnectionRequest cr = new ConnectionRequest();
 		cr.setConsumerId(request.getConsumerId());
 		cr.setUtilityType(request.getUtilityType());
@@ -29,7 +34,7 @@ public class MeterService {
 		return connectionRepo.findAll();
 	}
 
-	public void approve(String id, ApproveConnectionRequest request) {
+	public void approve(String id) {
 		ConnectionRequest cr = connectionRepo.findById(id)
 				.orElseThrow(() -> new IllegalArgumentException("Connection request not found"));
 
@@ -41,7 +46,6 @@ public class MeterService {
 		});
 
 		Meter m = new Meter();
-		m.setMeterNumber(request.getMeterNumber());
 		m.setConsumerId(cr.getConsumerId());
 		m.setUtilityType(cr.getUtilityType());
 		m.setInstallationDate(Instant.now());

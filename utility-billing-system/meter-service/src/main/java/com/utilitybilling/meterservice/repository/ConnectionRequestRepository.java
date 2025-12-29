@@ -9,4 +9,6 @@ import java.util.List;
 public interface ConnectionRequestRepository extends MongoRepository<ConnectionRequest, String> {
 
 	List<ConnectionRequest> findByStatus(ConnectionStatus status);
+
+	boolean existsByConsumerIdAndStatusIn(String consumerId, List<String> of);
 }

@@ -32,8 +32,8 @@ public class MeterController {
 	}
 
 	@PostMapping("/connection-requests/{id}/approve")
-	public ResponseEntity<Void> approve(@PathVariable String id, @Valid @RequestBody ApproveConnectionRequest r) {
-		service.approve(id, r);
+	public ResponseEntity<Void> approve(@PathVariable String id) {
+		service.approve(id);
 		return ResponseEntity.noContent().build();
 	}
 
