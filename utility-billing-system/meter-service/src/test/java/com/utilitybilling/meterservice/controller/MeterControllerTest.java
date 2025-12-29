@@ -98,4 +98,40 @@ class MeterControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string("300.0"));
     }
+    
+    @Test
+    void request() throws Exception {
+        CreateConnectionRequest dto = new CreateConnectionRequest();
+        dto.setConsumerId("c1");
+        dto.setUtilityType(UtilityType.WATER);
+        dto.setAddress("addr");
+
+        mockMvc.perform(post("/meters/connection-requests")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isCreated());
+
+        verify(meterService).requestConnection(dto);
+    }
+
+    @Test
+    void approve() throws Exception {
+        mockMvc.perform(post("/meters/connection-requests/1/approve"))
+                .andExpect(status().isNoContent());
+
+        verify(meterService).approve("1");
+    }
+
+    @Test
+    void reject() throws Exception {
+        RejectConnectionRequest dto = new RejectConnectionRequest();
+        dto.setReason("bad");
+
+        mockMvc.perform(post("/meters/connection-requests/1/reject")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isNoContent());
+
+        verify(meterService).reject("1", "bad");
+    }
 }
