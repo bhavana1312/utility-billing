@@ -72,7 +72,7 @@ public class GatewaySecurityConfig {
 				// PAYMENTS
 				.requestMatchers(HttpMethod.POST, "/payments/initiate").hasRole("USER")
 				.requestMatchers(HttpMethod.POST, "/payments/confirm").hasRole("USER")
-				.requestMatchers(HttpMethod.POST, "/payments/offline").hasRole("ADMIN")
+				.requestMatchers(HttpMethod.POST, "/payments/offline").hasRole("ACCOUNTS_OFFICER")
 				
 
 				// Meter read APIs
