@@ -27,6 +27,9 @@ public class Bill{
 
     private double penaltyAmount; 
     private double totalAmount;
+    
+    private Instant dueDate;     
+    private Instant lastUpdatedAt;
 
     private BillStatus status;
     private Instant generatedAt=Instant.now();

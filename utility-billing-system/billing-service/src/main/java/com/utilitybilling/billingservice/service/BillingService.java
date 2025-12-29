@@ -5,6 +5,10 @@ import com.utilitybilling.billingservice.feign.*;
 import com.utilitybilling.billingservice.model.*;
 import com.utilitybilling.billingservice.repository.BillRepository;
 import lombok.RequiredArgsConstructor;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+
 import org.springframework.stereotype.Service;
 
 @Service
@@ -52,8 +56,10 @@ public class BillingService {
 		bill.setEnergyCharge(energyCharge);
 		bill.setFixedCharge(fixedCharge);
 		bill.setTaxAmount(tax);
-		bill.setPenaltyAmount(0); // 🔥 applied later
+		bill.setPenaltyAmount(0);
 		bill.setTotalAmount(energyCharge + fixedCharge + tax);
+		bill.setDueDate(bill.getGeneratedAt().plus(15,ChronoUnit.DAYS));
+		bill.setLastUpdatedAt(Instant.now());
 		bill.setStatus(BillStatus.DUE);
 
 		Bill saved = billRepo.save(bill);
