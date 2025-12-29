@@ -19,20 +19,6 @@ public class BillingQueryService{
                 .stream().map(this::map).toList();
     }
 
-//    public BillResponse getForUser(String id,String consumerId){
-//        Bill bill=billRepo.findByIdAndConsumerId(id,consumerId)
-//                .orElseThrow(() ->
-//                        new IllegalStateException("Bill not found"));
-//        return map(bill);
-//    }
-
-//    public BillResponse getForAdmin(String id){
-//        Bill bill=billRepo.findById(id)
-//                .orElseThrow(() ->
-//                        new IllegalStateException("Bill not found"));
-//        return map(bill);
-//    }
-
     public List<BillResponse> all(BillStatus status){
         List<Bill> bills=status==null
                 ? billRepo.findAll()

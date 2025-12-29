@@ -31,13 +31,6 @@ public class BillingController{
         return queryService.consumerBills(consumerId);
     }
 
-//    @GetMapping("/{id}/consumer/{consumerId}")
-//    public BillResponse getForConsumer(
-//            @PathVariable String id,
-//            @PathVariable String consumerId){
-//        return queryService.getForUser(id,consumerId);
-//    }
-
     @GetMapping
     public List<BillResponse> all(
             @RequestParam(required=false) BillStatus status){
