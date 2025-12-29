@@ -19,7 +19,7 @@ public class BillingOfficerDataInitializer {
 	private final BCryptPasswordEncoder encoder;
 
 	@Bean
-	public CommandLineRunner seedBillinfOfficer() {
+	public CommandLineRunner seedBillingOfficer() {
 		return args -> {
 			if (!userRepository.existsByUsername("billing_officer")) {
 
