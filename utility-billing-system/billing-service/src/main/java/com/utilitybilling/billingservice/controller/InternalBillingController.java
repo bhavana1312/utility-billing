@@ -1,6 +1,7 @@
 package com.utilitybilling.billingservice.controller;
 
 import com.utilitybilling.billingservice.service.BillingService;
+import com.utilitybilling.billingservice.dto.OutstandingBalanceResponse;
 import com.utilitybilling.billingservice.service.BillingQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -24,4 +25,9 @@ public class InternalBillingController {
 		billingService.markPaid(billId);
 		return ResponseEntity.noContent().build();
 	}
+	
+    @GetMapping("/consumer/{consumerId}/outstanding")
+    public OutstandingBalanceResponse outstanding(@PathVariable String consumerId){
+        return queryService.outstanding(consumerId);
+    }
 }

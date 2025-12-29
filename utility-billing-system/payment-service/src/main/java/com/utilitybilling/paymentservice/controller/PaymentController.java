@@ -36,4 +36,9 @@ public class PaymentController{
     public Object invoices(@PathVariable String consumerId){
         return service.invoices(consumerId);
     }
+    
+    @GetMapping("/outstanding/{consumerId}")
+    public Object outstanding(@PathVariable String consumerId){
+        return service.outstanding(consumerId);
+    }
 }

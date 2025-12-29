@@ -14,6 +14,10 @@ public interface BillingClient {
 	@CircuitBreaker(name = "billingCB", fallbackMethod = "fallback")
 	void markPaid(@PathVariable("billId") String billId);
 
+	@GetMapping("/billing/internal/consumer/{consumerId}/outstanding")
+	@CircuitBreaker(name = "billingCB", fallbackMethod = "fallback")
+	OutstandingBalanceResponse outstanding(@PathVariable("consumerId") String consumerId);
+
 	default void fallback(String billId, Throwable t) {
 		throw new RuntimeException("Billing service unavailable");
 	}

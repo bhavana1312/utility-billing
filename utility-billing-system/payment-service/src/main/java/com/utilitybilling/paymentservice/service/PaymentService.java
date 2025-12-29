@@ -109,4 +109,8 @@ public class PaymentService {
 	public List<Invoice> invoices(String consumerId) {
 		return invoiceRepo.findByConsumerId(consumerId);
 	}
+
+	public Object outstanding(String consumerId) {
+		return billingClient.outstanding(consumerId);
+	}
 }

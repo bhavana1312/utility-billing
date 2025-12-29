@@ -35,11 +35,6 @@ public class BillingController{
     public List<BillResponse> all(
             @RequestParam(required=false) BillStatus status){
         return queryService.all(status);
-    }
-    
-    @GetMapping("/consumer/{consumerId}/outstanding")
-    public OutstandingBalanceResponse outstanding(@PathVariable String consumerId){
-        return queryService.outstanding(consumerId);
-    }
+    }  
 
 }
