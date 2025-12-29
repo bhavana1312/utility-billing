@@ -1,5 +1,6 @@
 package com.utilitybilling.tariffservice.dto;
 
+import com.utilitybilling.tariffservice.model.OverduePenaltySlab;
 import com.utilitybilling.tariffservice.model.TariffSlab;
 import com.utilitybilling.tariffservice.model.UtilityType;
 import lombok.Builder;
@@ -16,6 +17,7 @@ public class TariffResponse {
 	private List<TariffSlab> slabs;
 	private double fixedCharge;
 	private double taxPercentage;
+	private List<OverduePenaltySlab> overduePenaltySlabs;
 	private boolean active;
 	private LocalDate effectiveFrom;
 }

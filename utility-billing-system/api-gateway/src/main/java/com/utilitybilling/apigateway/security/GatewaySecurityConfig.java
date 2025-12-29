@@ -33,6 +33,8 @@ public class GatewaySecurityConfig {
 				.requestMatchers("/auth/**").permitAll()
 
 				.requestMatchers("/internal/**").permitAll()
+				
+				.requestMatchers(HttpMethod.GET, "/utilities/tariffs/**").permitAll()
 
 				// Public consumer onboarding
 				.requestMatchers(HttpMethod.POST, "/consumer-requests").permitAll()

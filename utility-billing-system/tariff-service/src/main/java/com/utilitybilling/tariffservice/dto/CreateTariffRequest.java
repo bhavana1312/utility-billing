@@ -1,5 +1,6 @@
 package com.utilitybilling.tariffservice.dto;
 
+import com.utilitybilling.tariffservice.model.OverduePenaltySlab;
 import com.utilitybilling.tariffservice.model.TariffSlab;
 import com.utilitybilling.tariffservice.model.UtilityType;
 import jakarta.validation.Valid;
@@ -24,6 +25,9 @@ public class CreateTariffRequest {
 	@Min(0)
 	@Max(100)
 	private double taxPercentage;
+	
+	@NotEmpty
+	private List<OverduePenaltySlab> overduePenaltySlabs;
 
 	@NotNull
 	private LocalDate effectiveFrom;

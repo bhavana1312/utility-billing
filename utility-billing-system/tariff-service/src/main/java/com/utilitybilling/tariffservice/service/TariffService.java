@@ -30,6 +30,7 @@ public class TariffService{
                 .slabs(r.getSlabs())
                 .fixedCharge(r.getFixedCharge())
                 .taxPercentage(r.getTaxPercentage())
+                .overduePenaltySlabs(r.getOverduePenaltySlabs())
                 .effectiveFrom(r.getEffectiveFrom())
                 .active(true)
                 .build());
@@ -56,6 +57,7 @@ public class TariffService{
                 .slabs(t.getSlabs())
                 .fixedCharge(t.getFixedCharge())
                 .taxPercentage(t.getTaxPercentage())
+                .overduePenaltySlabs(t.getOverduePenaltySlabs())
                 .active(t.isActive())
                 .effectiveFrom(t.getEffectiveFrom())
                 .build();
@@ -76,6 +78,7 @@ public class TariffService{
                 .slabs(r.getSlabs())
                 .fixedCharge(r.getFixedCharge())
                 .taxPercentage(r.getTaxPercentage())
+                .overduePenaltySlabs(r.getOverduePenaltySlabs())
                 .effectiveFrom(r.getEffectiveFrom())
                 .active(true)
                 .build());

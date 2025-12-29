@@ -7,25 +7,27 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDate;
 import java.util.List;
 
-@Document(collection="tariffs")
+@Document(collection = "tariffs")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Tariff{
+public class Tariff {
 
-    @Id
-    private String id;
+	@Id
+	private String id;
 
-    private UtilityType utilityType;
+	private UtilityType utilityType;
 
-    private List<TariffSlab> slabs;
+	private List<TariffSlab> slabs;
 
-    private double fixedCharge;
+	private double fixedCharge;
 
-    private double taxPercentage;
+	private double taxPercentage;
 
-    private boolean active;
+	private List<OverduePenaltySlab> overduePenaltySlabs;
 
-    private LocalDate effectiveFrom;
+	private boolean active;
+
+	private LocalDate effectiveFrom;
 }

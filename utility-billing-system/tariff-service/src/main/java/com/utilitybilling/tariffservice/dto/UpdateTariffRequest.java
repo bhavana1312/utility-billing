@@ -1,5 +1,6 @@
 package com.utilitybilling.tariffservice.dto;
 
+import com.utilitybilling.tariffservice.model.OverduePenaltySlab;
 import com.utilitybilling.tariffservice.model.TariffSlab;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
@@ -20,6 +21,8 @@ public class UpdateTariffRequest {
     @Min(value = 0, message = "Tax percentage must be at least 0")
     @Max(value = 100, message = "Tax percentage must not exceed 100")
     private double taxPercentage;
+    
+    private List<OverduePenaltySlab> overduePenaltySlabs;
 
     @NotNull(message = "Effective from date must be provided")
     private LocalDate effectiveFrom;
