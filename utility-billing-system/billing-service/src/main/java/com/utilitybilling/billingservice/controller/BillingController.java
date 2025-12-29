@@ -1,23 +1,46 @@
 package com.utilitybilling.billingservice.controller;
 
 import com.utilitybilling.billingservice.dto.*;
-import com.utilitybilling.billingservice.service.BillingService;
+import com.utilitybilling.billingservice.model.BillStatus;
+import com.utilitybilling.billingservice.service.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/billing")
 @RequiredArgsConstructor
 public class BillingController{
 
-    private final BillingService service;
+    private final BillingService billingService;
+    private final BillingQueryService queryService;
 
     @PostMapping("/generate")
     public ResponseEntity<BillResponse> generate(
             @Valid @RequestBody GenerateBillRequest request){
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(service.generate(request));
+                .body(billingService.generate(request));
+    }
+
+    @GetMapping("/{consumerId}")
+    public List<BillResponse> consumerBills(
+            @PathVariable String consumerId){
+        return queryService.consumerBills(consumerId);
+    }
+
+//    @GetMapping("/{id}/consumer/{consumerId}")
+//    public BillResponse getForConsumer(
+//            @PathVariable String id,
+//            @PathVariable String consumerId){
+//        return queryService.getForUser(id,consumerId);
+//    }
+
+    @GetMapping
+    public List<BillResponse> all(
+            @RequestParam(required=false) BillStatus status){
+        return queryService.all(status);
     }
 }

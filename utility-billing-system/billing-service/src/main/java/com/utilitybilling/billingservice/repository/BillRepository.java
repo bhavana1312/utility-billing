@@ -14,4 +14,10 @@ public interface BillRepository extends MongoRepository<Bill, String> {
 	Optional<Bill> findTopByMeterNumberOrderByGeneratedAtDesc(String meterNumber);
 
 	List<Bill> findByStatusAndDueDateBefore(BillStatus status, Instant now);
+	
+	List<Bill> findByConsumerIdOrderByGeneratedAtDesc(String consumerId);
+
+	Optional<Bill> findByIdAndConsumerId(String id,String consumerId);
+
+	List<Bill> findByStatus(BillStatus status);
 }

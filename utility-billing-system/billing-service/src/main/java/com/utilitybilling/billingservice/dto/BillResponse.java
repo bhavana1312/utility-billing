@@ -19,6 +19,9 @@ public class BillResponse{
     private double fixedCharge;
     private double taxAmount;
     private double totalAmount;
+    private double penaltyAmount; 
+    
+    private Instant dueDate; 
 
     private String status;
     private Instant generatedAt;

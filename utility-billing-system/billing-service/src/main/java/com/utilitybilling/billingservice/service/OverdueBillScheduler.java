@@ -30,13 +30,14 @@ public class OverdueBillScheduler{
             int overdueDays=(int)ChronoUnit.DAYS.between(
                     bill.getDueDate(),Instant.now());
 
-            var tariff=tariffClient.getActive(bill.getUtilityType());
+            var tariff=
+                    tariffClient.getActive(bill.getUtilityType());
 
-            double penalty=PenaltyCalculator.calculatePenalty(
-                    bill.getTotalAmount(),
-                    overdueDays,
-                    tariff.getOverduePenaltySlabs()
-            );
+            double penalty=
+                    PenaltyCalculator.calculatePenalty(
+                            bill.getTotalAmount(),
+                            overdueDays,
+                            tariff.getOverduePenaltySlabs());
 
             bill.setPenaltyAmount(penalty);
             bill.setTotalAmount(bill.getTotalAmount()+penalty);
