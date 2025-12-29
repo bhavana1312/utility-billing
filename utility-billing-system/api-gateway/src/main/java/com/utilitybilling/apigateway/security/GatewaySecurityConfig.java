@@ -68,6 +68,12 @@ public class GatewaySecurityConfig {
 				// BILLING SERVICE
 				.requestMatchers(HttpMethod.POST, "/billing/generate").hasRole("BILLING_OFFICER")
 				.requestMatchers(HttpMethod.GET, "/billing/**").hasAnyRole("USER","ADMIN","BILLING_OFFICER","ACCOUNTS_OFFICER")
+				
+				// PAYMENTS
+				.requestMatchers(HttpMethod.POST, "/payments/initiate").hasRole("USER")
+				.requestMatchers(HttpMethod.POST, "/payments/confirm").hasRole("USER")
+				.requestMatchers(HttpMethod.POST, "/payments/offline").hasRole("ADMIN")
+				
 
 				// Meter read APIs
 				.requestMatchers(HttpMethod.GET, "/meters/**").authenticated()

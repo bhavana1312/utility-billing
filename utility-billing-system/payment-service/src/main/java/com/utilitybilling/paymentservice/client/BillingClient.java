@@ -1,0 +1,21 @@
+package com.utilitybilling.paymentservice.client;
+
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.*;
+
+@FeignClient(name="billing-service")
+public interface BillingClient{
+
+    @GetMapping("/billing/internal/{billId}")
+    BillResponse getBill(@PathVariable("billId") String billId);
+
+    @PutMapping("/billing/internal/{billId}/mark-paid")
+//    @CircuitBreaker(name="billingCB",fallbackMethod="fallback")
+    void markPaid(@PathVariable("billId") String billId);
+
+    default void fallback(String billId,Throwable t){
+    	System.out.print(t.getStackTrace());
+        throw new RuntimeException("Billing service unavailable");
+    }
+}

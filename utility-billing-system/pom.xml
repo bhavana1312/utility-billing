@@ -32,8 +32,8 @@
         <module>consumer-service</module>
         <module>meter-service</module>
         <module>billing-service</module>
-        <!-- <module>payment-service</module>
-        <module>report-service</module>
+        <module>payment-service</module>
+        <!-- <module>report-service</module>
         <module>notification-service</module> -->
     </modules>
 
