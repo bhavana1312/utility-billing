@@ -19,6 +19,6 @@ public interface BillingClient {
 	OutstandingBalanceResponse outstanding(@PathVariable("consumerId") String consumerId);
 
 	default void fallback(String billId, Throwable t) {
-		throw new RuntimeException("Billing service unavailable");
+		throw new IllegalStateException("Billing service unavailable");
 	}
 }

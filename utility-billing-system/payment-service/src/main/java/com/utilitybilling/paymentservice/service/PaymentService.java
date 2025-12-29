@@ -1,8 +1,6 @@
 package com.utilitybilling.paymentservice.service;
 
-import com.utilitybilling.paymentservice.client.BillResponse;
-import com.utilitybilling.paymentservice.client.BillStatus;
-import com.utilitybilling.paymentservice.client.BillingClient;
+import com.utilitybilling.paymentservice.client.*;
 import com.utilitybilling.paymentservice.dto.*;
 import com.utilitybilling.paymentservice.model.*;
 import com.utilitybilling.paymentservice.repository.*;
@@ -21,12 +19,16 @@ public class PaymentService {
 	private final InvoiceRepository invoiceRepo;
 	private final BillingClient billingClient;
 
-	public Object initiate(InitiatePaymentRequest request) {
-		BillResponse bill = billingClient.getBill(request.getBillId());
-		System.out.print(bill);
+	public Payment initiate(InitiatePaymentRequest request) {
 
-		if (!bill.getStatus().equals(BillStatus.DUE) && !bill.getStatus().equals(BillStatus.OVERDUE))
-			throw new RuntimeException("Bill is not payable");
+		BillResponse bill = billingClient.getBill(request.getBillId());
+
+		if (!(bill.getStatus() == BillStatus.DUE || bill.getStatus() == BillStatus.OVERDUE))
+			throw new IllegalStateException("Bill is not payable");
+
+		paymentRepo.findByBillIdAndStatus(bill.getId(), PaymentStatus.SUCCESS).ifPresent(p -> {
+			throw new IllegalStateException("Bill already paid");
+		});
 
 		String otp = String.valueOf(100000 + new Random().nextInt(900000));
 
@@ -40,22 +42,21 @@ public class PaymentService {
 		p.setOtpExpiresAt(Instant.now().plusSeconds(300));
 		p.setProcessedBy("SYSTEM");
 
-		paymentRepo.save(p);
-
-		return p;
+		return paymentRepo.save(p);
 	}
 
-	public Object confirm(ConfirmPaymentRequest request) {
+	public Invoice confirm(ConfirmPaymentRequest request) {
+
 		Payment p = paymentRepo.findById(request.getPaymentId())
-				.orElseThrow(() -> new RuntimeException("Payment not found"));
+				.orElseThrow(() -> new IllegalArgumentException("Payment not found"));
 
 		if (p.getStatus() != PaymentStatus.INITIATED)
-			throw new RuntimeException("Payment already processed");
+			throw new IllegalStateException("Payment already processed");
 
 		if (!p.getOtp().equals(request.getOtp()) || Instant.now().isAfter(p.getOtpExpiresAt())) {
 			p.setStatus(PaymentStatus.FAILED);
 			paymentRepo.save(p);
-			throw new RuntimeException("Invalid or expired OTP");
+			throw new IllegalArgumentException("Invalid or expired OTP");
 		}
 
 		billingClient.markPaid(p.getBillId());
@@ -64,22 +65,24 @@ public class PaymentService {
 		p.setCompletedAt(Instant.now());
 		paymentRepo.save(p);
 
-		Invoice inv = new Invoice();
-		inv.setPaymentId(p.getId());
-		inv.setBillId(p.getBillId());
-		inv.setConsumerId(p.getConsumerId());
-		inv.setAmount(p.getAmount());
-		inv.setMode(p.getMode());
-		invoiceRepo.save(inv);
+		Invoice i = new Invoice();
+		i.setPaymentId(p.getId());
+		i.setBillId(p.getBillId());
+		i.setConsumerId(p.getConsumerId());
+		i.setAmount(p.getAmount());
+		i.setMode(p.getMode());
 
-		return inv;
+		return invoiceRepo.save(i);
 	}
 
 	public void offlinePay(OfflinePaymentRequest request) {
+
 		BillResponse bill = billingClient.getBill(request.getBillId());
 
-		if (!bill.getStatus().equals(BillStatus.DUE) && !bill.getStatus().equals(BillStatus.OVERDUE))
-			throw new RuntimeException("Bill is not payable");
+		if (!(bill.getStatus() == BillStatus.DUE || bill.getStatus() == BillStatus.OVERDUE))
+			throw new IllegalStateException("Bill is not payable");
+
+		billingClient.markPaid(bill.getId());
 
 		Payment p = new Payment();
 		p.setBillId(bill.getId());
@@ -91,15 +94,15 @@ public class PaymentService {
 		p.setCompletedAt(Instant.now());
 
 		paymentRepo.save(p);
-		billingClient.markPaid(bill.getId());
 
-		Invoice inv = new Invoice();
-		inv.setPaymentId(p.getId());
-		inv.setBillId(p.getBillId());
-		inv.setConsumerId(p.getConsumerId());
-		inv.setAmount(p.getAmount());
-		inv.setMode(p.getMode());
-		invoiceRepo.save(inv);
+		Invoice i = new Invoice();
+		i.setPaymentId(p.getId());
+		i.setBillId(p.getBillId());
+		i.setConsumerId(p.getConsumerId());
+		i.setAmount(p.getAmount());
+		i.setMode(p.getMode());
+
+		invoiceRepo.save(i);
 	}
 
 	public List<Payment> history(String consumerId) {
@@ -110,7 +113,7 @@ public class PaymentService {
 		return invoiceRepo.findByConsumerId(consumerId);
 	}
 
-	public Object outstanding(String consumerId) {
+	public OutstandingBalanceResponse outstanding(String consumerId) {
 		return billingClient.outstanding(consumerId);
 	}
 }
