@@ -83,6 +83,28 @@
                             <goals>
                                 <goal>report</goal>
                             </goals>
+                             <configuration>
+
+                <!-- ✅ INCLUDE only controller & service -->
+                <includes>
+                    <include>**/controller/**</include>
+                    <include>**/service/**</include>
+                </includes>
+
+                <!-- ❌ EXCLUDE everything else explicitly -->
+                <excludes>
+                    <exclude>**/config/**</exclude>
+                    <exclude>**/dto/**</exclude>
+                    <exclude>**/model/**</exclude>
+                    <exclude>**/entity/**</exclude>
+                    <exclude>**/repository/**</exclude>
+                    <exclude>**/exception/**</exclude>
+                    <exclude>**/security/**</exclude>
+                    <exclude>**/util/**</exclude>
+                    <exclude>**/*Application*</exclude>
+                </excludes>
+
+            </configuration>
                         </execution>
                     </executions>
                 </plugin>

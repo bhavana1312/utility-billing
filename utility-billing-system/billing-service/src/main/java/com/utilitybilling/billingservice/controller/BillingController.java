@@ -27,7 +27,7 @@ public class BillingController{
 
     @GetMapping("/{consumerId}")
     public List<BillResponse> consumerBills(
-            @PathVariable String consumerId){
+            @PathVariable("consumerId") String consumerId){
         return queryService.consumerBills(consumerId);
     }
 
