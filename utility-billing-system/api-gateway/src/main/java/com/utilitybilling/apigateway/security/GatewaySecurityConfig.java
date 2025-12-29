@@ -31,7 +31,7 @@ public class GatewaySecurityConfig {
 
 				// Public auth endpoints
 				.requestMatchers("/auth/**").permitAll()
-				
+
 				.requestMatchers("/internal/**").permitAll()
 
 				// Public consumer onboarding
@@ -53,6 +53,18 @@ public class GatewaySecurityConfig {
 				// Consumer request review (ADMIN)
 				.requestMatchers(HttpMethod.GET, "/consumer-requests/**").hasRole("ADMIN")
 				.requestMatchers(HttpMethod.PUT, "/consumer-requests/**").hasRole("ADMIN")
+
+				// Public connection request
+				.requestMatchers(HttpMethod.POST, "/meters/connection-requests").permitAll()
+
+				// Admin approval / rejection
+				.requestMatchers(HttpMethod.POST, "/meters/connection-requests/**").hasRole("ADMIN")
+
+				// Meter readings — BILLING OFFICER ONLY
+				.requestMatchers(HttpMethod.POST, "/meters/readings").hasRole("BILLING_OFFICER")
+
+				// Meter read APIs
+				.requestMatchers(HttpMethod.GET, "/meters/**").authenticated()
 
 				.anyRequest().authenticated()).addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
 				.build();

@@ -1,0 +1,71 @@
+package com.utilitybilling.meterservice.controller;
+
+import com.utilitybilling.meterservice.dto.*;
+import com.utilitybilling.meterservice.model.ConnectionRequest;
+import com.utilitybilling.meterservice.model.Meter;
+import com.utilitybilling.meterservice.service.MeterService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/meters")
+@RequiredArgsConstructor
+public class MeterController {
+
+	private final MeterService service;
+
+	@PostMapping("/connection-requests")
+	public ResponseEntity<Void> request(@Valid @RequestBody CreateConnectionRequest r) {
+		service.requestConnection(r);
+		return ResponseEntity.status(HttpStatus.CREATED).build();
+	}
+
+	@GetMapping("/connection-requests")
+	public ResponseEntity<List<ConnectionRequest>> all() {
+		return ResponseEntity.ok(service.getAllRequests());
+	}
+
+	@PostMapping("/connection-requests/{id}/approve")
+	public ResponseEntity<Void> approve(@PathVariable String id, @Valid @RequestBody ApproveConnectionRequest r) {
+		service.approve(id, r);
+		return ResponseEntity.noContent().build();
+	}
+
+	@PostMapping("/connection-requests/{id}/reject")
+	public ResponseEntity<Void> reject(@PathVariable String id, @Valid @RequestBody RejectConnectionRequest r) {
+		service.reject(id, r.getReason());
+		return ResponseEntity.noContent().build();
+	}
+
+	@GetMapping("/{meterNumber}")
+	public ResponseEntity<MeterDetailsResponse> getMeter(@PathVariable String meterNumber) {
+		return ResponseEntity.ok(service.getMeter(meterNumber));
+	}
+
+	@GetMapping("/consumer/{consumerId}")
+	public ResponseEntity<List<Meter>> byConsumer(@PathVariable String consumerId) {
+		return ResponseEntity.ok(service.getMetersByConsumer(consumerId));
+	}
+
+	@DeleteMapping("/{meterNumber}")
+	public ResponseEntity<Void> deactivate(@PathVariable String meterNumber) {
+		service.deactivateMeter(meterNumber);
+		return ResponseEntity.noContent().build();
+	}
+
+	@PostMapping("/readings")
+	public ResponseEntity<MeterReadingResponse> add(@Valid @RequestBody CreateMeterReadingRequest r) {
+		return ResponseEntity.status(HttpStatus.CREATED).body(service.addReading(r));
+	}
+
+	@GetMapping("/{meterNumber}/last-reading")
+	public ResponseEntity<Double> last(@PathVariable String meterNumber) {
+		return ResponseEntity.ok(service.getLastReading(meterNumber));
+	}
+}
