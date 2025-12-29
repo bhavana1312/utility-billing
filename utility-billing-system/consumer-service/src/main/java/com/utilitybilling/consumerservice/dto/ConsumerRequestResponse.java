@@ -2,7 +2,7 @@ package com.utilitybilling.consumerservice.dto;
 
 import lombok.*;
 
-@Getter
+@Data
 @Builder
 public class ConsumerRequestResponse{
     private String requestId;

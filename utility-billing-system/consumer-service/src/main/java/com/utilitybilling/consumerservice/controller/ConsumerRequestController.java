@@ -28,12 +28,12 @@ public class ConsumerRequestController{
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ConsumerRequest> get(@PathVariable String id){
+    public ResponseEntity<ConsumerRequest> get(@PathVariable("id") String id){
         return ResponseEntity.ok(service.getById(id));
     }
 
     @PutMapping("/{id}/reject")
-    public ResponseEntity<Void> reject(@PathVariable String id,@Valid @RequestBody RejectRequest r){
+    public ResponseEntity<Void> reject(@PathVariable("id") String id,@Valid @RequestBody RejectRequest r){
         service.reject(id,r.getReason());
         return ResponseEntity.noContent().build();
     }

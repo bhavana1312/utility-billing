@@ -17,12 +17,12 @@ public class ConsumerController{
     private final ConsumerService service;
 
     @PostMapping("/from-request/{id}")
-    public ResponseEntity<ConsumerResponse> approve(@PathVariable String id){
+    public ResponseEntity<ConsumerResponse> approve(@PathVariable("id")  String id){
         return ResponseEntity.status(HttpStatus.CREATED).body(service.createFromRequest(id));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ConsumerResponse> get(@PathVariable String id){
+    public ResponseEntity<ConsumerResponse> get(@PathVariable("id") String id){
         return ResponseEntity.ok(service.getById(id));
     }
 
@@ -33,19 +33,19 @@ public class ConsumerController{
 
     @PutMapping("/{id}")
     public ResponseEntity<ConsumerResponse> update(
-            @PathVariable String id,
+            @PathVariable("id")  String id,
             @Valid @RequestBody UpdateConsumerRequest r){
         return ResponseEntity.ok(service.update(id,r));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deactivate(@PathVariable String id){
+    public ResponseEntity<Void> deactivate(@PathVariable("id")  String id){
         service.deactivate(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}/exists")
-    public ResponseEntity<ExistsResponse> exists(@PathVariable String id){
+    public ResponseEntity<ExistsResponse> exists(@PathVariable("id")  String id){
         return ResponseEntity.ok(new ExistsResponse(service.exists(id)));
     }
 }
