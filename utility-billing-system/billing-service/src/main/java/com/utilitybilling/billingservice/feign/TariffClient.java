@@ -10,7 +10,7 @@ public interface TariffClient{
 
     @CircuitBreaker(name="tariffService",fallbackMethod="fallback")
     @GetMapping("/utilities/tariffs/{utilityType}")
-    TariffResponse getActive(@PathVariable String utilityType);
+    TariffResponse getActive(@PathVariable("utilityType") String utilityType);
 
     default TariffResponse fallback(String utilityType,Throwable t){
         throw new IllegalStateException("Tariff service unavailable");

@@ -46,7 +46,6 @@ public class BillingQueryService {
 
 	public Bill getById(String billId) {
 		Bill bill = billRepo.findById(billId).orElseThrow(() -> new RuntimeException("Bill not found"));
-
 		return bill;
 	}
 

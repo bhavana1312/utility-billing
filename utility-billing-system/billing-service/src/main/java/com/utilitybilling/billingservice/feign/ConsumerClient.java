@@ -10,7 +10,7 @@ public interface ConsumerClient {
 
 	@CircuitBreaker(name = "consumerService", fallbackMethod = "fallback")
 	@GetMapping("/consumers/{id}/exists")
-	ConsumerExistsResponse exists(@PathVariable String id);
+	ConsumerExistsResponse exists(@PathVariable("id") String id);
 
 	default boolean fallback(String id, Throwable t) {
 		t.printStackTrace();

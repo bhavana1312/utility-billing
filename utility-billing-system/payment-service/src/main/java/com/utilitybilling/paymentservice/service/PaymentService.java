@@ -24,14 +24,9 @@ public class PaymentService {
 
 	public Object initiate(InitiatePaymentRequest request) {
 		BillResponse bill = billingClient.getBill(request.getBillId());
-		System.out.print(bill);
-
+		
 		if (!bill.getStatus().equals(BillStatus.DUE) && !bill.getStatus().equals(BillStatus.OVERDUE))
 			throw new IllegalStateException("Bill is not payable");
-
-		Optional<Payment> existing = paymentRepo.findByBillIdAndStatus(bill.getId(), PaymentStatus.SUCCESS);
-		if (existing != null)
-			throw new IllegalStateException("Bill already paid");
 
 		String otp = String.valueOf(100000 + new Random().nextInt(900000));
 
