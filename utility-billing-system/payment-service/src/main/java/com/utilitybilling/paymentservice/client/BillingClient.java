@@ -4,18 +4,17 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(name="billing-service")
-public interface BillingClient{
+@FeignClient(name = "billing-service")
+public interface BillingClient {
 
-    @GetMapping("/billing/internal/{billId}")
-    BillResponse getBill(@PathVariable("billId") String billId);
+	@GetMapping("/billing/internal/{billId}")
+	BillResponse getBill(@PathVariable("billId") String billId);
 
-    @PutMapping("/billing/internal/{billId}/mark-paid")
-//    @CircuitBreaker(name="billingCB",fallbackMethod="fallback")
-    void markPaid(@PathVariable("billId") String billId);
+	@PutMapping("/billing/internal/{billId}/mark-paid")
+	@CircuitBreaker(name = "billingCB", fallbackMethod = "fallback")
+	void markPaid(@PathVariable("billId") String billId);
 
-    default void fallback(String billId,Throwable t){
-    	System.out.print(t.getStackTrace());
-        throw new RuntimeException("Billing service unavailable");
-    }
+	default void fallback(String billId, Throwable t) {
+		throw new RuntimeException("Billing service unavailable");
+	}
 }

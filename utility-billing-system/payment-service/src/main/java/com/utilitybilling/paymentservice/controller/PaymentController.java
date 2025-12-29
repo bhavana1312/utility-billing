@@ -26,4 +26,14 @@ public class PaymentController{
     public void offline(@RequestBody OfflinePaymentRequest r){
         service.offlinePay(r);
     }
+    
+    @GetMapping("/history/{consumerId}")
+    public Object history(@PathVariable String consumerId){
+        return service.history(consumerId);
+    }
+
+    @GetMapping("/invoices/{consumerId}")
+    public Object invoices(@PathVariable String consumerId){
+        return service.invoices(consumerId);
+    }
 }

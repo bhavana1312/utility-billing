@@ -1,6 +1,7 @@
 package com.utilitybilling.billingservice.service;
 
 import com.utilitybilling.billingservice.dto.BillResponse;
+import com.utilitybilling.billingservice.dto.OutstandingBalanceResponse;
 import com.utilitybilling.billingservice.model.*;
 import com.utilitybilling.billingservice.repository.BillRepository;
 import lombok.RequiredArgsConstructor;
@@ -43,10 +44,23 @@ public class BillingQueryService {
 		return r;
 	}
 
-	public BillResponse getById(String billId) {
-		System.out.print(billId);
+	public Bill getById(String billId) {
 		Bill bill = billRepo.findById(billId).orElseThrow(() -> new RuntimeException("Bill not found"));
 
-		return map(bill);
+		return bill;
+	}
+
+	public OutstandingBalanceResponse outstanding(String consumerId) {
+
+		List<Bill> bills = billRepo.findByConsumerIdAndStatusIn(consumerId,
+				List.of(BillStatus.DUE, BillStatus.OVERDUE));
+
+		double total = bills.stream().mapToDouble(Bill::getTotalAmount).sum();
+
+		OutstandingBalanceResponse r = new OutstandingBalanceResponse();
+		r.setConsumerId(consumerId);
+		r.setOutstandingAmount(total);
+
+		return r;
 	}
 }

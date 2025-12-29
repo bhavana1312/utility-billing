@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Random;
 
 @Service
@@ -22,15 +23,15 @@ public class PaymentService {
 
 	public Object initiate(InitiatePaymentRequest request) {
 		BillResponse bill = billingClient.getBill(request.getBillId());
+		System.out.print(bill);
 
-		if (!bill.getStatus().equals("DUE") && !bill.getStatus().equals("OVERDUE")) {
+		if (!bill.getStatus().equals(BillStatus.DUE) && !bill.getStatus().equals(BillStatus.OVERDUE))
 			throw new RuntimeException("Bill is not payable");
-		}
 
 		String otp = String.valueOf(100000 + new Random().nextInt(900000));
 
 		Payment p = new Payment();
-		p.setBillId(bill.getBillId());
+		p.setBillId(bill.getId());
 		p.setConsumerId(bill.getConsumerId());
 		p.setAmount(bill.getTotalAmount());
 		p.setMode(PaymentMode.ONLINE);
@@ -77,11 +78,11 @@ public class PaymentService {
 	public void offlinePay(OfflinePaymentRequest request) {
 		BillResponse bill = billingClient.getBill(request.getBillId());
 
-		if (!bill.getStatus().equals("DUE") && !bill.getStatus().equals("OVERDUE"))
+		if (!bill.getStatus().equals(BillStatus.DUE) && !bill.getStatus().equals(BillStatus.OVERDUE))
 			throw new RuntimeException("Bill is not payable");
 
 		Payment p = new Payment();
-		p.setBillId(bill.getBillId());
+		p.setBillId(bill.getId());
 		p.setConsumerId(bill.getConsumerId());
 		p.setAmount(bill.getTotalAmount());
 		p.setMode(request.getMode());
@@ -90,7 +91,7 @@ public class PaymentService {
 		p.setCompletedAt(Instant.now());
 
 		paymentRepo.save(p);
-		billingClient.markPaid(bill.getBillId());
+		billingClient.markPaid(bill.getId());
 
 		Invoice inv = new Invoice();
 		inv.setPaymentId(p.getId());
@@ -99,5 +100,13 @@ public class PaymentService {
 		inv.setAmount(p.getAmount());
 		inv.setMode(p.getMode());
 		invoiceRepo.save(inv);
+	}
+
+	public List<Payment> history(String consumerId) {
+		return paymentRepo.findByConsumerId(consumerId);
+	}
+
+	public List<Invoice> invoices(String consumerId) {
+		return invoiceRepo.findByConsumerId(consumerId);
 	}
 }

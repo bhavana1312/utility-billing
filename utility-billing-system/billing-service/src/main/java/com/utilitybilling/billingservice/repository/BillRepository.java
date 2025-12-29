@@ -20,4 +20,6 @@ public interface BillRepository extends MongoRepository<Bill, String> {
 	Optional<Bill> findByIdAndConsumerId(String id,String consumerId);
 
 	List<Bill> findByStatus(BillStatus status);
+	
+	List<Bill> findByConsumerIdAndStatusIn(String consumerId,List<BillStatus> statuses);
 }

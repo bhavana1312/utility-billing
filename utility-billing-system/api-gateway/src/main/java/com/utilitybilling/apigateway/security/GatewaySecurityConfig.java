@@ -33,7 +33,7 @@ public class GatewaySecurityConfig {
 				.requestMatchers("/auth/**").permitAll()
 
 				.requestMatchers("/internal/**").permitAll()
-				
+
 				.requestMatchers(HttpMethod.GET, "/utilities/tariffs/**").permitAll()
 
 				// Public consumer onboarding
@@ -50,7 +50,7 @@ public class GatewaySecurityConfig {
 				.requestMatchers(HttpMethod.DELETE, "/consumers/**").hasRole("ADMIN")
 
 				// Consumer read
-				.requestMatchers(HttpMethod.GET, "/consumers/**").hasAnyRole("USER","ADMIN","BILLING_OFFICER")
+				.requestMatchers(HttpMethod.GET, "/consumers/**").hasAnyRole("USER", "ADMIN", "BILLING_OFFICER")
 
 				// Consumer request review (ADMIN)
 				.requestMatchers(HttpMethod.GET, "/consumer-requests/**").hasRole("ADMIN")
@@ -64,16 +64,18 @@ public class GatewaySecurityConfig {
 
 				// Meter readings — BILLING OFFICER ONLY
 				.requestMatchers(HttpMethod.POST, "/meters/readings").hasRole("BILLING_OFFICER")
-				
+
 				// BILLING SERVICE
 				.requestMatchers(HttpMethod.POST, "/billing/generate").hasRole("BILLING_OFFICER")
-				.requestMatchers(HttpMethod.GET, "/billing/**").hasAnyRole("USER","ADMIN","BILLING_OFFICER","ACCOUNTS_OFFICER")
-				
+				.requestMatchers(HttpMethod.GET, "/billing/**")
+				.hasAnyRole("USER", "ADMIN", "BILLING_OFFICER", "ACCOUNTS_OFFICER")
+
 				// PAYMENTS
 				.requestMatchers(HttpMethod.POST, "/payments/initiate").hasRole("USER")
 				.requestMatchers(HttpMethod.POST, "/payments/confirm").hasRole("USER")
 				.requestMatchers(HttpMethod.POST, "/payments/offline").hasRole("ACCOUNTS_OFFICER")
-				
+				.requestMatchers(HttpMethod.GET, "/payments/**")
+				.hasAnyRole("USER", "ADMIN", "BILLING_OFFICER", "ACCOUNTS_OFFICER")
 
 				// Meter read APIs
 				.requestMatchers(HttpMethod.GET, "/meters/**").authenticated()

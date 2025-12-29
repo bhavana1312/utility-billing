@@ -8,7 +8,7 @@ import lombok.Data;
 public class BillResponse {
 
 	@Id
-	private String billId;
+	private String Id;
 
 	private String consumerId;
 	private String meterNumber;
@@ -28,6 +28,6 @@ public class BillResponse {
 	private Instant dueDate;
 	private Instant lastUpdatedAt;
 
-	private String status;
+	private BillStatus status;
 	private Instant generatedAt = Instant.now();
 }
