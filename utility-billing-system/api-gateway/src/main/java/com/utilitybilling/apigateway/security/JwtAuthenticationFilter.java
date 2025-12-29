@@ -19,58 +19,47 @@ import java.util.List;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    @Value("${jwt.secret}")
-    private String secret;
+	@Value("${jwt.secret}")
+	private String secret;
 
-    private SecretKey getSigningKey(){
-        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-    }
+	private SecretKey getSigningKey() {
+		return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+	}
 
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request){
-        String path=request.getRequestURI();
-        return path.startsWith("/auth/")
-                || path.startsWith("/actuator/");
-    }
+	@Override
+	protected boolean shouldNotFilter(HttpServletRequest request) {
+		String path = request.getRequestURI();
+		return path.startsWith("/auth/") || path.startsWith("/actuator/");
+	}
 
-    @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain chain)
-            throws IOException, ServletException {
+	@Override
+	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+			throws IOException, ServletException {
 
-        String header=request.getHeader("Authorization");
+		String header = request.getHeader("Authorization");
 
-        if(header!=null && header.startsWith("Bearer ")){
-            try{
-                String token=header.substring(7);
+		if (header != null && header.startsWith("Bearer ")) {
+			try {
+				String token = header.substring(7);
 
-                Claims claims = Jwts.parserBuilder()
-                        .setSigningKey(getSigningKey())   // ✅ FIX
-                        .build()
-                        .parseClaimsJws(token)
-                        .getBody();
+				Claims claims = Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token)
+						.getBody();
 
-                String username=claims.getSubject();
-                List<String> roles=claims.get("roles",List.class);
+				String username = claims.getSubject();
+				List<String> roles = claims.get("roles", List.class);
 
-                var authorities=roles.stream()
-                        .map(SimpleGrantedAuthority::new)
-                        .toList();
+				var authorities = roles.stream().map(SimpleGrantedAuthority::new).toList();
 
-                SecurityContextHolder.getContext().setAuthentication(
-                        new UsernamePasswordAuthenticationToken(
-                                username,null,authorities
-                        )
-                );
+				SecurityContextHolder.getContext()
+						.setAuthentication(new UsernamePasswordAuthenticationToken(username, null, authorities));
 
-            }catch(JwtException e){
-                SecurityContextHolder.clearContext();
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                return;
-            }
-        }
+			} catch (JwtException e) {
+				SecurityContextHolder.clearContext();
+				response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+				return;
+			}
+		}
 
-        chain.doFilter(request,response);
-    }
+		chain.doFilter(request, response);
+	}
 }

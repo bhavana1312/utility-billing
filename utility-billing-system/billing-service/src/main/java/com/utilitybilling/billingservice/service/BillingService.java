@@ -23,7 +23,7 @@ public class BillingService {
 	public BillResponse generate(GenerateBillRequest request) {
 
 		MeterResponse meter = meterClient.getMeter(request.getMeterNumber());
-
+		
 		if (!meter.isActive())
 			throw new IllegalStateException("Meter is inactive");
 

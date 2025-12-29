@@ -50,7 +50,7 @@ public class GatewaySecurityConfig {
 				.requestMatchers(HttpMethod.DELETE, "/consumers/**").hasRole("ADMIN")
 
 				// Consumer read
-				.requestMatchers(HttpMethod.GET, "/consumers/**").authenticated()
+				.requestMatchers(HttpMethod.GET, "/consumers/**").hasAnyRole("USER","ADMIN","BILLING_OFFICER")
 
 				// Consumer request review (ADMIN)
 				.requestMatchers(HttpMethod.GET, "/consumer-requests/**").hasRole("ADMIN")
@@ -64,6 +64,9 @@ public class GatewaySecurityConfig {
 
 				// Meter readings — BILLING OFFICER ONLY
 				.requestMatchers(HttpMethod.POST, "/meters/readings").hasRole("BILLING_OFFICER")
+				
+				// BILLING SERVICE
+				.requestMatchers(HttpMethod.POST, "/billing/generate").hasRole("BILLING_OFFICER")
 
 				// Meter read APIs
 				.requestMatchers(HttpMethod.GET, "/meters/**").authenticated()

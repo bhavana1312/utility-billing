@@ -18,7 +18,6 @@ public class OverdueBillScheduler{
     private final BillRepository billRepo;
     private final TariffClient tariffClient;
 
-    // Runs every day at 01:00 AM
     @Scheduled(cron="0 0 1 * * *")
     public void markOverdueBills(){
 
