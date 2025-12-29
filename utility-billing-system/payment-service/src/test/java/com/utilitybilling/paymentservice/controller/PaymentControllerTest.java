@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +40,7 @@ class PaymentControllerTest {
 		InitiatePaymentRequest req = new InitiatePaymentRequest();
 		req.setBillId("B1");
 
-		when(service.initiate(any())).thenReturn(new Object());
+		when(service.initiate(any())).thenReturn(Map.of("status", "OK"));
 
 		mockMvc.perform(post("/payments/initiate").contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsString(req))).andExpect(status().isOk());
@@ -49,7 +50,7 @@ class PaymentControllerTest {
 	void shouldConfirmPayment() throws Exception {
 		ConfirmPaymentRequest req = new ConfirmPaymentRequest();
 
-		when(service.confirm(any())).thenReturn(new Object());
+		when(service.initiate(any())).thenReturn(Map.of("status", "CONFIRMED"));
 
 		mockMvc.perform(post("/payments/confirm").contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsString(req))).andExpect(status().isOk());
@@ -81,7 +82,7 @@ class PaymentControllerTest {
 
 	@Test
 	void shouldReturnOutstanding() throws Exception {
-		when(service.outstanding("C1")).thenReturn(new Object());
+		when(service.outstanding("C1")).thenReturn(Map.of("status", "OK"));
 
 		mockMvc.perform(get("/payments/outstanding/C1")).andExpect(status().isOk());
 	}

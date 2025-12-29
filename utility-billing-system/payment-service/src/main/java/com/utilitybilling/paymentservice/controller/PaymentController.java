@@ -28,17 +28,17 @@ public class PaymentController{
     }
     
     @GetMapping("/history/{consumerId}")
-    public Object history(@PathVariable String consumerId){
+    public Object history(@PathVariable("consumerId") String consumerId){
         return service.history(consumerId);
     }
 
     @GetMapping("/invoices/{consumerId}")
-    public Object invoices(@PathVariable String consumerId){
+    public Object invoices(@PathVariable("consumerId") String consumerId){
         return service.invoices(consumerId);
     }
     
     @GetMapping("/outstanding/{consumerId}")
-    public Object outstanding(@PathVariable String consumerId){
+    public Object outstanding(@PathVariable("consumerId") String consumerId){
         return service.outstanding(consumerId);
     }
 }
