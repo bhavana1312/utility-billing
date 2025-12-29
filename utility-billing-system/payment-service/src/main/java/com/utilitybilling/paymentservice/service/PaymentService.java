@@ -1,6 +1,9 @@
 package com.utilitybilling.paymentservice.service;
 
-import com.utilitybilling.paymentservice.client.*;
+import com.google.common.base.Optional;
+import com.utilitybilling.paymentservice.client.BillResponse;
+import com.utilitybilling.paymentservice.client.BillStatus;
+import com.utilitybilling.paymentservice.client.BillingClient;
 import com.utilitybilling.paymentservice.dto.*;
 import com.utilitybilling.paymentservice.model.*;
 import com.utilitybilling.paymentservice.repository.*;
@@ -19,16 +22,16 @@ public class PaymentService {
 	private final InvoiceRepository invoiceRepo;
 	private final BillingClient billingClient;
 
-	public Payment initiate(InitiatePaymentRequest request) {
-
+	public Object initiate(InitiatePaymentRequest request) {
 		BillResponse bill = billingClient.getBill(request.getBillId());
+		System.out.print(bill);
 
-		if (!(bill.getStatus() == BillStatus.DUE || bill.getStatus() == BillStatus.OVERDUE))
+		if (!bill.getStatus().equals(BillStatus.DUE) && !bill.getStatus().equals(BillStatus.OVERDUE))
 			throw new IllegalStateException("Bill is not payable");
 
-		paymentRepo.findByBillIdAndStatus(bill.getId(), PaymentStatus.SUCCESS).ifPresent(p -> {
+		Optional<Payment> existing = paymentRepo.findByBillIdAndStatus(bill.getId(), PaymentStatus.SUCCESS);
+		if (existing != null)
 			throw new IllegalStateException("Bill already paid");
-		});
 
 		String otp = String.valueOf(100000 + new Random().nextInt(900000));
 
@@ -42,11 +45,12 @@ public class PaymentService {
 		p.setOtpExpiresAt(Instant.now().plusSeconds(300));
 		p.setProcessedBy("SYSTEM");
 
-		return paymentRepo.save(p);
+		paymentRepo.save(p);
+
+		return p;
 	}
 
-	public Invoice confirm(ConfirmPaymentRequest request) {
-
+	public Object confirm(ConfirmPaymentRequest request) {
 		Payment p = paymentRepo.findById(request.getPaymentId())
 				.orElseThrow(() -> new IllegalArgumentException("Payment not found"));
 
@@ -65,24 +69,22 @@ public class PaymentService {
 		p.setCompletedAt(Instant.now());
 		paymentRepo.save(p);
 
-		Invoice i = new Invoice();
-		i.setPaymentId(p.getId());
-		i.setBillId(p.getBillId());
-		i.setConsumerId(p.getConsumerId());
-		i.setAmount(p.getAmount());
-		i.setMode(p.getMode());
+		Invoice inv = new Invoice();
+		inv.setPaymentId(p.getId());
+		inv.setBillId(p.getBillId());
+		inv.setConsumerId(p.getConsumerId());
+		inv.setAmount(p.getAmount());
+		inv.setMode(p.getMode());
+		invoiceRepo.save(inv);
 
-		return invoiceRepo.save(i);
+		return inv;
 	}
 
 	public void offlinePay(OfflinePaymentRequest request) {
-
 		BillResponse bill = billingClient.getBill(request.getBillId());
 
-		if (!(bill.getStatus() == BillStatus.DUE || bill.getStatus() == BillStatus.OVERDUE))
+		if (!bill.getStatus().equals(BillStatus.DUE) && !bill.getStatus().equals(BillStatus.OVERDUE))
 			throw new IllegalStateException("Bill is not payable");
-
-		billingClient.markPaid(bill.getId());
 
 		Payment p = new Payment();
 		p.setBillId(bill.getId());
@@ -94,15 +96,15 @@ public class PaymentService {
 		p.setCompletedAt(Instant.now());
 
 		paymentRepo.save(p);
+		billingClient.markPaid(bill.getId());
 
-		Invoice i = new Invoice();
-		i.setPaymentId(p.getId());
-		i.setBillId(p.getBillId());
-		i.setConsumerId(p.getConsumerId());
-		i.setAmount(p.getAmount());
-		i.setMode(p.getMode());
-
-		invoiceRepo.save(i);
+		Invoice inv = new Invoice();
+		inv.setPaymentId(p.getId());
+		inv.setBillId(p.getBillId());
+		inv.setConsumerId(p.getConsumerId());
+		inv.setAmount(p.getAmount());
+		inv.setMode(p.getMode());
+		invoiceRepo.save(inv);
 	}
 
 	public List<Payment> history(String consumerId) {
@@ -113,7 +115,7 @@ public class PaymentService {
 		return invoiceRepo.findByConsumerId(consumerId);
 	}
 
-	public OutstandingBalanceResponse outstanding(String consumerId) {
+	public Object outstanding(String consumerId) {
 		return billingClient.outstanding(consumerId);
 	}
 }
