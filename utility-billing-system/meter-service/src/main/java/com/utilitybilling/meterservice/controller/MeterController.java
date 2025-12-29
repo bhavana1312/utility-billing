@@ -32,29 +32,29 @@ public class MeterController {
 	}
 
 	@PostMapping("/connection-requests/{id}/approve")
-	public ResponseEntity<Void> approve(@PathVariable String id) {
+	public ResponseEntity<Void> approve(@PathVariable("id") String id) {
 		service.approve(id);
 		return ResponseEntity.noContent().build();
 	}
 
 	@PostMapping("/connection-requests/{id}/reject")
-	public ResponseEntity<Void> reject(@PathVariable String id, @Valid @RequestBody RejectConnectionRequest r) {
+	public ResponseEntity<Void> reject(@PathVariable("id") String id, @Valid @RequestBody RejectConnectionRequest r) {
 		service.reject(id, r.getReason());
 		return ResponseEntity.noContent().build();
 	}
 
 	@GetMapping("/{meterNumber}")
-	public ResponseEntity<MeterDetailsResponse> getMeter(@PathVariable String meterNumber) {
+	public ResponseEntity<MeterDetailsResponse> getMeter(@PathVariable("meterNumber") String meterNumber) {
 		return ResponseEntity.ok(service.getMeter(meterNumber));
 	}
 
 	@GetMapping("/consumer/{consumerId}")
-	public ResponseEntity<List<Meter>> byConsumer(@PathVariable String consumerId) {
+	public ResponseEntity<List<Meter>> byConsumer(@PathVariable("consumerId") String consumerId) {
 		return ResponseEntity.ok(service.getMetersByConsumer(consumerId));
 	}
 
 	@DeleteMapping("/{meterNumber}")
-	public ResponseEntity<Void> deactivate(@PathVariable String meterNumber) {
+	public ResponseEntity<Void> deactivate(@PathVariable("meterNumber") String meterNumber) {
 		service.deactivateMeter(meterNumber);
 		return ResponseEntity.noContent().build();
 	}
@@ -65,7 +65,7 @@ public class MeterController {
 	}
 
 	@GetMapping("/{meterNumber}/last-reading")
-	public ResponseEntity<Double> last(@PathVariable String meterNumber) {
+	public ResponseEntity<Double> last(@PathVariable("meterNumber") String meterNumber) {
 		return ResponseEntity.ok(service.getLastReading(meterNumber));
 	}
 }
