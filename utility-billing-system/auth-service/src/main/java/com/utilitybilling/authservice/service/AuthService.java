@@ -1,5 +1,7 @@
 package com.utilitybilling.authservice.service;
 
+import com.utilitybilling.authservice.client.NotificationClient;
+import com.utilitybilling.authservice.client.NotificationRequest;
 import com.utilitybilling.authservice.dto.*;
 import com.utilitybilling.authservice.exception.*;
 import com.utilitybilling.authservice.model.User;
@@ -20,17 +22,19 @@ public class AuthService {
 	private final UserRepository repo;
 	private final BCryptPasswordEncoder encoder;
 	private final JwtUtil jwtUtil;
+	private final NotificationClient notificationClient;
 
 	public void register(RegisterRequest r) {
 		if (repo.existsByUsername(r.getUsername()))
 			throw new UserAlreadyExistsException("User already exists");
 		if (repo.existsByEmail(r.getEmail()))
 			throw new UserAlreadyExistsException("Email already exists");
-		
+
 		var roles = r.getRoles();
 		if (roles == null || roles.isEmpty()) {
 			roles = List.of("ROLE_USER");
 		}
+
 		repo.save(User.builder().username(r.getUsername()).email(r.getEmail()).password(encoder.encode(r.getPassword()))
 				.roles(roles).enabled(true).createdAt(Instant.now()).passwordUpdatedAt(Instant.now()).build());
 	}
@@ -56,19 +60,31 @@ public class AuthService {
 		u.setPassword(encoder.encode(r.getNewPassword()));
 		u.setPasswordUpdatedAt(Instant.now());
 		repo.save(u);
+
+		notificationClient.send(NotificationRequest.builder().email(u.getEmail()).type("PASSWORD_CHANGED")
+				.subject("Password changed successfully")
+				.message("Your password was changed successfully. If this wasn’t you, contact support immediately.")
+				.build());
 	}
 
 	public void forgotPassword(ForgotPasswordRequest r) {
 		User u = repo.findByEmail(r.getEmail()).orElseThrow(UserNotFoundException::new);
 
-		u.setResetToken(UUID.randomUUID().toString());
+		String token = UUID.randomUUID().toString();
+
+		u.setResetToken(token);
 		u.setResetTokenExpiry(Instant.now().plusSeconds(900));
 		repo.save(u);
 
-		// token will be emailed later
+		String resetLink = "http://localhost:8089/reset-password?token=" + token;
+
+		notificationClient.send(NotificationRequest.builder().email(u.getEmail()).type("PASSWORD_RESET")
+				.subject("Reset your password").message("Click the link below to reset your password:\n\n" + resetLink
+						+ "\n\nThis link expires in 15 minutes.")
+				.build());
 	}
 
-	public void resetPassword(ResetPasswordRequest r) {	
+	public void resetPassword(ResetPasswordRequest r) {
 		User u = repo.findByResetToken(r.getResetToken())
 				.orElseThrow(() -> new InvalidTokenException("Invalid reset token"));
 
@@ -80,5 +96,11 @@ public class AuthService {
 		u.setResetToken(null);
 		u.setResetTokenExpiry(null);
 		repo.save(u);
+
+		notificationClient.send(NotificationRequest.builder().email(u.getEmail()).type("PASSWORD_CHANGED")
+				.subject("Your password was reset successfully")
+				.message("Your password has been reset successfully.\n\n"
+						+ "If you did not perform this action, please contact support immediately.")
+				.build());
 	}
 }
