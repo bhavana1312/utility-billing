@@ -4,6 +4,7 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 @Data
@@ -12,11 +13,13 @@ public class Payment {
 
 	@Id
 	private String id;
+	private String email;
 
 	private String billId;
 	private String consumerId;
+	private String utilityType;
 
-	private double amount;
+	private BigDecimal amount;
 
 	private PaymentMode mode;
 	private PaymentStatus status;

@@ -1,5 +1,6 @@
 package com.utilitybilling.paymentservice.client;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import org.springframework.data.annotation.Id;
 import lombok.Data;
@@ -9,7 +10,7 @@ public class BillResponse {
 
 	@Id
 	private String Id;
-
+	private String email;
 	private String consumerId;
 	private String meterNumber;
 	private String utilityType;
@@ -18,12 +19,12 @@ public class BillResponse {
 	private double currentReading;
 	private double unitsConsumed;
 
-	private double energyCharge;
-	private double fixedCharge;
-	private double taxAmount;
+	private BigDecimal energyCharge;
+	private BigDecimal fixedCharge;
+	private BigDecimal taxAmount;
 
-	private double penaltyAmount;
-	private double totalAmount;
+	private BigDecimal penaltyAmount;
+	private BigDecimal totalAmount;
 
 	private Instant dueDate;
 	private Instant lastUpdatedAt;

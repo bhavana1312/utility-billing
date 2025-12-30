@@ -4,6 +4,8 @@ import com.google.common.base.Optional;
 import com.utilitybilling.paymentservice.client.BillResponse;
 import com.utilitybilling.paymentservice.client.BillStatus;
 import com.utilitybilling.paymentservice.client.BillingClient;
+import com.utilitybilling.paymentservice.client.NotificationClient;
+import com.utilitybilling.paymentservice.client.NotificationRequest;
 import com.utilitybilling.paymentservice.dto.*;
 import com.utilitybilling.paymentservice.model.*;
 import com.utilitybilling.paymentservice.repository.*;
@@ -21,10 +23,11 @@ public class PaymentService {
 	private final PaymentRepository paymentRepo;
 	private final InvoiceRepository invoiceRepo;
 	private final BillingClient billingClient;
+	private final NotificationClient notificationClient;
 
 	public Object initiate(InitiatePaymentRequest request) {
 		BillResponse bill = billingClient.getBill(request.getBillId());
-		
+
 		if (!bill.getStatus().equals(BillStatus.DUE) && !bill.getStatus().equals(BillStatus.OVERDUE))
 			throw new IllegalStateException("Bill is not payable");
 
@@ -32,6 +35,8 @@ public class PaymentService {
 
 		Payment p = new Payment();
 		p.setBillId(bill.getId());
+		p.setEmail(bill.getEmail());
+		p.setUtilityType(bill.getUtilityType());
 		p.setConsumerId(bill.getConsumerId());
 		p.setAmount(bill.getTotalAmount());
 		p.setMode(PaymentMode.ONLINE);
@@ -41,6 +46,13 @@ public class PaymentService {
 		p.setProcessedBy("SYSTEM");
 
 		paymentRepo.save(p);
+
+		notificationClient.send(NotificationRequest.builder().email(bill.getEmail()).type("PAYMENT_OTP")
+				.subject("OTP for " + p.getUtilityType() + " bill payment")
+				.message("Payment initiated with id: " + p.getId() + "\n" + "Your OTP for " + p.getUtilityType()
+						+ " paying bill with id " + bill.getId() + " is: " + otp + "\n\n"
+						+ "This OTP is valid for 5 minutes.")
+				.build());
 
 		return p;
 	}
@@ -55,6 +67,13 @@ public class PaymentService {
 		if (!p.getOtp().equals(request.getOtp()) || Instant.now().isAfter(p.getOtpExpiresAt())) {
 			p.setStatus(PaymentStatus.FAILED);
 			paymentRepo.save(p);
+
+			notificationClient
+					.send(NotificationRequest.builder().email(p.getEmail()).type("PAYMENT_FAILED")
+							.subject("Payment failed").message("Your payment for " + p.getUtilityType()
+									+ " bill with id: " + p.getBillId() + " failed due to invalid or expired OTP.")
+							.build());
+
 			throw new IllegalArgumentException("Invalid or expired OTP");
 		}
 
@@ -71,6 +90,12 @@ public class PaymentService {
 		inv.setAmount(p.getAmount());
 		inv.setMode(p.getMode());
 		invoiceRepo.save(inv);
+
+		notificationClient.send(
+				NotificationRequest.builder().email(p.getEmail()).type("PAYMENT_SUCCESS").subject("Payment successful")
+						.message("Your payment of ₹" + p.getAmount() + " for " + p.getUtilityType() + " bill with id:"
+								+ p.getBillId() + " was successful.\n\n" + "Payment ID: " + p.getId())
+						.build());
 
 		return inv;
 	}
@@ -100,6 +125,11 @@ public class PaymentService {
 		inv.setAmount(p.getAmount());
 		inv.setMode(p.getMode());
 		invoiceRepo.save(inv);
+		notificationClient.send(NotificationRequest.builder().email(bill.getEmail()).type("PAYMENT_SUCCESS")
+				.subject("Offline payment recorded").message("Your offline payment of ₹" + p.getAmount() + " for "
+						+ bill.getUtilityType() + " bill with id:" + p.getBillId() + " has been recorded.")
+				.build());
+
 	}
 
 	public List<Payment> history(String consumerId) {
