@@ -1,21 +1,30 @@
-package com.utilitybilling.tariffservice.dto;
-
-import com.utilitybilling.tariffservice.model.*;
-import lombok.Builder;
-import lombok.Data;
+package com.utilitybilling.tariffservice.model;
 
 import java.time.LocalDate;
 import java.util.List;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.Builder;
+
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
-public class TariffResponse {
-	private UtilityType utilityType;
+public class TariffPlanConfig{
+
 	private TariffPlan plan;
+
 	private boolean active;
-	private List<TariffSlab> slabs;
+
 	private double fixedCharge;
+
 	private double taxPercentage;
+
+	private List<TariffSlab> slabs;
+
 	private List<OverduePenaltySlab> overduePenaltySlabs;
+
 	private LocalDate effectiveFrom;
 }

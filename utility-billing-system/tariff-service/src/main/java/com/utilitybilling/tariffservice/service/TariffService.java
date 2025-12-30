@@ -1,86 +1,79 @@
 package com.utilitybilling.tariffservice.service;
 
+import com.utilitybilling.tariffservice.dto.*;
+import com.utilitybilling.tariffservice.exception.*;
+import com.utilitybilling.tariffservice.model.*;
+import com.utilitybilling.tariffservice.repository.TariffRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import com.utilitybilling.tariffservice.dto.CreateTariffRequest;
-import com.utilitybilling.tariffservice.dto.TariffResponse;
-import com.utilitybilling.tariffservice.dto.UpdateTariffRequest;
-import com.utilitybilling.tariffservice.exception.BusinessException;
-import com.utilitybilling.tariffservice.exception.NotFoundException;
-import com.utilitybilling.tariffservice.model.Tariff;
-import com.utilitybilling.tariffservice.model.UtilityType;
-import com.utilitybilling.tariffservice.repository.TariffRepository;
-
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
 
 @Service
 @RequiredArgsConstructor
-public class TariffService{
+public class TariffService {
 
-    private final TariffRepository repo;
+	private final TariffRepository repo;
 
-    public void create(CreateTariffRequest r){
-        repo.findByUtilityTypeAndActiveTrue(r.getUtilityType())
-                .ifPresent(t->{
-                    throw new BusinessException("Active tariff already exists for "+r.getUtilityType());
-                });
+	public void createPlan(CreateTariffPlanRequest r) {
 
-        repo.save(Tariff.builder()
-                .utilityType(r.getUtilityType())
-                .slabs(r.getSlabs())
-                .fixedCharge(r.getFixedCharge())
-                .taxPercentage(r.getTaxPercentage())
-                .overduePenaltySlabs(r.getOverduePenaltySlabs())
-                .effectiveFrom(r.getEffectiveFrom())
-                .active(true)
-                .build());
-    }
+		Tariff tariff = repo.findByUtilityType(r.getUtilityType())
+				.orElse(Tariff.builder().utilityType(r.getUtilityType()).plans(new ArrayList<>()).build());
 
-    public TariffResponse getActive(UtilityType type){
-        Tariff t=repo.findByUtilityTypeAndActiveTrue(type)
-                .orElseThrow(()->new NotFoundException("No active tariff found"));
+		tariff.getPlans().stream().filter(p -> p.getPlan() == r.getPlan() && p.isActive()).findFirst().ifPresent(p -> {
+			throw new BusinessException("Active plan already exists for " + r.getPlan());
+		});
 
-        return map(t);
-    }
+		TariffPlanConfig plan = TariffPlanConfig.builder().plan(r.getPlan()).slabs(r.getSlabs())
+				.fixedCharge(r.getFixedCharge()).taxPercentage(r.getTaxPercentage())
+				.overduePenaltySlabs(r.getOverduePenaltySlabs()).effectiveFrom(r.getEffectiveFrom()).active(true)
+				.build();
 
-    public void deactivate(String id){
-        Tariff t=repo.findById(id)
-                .orElseThrow(()->new NotFoundException("Tariff not found"));
-        t.setActive(false);
-        repo.save(t);
-    }
+		tariff.getPlans().add(plan);
+		repo.save(tariff);
+	}
 
-    private TariffResponse map(Tariff t){
-        return TariffResponse.builder()
-                .id(t.getId())
-                .utilityType(t.getUtilityType())
-                .slabs(t.getSlabs())
-                .fixedCharge(t.getFixedCharge())
-                .taxPercentage(t.getTaxPercentage())
-                .overduePenaltySlabs(t.getOverduePenaltySlabs())
-                .active(t.isActive())
-                .effectiveFrom(t.getEffectiveFrom())
-                .build();
-    }
-    
-    public void update(String tariffId,UpdateTariffRequest r){
-        Tariff existing=repo.findById(tariffId)
-                .orElseThrow(()->new NotFoundException("Tariff not found"));
+	public TariffResponse getActivePlan(UtilityType type, TariffPlan plan) {
 
-        if(!existing.isActive())
-            throw new BusinessException("Cannot update inactive tariff");
+		Tariff tariff = repo.findByUtilityType(type).orElseThrow(() -> new NotFoundException("Tariff not found"));
 
-        existing.setActive(false);
-        repo.save(existing);
+		TariffPlanConfig p = tariff.getPlans().stream().filter(tp -> tp.getPlan() == plan && tp.isActive()).findFirst()
+				.orElseThrow(() -> new NotFoundException("Active tariff plan not found"));
 
-        repo.save(Tariff.builder()
-                .utilityType(existing.getUtilityType())
-                .slabs(r.getSlabs())
-                .fixedCharge(r.getFixedCharge())
-                .taxPercentage(r.getTaxPercentage())
-                .overduePenaltySlabs(r.getOverduePenaltySlabs())
-                .effectiveFrom(r.getEffectiveFrom())
-                .active(true)
-                .build());
-    }
+		return map(type, p);
+	}
+
+	public void deactivatePlan(UtilityType type, TariffPlan plan) {
+
+		Tariff tariff = repo.findByUtilityType(type).orElseThrow(() -> new NotFoundException("Tariff not found"));
+
+		TariffPlanConfig p = tariff.getPlans().stream().filter(tp -> tp.getPlan() == plan && tp.isActive()).findFirst()
+				.orElseThrow(() -> new NotFoundException("Active plan not found"));
+
+		p.setActive(false);
+		repo.save(tariff);
+	}
+
+	public void updatePlan(UtilityType type, TariffPlan plan, UpdateTariffPlanRequest r) {
+
+		Tariff tariff = repo.findByUtilityType(type).orElseThrow(() -> new NotFoundException("Tariff not found"));
+
+		TariffPlanConfig existing = tariff.getPlans().stream().filter(tp -> tp.getPlan() == plan && tp.isActive())
+				.findFirst().orElseThrow(() -> new BusinessException("No active plan to update"));
+
+		existing.setActive(false);
+
+		tariff.getPlans()
+				.add(TariffPlanConfig.builder().plan(plan).slabs(r.getSlabs()).fixedCharge(r.getFixedCharge())
+						.taxPercentage(r.getTaxPercentage()).overduePenaltySlabs(r.getOverduePenaltySlabs())
+						.effectiveFrom(r.getEffectiveFrom()).active(true).build());
+
+		repo.save(tariff);
+	}
+
+	private TariffResponse map(UtilityType type, TariffPlanConfig p) {
+		return TariffResponse.builder().utilityType(type).plan(p.getPlan()).active(p.isActive()).slabs(p.getSlabs())
+				.fixedCharge(p.getFixedCharge()).taxPercentage(p.getTaxPercentage())
+				.overduePenaltySlabs(p.getOverduePenaltySlabs()).effectiveFrom(p.getEffectiveFrom()).build();
+	}
 }

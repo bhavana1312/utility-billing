@@ -1,9 +1,7 @@
 package com.utilitybilling.tariffservice.controller;
 
-import com.utilitybilling.tariffservice.dto.CreateTariffRequest;
-import com.utilitybilling.tariffservice.dto.TariffResponse;
-import com.utilitybilling.tariffservice.dto.UpdateTariffRequest;
-import com.utilitybilling.tariffservice.model.UtilityType;
+import com.utilitybilling.tariffservice.dto.*;
+import com.utilitybilling.tariffservice.model.*;
 import com.utilitybilling.tariffservice.service.TariffService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,32 +11,32 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/utilities/tariffs")
 @RequiredArgsConstructor
-public class TariffController{
+public class TariffController {
 
-    private final TariffService service;
+	private final TariffService service;
 
-    @PostMapping
-    public ResponseEntity<Void> create(@Valid @RequestBody CreateTariffRequest r){
-        service.create(r);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
-    }
+	@PostMapping("/plans")
+	public ResponseEntity<Void> createPlan(@Valid @RequestBody CreateTariffPlanRequest r) {
+		service.createPlan(r);
+		return ResponseEntity.status(HttpStatus.CREATED).build();
+	}
 
-    @GetMapping("/{utilityType}")
-    public ResponseEntity<TariffResponse> getActive(@PathVariable("utilityType")  UtilityType utilityType){
-        return ResponseEntity.ok(service.getActive(utilityType));
-    }
+	@GetMapping("/{utilityType}/plans/{plan}")
+	public ResponseEntity<TariffResponse> getActivePlan(@PathVariable UtilityType utilityType,
+			@PathVariable TariffPlan plan) {
+		return ResponseEntity.ok(service.getActivePlan(utilityType, plan));
+	}
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deactivate(@PathVariable("id") String id){
-        service.deactivate(id);
-        return ResponseEntity.noContent().build();
-    }
-    
-    @PutMapping("/{id}")
-    public ResponseEntity<Void> update(
-            @PathVariable("id") String id,
-            @Valid @RequestBody UpdateTariffRequest r){
-        service.update(id,r);
-        return ResponseEntity.noContent().build();
-    }
+	@DeleteMapping("/{utilityType}/plans/{plan}")
+	public ResponseEntity<Void> deactivatePlan(@PathVariable UtilityType utilityType, @PathVariable TariffPlan plan) {
+		service.deactivatePlan(utilityType, plan);
+		return ResponseEntity.noContent().build();
+	}
+
+	@PutMapping("/{utilityType}/plans/{plan}")
+	public ResponseEntity<Void> updatePlan(@PathVariable UtilityType utilityType, @PathVariable TariffPlan plan,
+			@Valid @RequestBody UpdateTariffPlanRequest r) {
+		service.updatePlan(utilityType, plan, r);
+		return ResponseEntity.noContent().build();
+	}
 }

@@ -7,9 +7,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.List;
 import java.util.Optional;
 
-public interface TariffRepository extends MongoRepository<Tariff,String>{
+public interface TariffRepository extends MongoRepository<Tariff, String> {
 
-    Optional<Tariff> findByUtilityTypeAndActiveTrue(UtilityType utilityType);
-
-    List<Tariff> findByUtilityType(UtilityType utilityType);
+	Optional<Tariff> findByUtilityType(UtilityType utilityType);
 }

@@ -1,8 +1,6 @@
 package com.utilitybilling.tariffservice.dto;
 
-import com.utilitybilling.tariffservice.model.OverduePenaltySlab;
-import com.utilitybilling.tariffservice.model.TariffSlab;
-import com.utilitybilling.tariffservice.model.UtilityType;
+import com.utilitybilling.tariffservice.model.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.Data;
@@ -11,10 +9,13 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Data
-public class CreateTariffRequest {
+public class CreateTariffPlanRequest {
 
 	@NotNull
 	private UtilityType utilityType;
+
+	@NotNull
+	private TariffPlan plan;
 
 	@NotEmpty
 	private List<@Valid TariffSlab> slabs;
@@ -25,7 +26,7 @@ public class CreateTariffRequest {
 	@Min(0)
 	@Max(100)
 	private double taxPercentage;
-	
+
 	@NotEmpty
 	private List<OverduePenaltySlab> overduePenaltySlabs;
 

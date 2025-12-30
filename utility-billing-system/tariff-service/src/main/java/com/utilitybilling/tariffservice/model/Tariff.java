@@ -12,22 +12,13 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Tariff {
+public class Tariff{
 
 	@Id
 	private String id;
 
 	private UtilityType utilityType;
 
-	private List<TariffSlab> slabs;
-
-	private double fixedCharge;
-
-	private double taxPercentage;
-
-	private List<OverduePenaltySlab> overduePenaltySlabs;
-
-	private boolean active;
-
-	private LocalDate effectiveFrom;
+	private List<TariffPlanConfig> plans;
 }
+
