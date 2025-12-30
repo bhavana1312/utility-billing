@@ -7,6 +7,7 @@ import com.utilitybilling.billingservice.repository.BillRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -28,16 +29,19 @@ public class BillingQueryService {
 	private BillResponse map(Bill bill) {
 		BillResponse r = new BillResponse();
 		r.setBillId(bill.getId());
+		r.setEmail(bill.getEmail());
 		r.setMeterNumber(bill.getMeterNumber());
 		r.setUtilityType(bill.getUtilityType());
 		r.setPreviousReading(bill.getPreviousReading());
 		r.setCurrentReading(bill.getCurrentReading());
 		r.setUnitsConsumed(bill.getUnitsConsumed());
+
 		r.setEnergyCharge(bill.getEnergyCharge());
 		r.setFixedCharge(bill.getFixedCharge());
 		r.setTaxAmount(bill.getTaxAmount());
 		r.setPenaltyAmount(bill.getPenaltyAmount());
 		r.setTotalAmount(bill.getTotalAmount());
+
 		r.setStatus(bill.getStatus().name());
 		r.setGeneratedAt(bill.getGeneratedAt());
 		r.setDueDate(bill.getDueDate());
@@ -45,8 +49,7 @@ public class BillingQueryService {
 	}
 
 	public Bill getById(String billId) {
-		Bill bill = billRepo.findById(billId).orElseThrow(() -> new IllegalArgumentException("Bill not found"));
-		return bill;
+		return billRepo.findById(billId).orElseThrow(() -> new IllegalArgumentException("Bill not found"));
 	}
 
 	public OutstandingBalanceResponse outstanding(String consumerId) {
@@ -54,11 +57,11 @@ public class BillingQueryService {
 		List<Bill> bills = billRepo.findByConsumerIdAndStatusIn(consumerId,
 				List.of(BillStatus.DUE, BillStatus.OVERDUE));
 
-		double total = bills.stream().mapToDouble(Bill::getTotalAmount).sum();
+		BigDecimal totalOutstanding = bills.stream().map(Bill::getTotalAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
 
 		OutstandingBalanceResponse r = new OutstandingBalanceResponse();
 		r.setConsumerId(consumerId);
-		r.setOutstandingAmount(total);
+		r.setOutstandingAmount(totalOutstanding);
 
 		return r;
 	}

@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -22,7 +23,7 @@ public class OverdueBillScheduler {
 	private final TariffClient tariffClient;
 	private final NotificationClient notificationClient;
 
-	@Scheduled(cron = "0 30 16 * * *")
+	@Scheduled(cron = "0 30 17 * * *")
 	public void markOverdueBills() {
 
 		List<Bill> dueBills = new ArrayList<>();
@@ -32,23 +33,23 @@ public class OverdueBillScheduler {
 
 		for (Bill bill : dueBills) {
 
-			int overdueDays = (int) ChronoUnit.DAYS.between(bill.getDueDate().toInstant(), Instant.now());
+			int overdueDays = (int) ChronoUnit.MINUTES.between(bill.getDueDate().toInstant(), Instant.now());
 
 			var tariff = tariffClient.getActive(bill.getUtilityType());
 
-			double penalty = PenaltyCalculator.calculatePenalty(bill.getTotalAmount(), overdueDays,
+			BigDecimal penalty = PenaltyCalculator.calculatePenalty(bill.getTotalAmount(), overdueDays,
 					tariff.getOverduePenaltySlabs());
 
 			bill.setPenaltyAmount(penalty);
-			bill.setTotalAmount(bill.getTotalAmount() + penalty);
+			bill.setTotalAmount(bill.getTotalAmount().add(penalty));
 			bill.setStatus(BillStatus.OVERDUE);
 			bill.setLastUpdatedAt(Instant.now());
 
-			notificationClient.send(NotificationRequest.builder().email(bill.getEmail()).type("BILL_GENERATED")
+			notificationClient.send(NotificationRequest.builder().email(bill.getEmail()).type("BILL_OVERDUE")
 					.subject("Your utility bill is overdue")
-					.message("Your " + bill.getUtilityType() + " bill has been generated.\n\n" + "Bill ID: "
-							+ bill.getId() + "\n" + "Amount Due: ₹" + bill.getTotalAmount() + "\n" + "Due Date: "
-							+ bill.getDueDate() + "Penalty Amount: ₹" + bill.getPenaltyAmount())
+					.message("Your " + bill.getUtilityType() + " bill is overdue.\n\n" + "Bill ID: " + bill.getId()
+							+ "\n" + "Amount Due: ₹" + bill.getTotalAmount() + "\n" + "Penalty Amount: ₹"
+							+ bill.getPenaltyAmount() + "\n" + "Due Date: " + bill.getDueDate())
 					.build());
 
 			billRepo.save(bill);

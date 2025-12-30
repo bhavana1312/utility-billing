@@ -7,10 +7,11 @@ import com.utilitybilling.billingservice.repository.BillRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -46,10 +47,13 @@ public class BillingService {
 
 		TariffResponse tariff = tariffClient.getActive(meter.getUtilityType());
 
-		double energyCharge = calculateEnergyCharge(units, tariff.getSlabs());
+		BigDecimal energyCharge = calculateEnergyCharge(units, tariff.getSlabs());
+		BigDecimal fixedCharge = BigDecimal.valueOf(tariff.getFixedCharge());
 
-		double fixedCharge = tariff.getFixedCharge();
-		double tax = (energyCharge + fixedCharge) * tariff.getTaxPercentage() / 100.0;
+		BigDecimal taxAmount = energyCharge.add(fixedCharge).multiply(BigDecimal.valueOf(tariff.getTaxPercentage()))
+				.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+
+		BigDecimal totalAmount = energyCharge.add(fixedCharge).add(taxAmount).setScale(2, RoundingMode.HALF_UP);
 
 		Bill bill = new Bill();
 		bill.setConsumerId(meter.getConsumerId());
@@ -59,47 +63,54 @@ public class BillingService {
 		bill.setPreviousReading(previousReading);
 		bill.setCurrentReading(currentReading);
 		bill.setUnitsConsumed(units);
+
 		bill.setEnergyCharge(energyCharge);
 		bill.setFixedCharge(fixedCharge);
-		bill.setTaxAmount(tax);
-		bill.setPenaltyAmount(0);
-		bill.setTotalAmount(energyCharge + fixedCharge + tax);
-		bill.setDueDate(Date.from(bill.getGeneratedAt().plus(2, ChronoUnit.DAYS)));
+		bill.setTaxAmount(taxAmount);
+		bill.setPenaltyAmount(BigDecimal.ZERO);
+		bill.setTotalAmount(totalAmount);
+
+		bill.setDueDate(Date.from(bill.getGeneratedAt().plus(2, ChronoUnit.SECONDS)));
 		bill.setLastUpdatedAt(Instant.now());
 		bill.setStatus(BillStatus.DUE);
 
-		BillResponse billResponse = map(billRepo.save(bill));
+		Bill savedBill = billRepo.save(bill);
 
 		notificationClient.send(NotificationRequest.builder().email(bill.getEmail()).type("BILL_GENERATED")
 				.subject("Your utility bill is ready")
-				.message("Your " + bill.getUtilityType() + " bill has been generated.\n\n" + "Bill ID: " + bill.getId()
-						+ "\n" + "Amount Due: ₹" + bill.getTotalAmount() + "\n" + "Due Date: " + bill.getDueDate())
+				.message("Your " + bill.getUtilityType() + " bill has been generated.\n\n" + "Bill ID: "
+						+ savedBill.getId() + "\n" + "Amount Due: ₹" + bill.getTotalAmount() + "\n" + "Due Date: "
+						+ bill.getDueDate())
 				.build());
 
-		return billResponse;
+		return map(savedBill);
 	}
 
-	private double calculateEnergyCharge(double units, Iterable<TariffSlab> slabs) {
+	private BigDecimal calculateEnergyCharge(double units, Iterable<TariffSlab> slabs) {
 
+		BigDecimal amount = BigDecimal.ZERO;
 		double remaining = units;
-		double amount = 0;
 
 		for (TariffSlab slab : slabs) {
 			if (remaining <= 0)
 				break;
 
 			int slabUnits = slab.getToUnit() - slab.getFromUnit() + 1;
-
 			double used = Math.min(remaining, slabUnits);
-			amount += used * slab.getRatePerUnit();
+
+			BigDecimal slabCharge = BigDecimal.valueOf(used).multiply(BigDecimal.valueOf(slab.getRatePerUnit()));
+
+			amount = amount.add(slabCharge);
 			remaining -= used;
 		}
-		return amount;
+
+		return amount.setScale(2, RoundingMode.HALF_UP);
 	}
 
 	private BillResponse map(Bill bill) {
 		BillResponse r = new BillResponse();
 		r.setBillId(bill.getId());
+		r.setEmail(bill.getEmail());
 		r.setMeterNumber(bill.getMeterNumber());
 		r.setUtilityType(bill.getUtilityType());
 		r.setPreviousReading(bill.getPreviousReading());
@@ -123,5 +134,4 @@ public class BillingService {
 		bill.setLastUpdatedAt(Instant.now());
 		billRepo.save(bill);
 	}
-
 }

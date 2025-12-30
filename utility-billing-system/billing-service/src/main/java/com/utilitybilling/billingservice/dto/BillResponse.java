@@ -1,14 +1,16 @@
 package com.utilitybilling.billingservice.dto;
 
 import lombok.Data;
-import java.util.Date;
 
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Date;
 
 @Data
 public class BillResponse {
 
 	private String billId;
+	private String email;
 	private String meterNumber;
 	private String utilityType;
 
@@ -16,14 +18,13 @@ public class BillResponse {
 	private double currentReading;
 	private double unitsConsumed;
 
-	private double energyCharge;
-	private double fixedCharge;
-	private double taxAmount;
-	private double totalAmount;
-	private double penaltyAmount;
+	private BigDecimal energyCharge;
+	private BigDecimal fixedCharge;
+	private BigDecimal taxAmount;
+	private BigDecimal penaltyAmount;
+	private BigDecimal totalAmount;
 
 	private Date dueDate;
-
 	private String status;
 	private Instant generatedAt;
 }
