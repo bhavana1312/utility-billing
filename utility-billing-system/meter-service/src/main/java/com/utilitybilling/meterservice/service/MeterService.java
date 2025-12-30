@@ -1,5 +1,7 @@
 package com.utilitybilling.meterservice.service;
 
+import com.utilitybilling.meterservice.client.NotificationClient;
+import com.utilitybilling.meterservice.client.NotificationRequest;
 import com.utilitybilling.meterservice.dto.*;
 import com.utilitybilling.meterservice.model.*;
 import com.utilitybilling.meterservice.repository.*;
@@ -16,15 +18,18 @@ public class MeterService {
 	private final ConnectionRequestRepository connectionRepo;
 	private final MeterRepository meterRepo;
 	private final MeterReadingRepository readingRepo;
+	private final NotificationClient notificationClient;
 
 	public void requestConnection(CreateConnectionRequest request) {
-		
-		boolean exists = connectionRepo.existsByConsumerIdAndStatusIn(request.getConsumerId(), List.of("PENDING", "APPROVED"));
+
+		boolean exists = connectionRepo.existsByConsumerIdAndStatusIn(request.getConsumerId(),
+				List.of("PENDING", "APPROVED"));
 
 		if (exists)
 			throw new IllegalStateException("Consumer request already exists");
 		ConnectionRequest cr = new ConnectionRequest();
 		cr.setConsumerId(request.getConsumerId());
+		cr.setEmail(request.getEmail());
 		cr.setUtilityType(request.getUtilityType());
 		cr.setAddress(request.getAddress());
 		connectionRepo.save(cr);
@@ -55,6 +60,12 @@ public class MeterService {
 
 		cr.setStatus(ConnectionStatus.APPROVED);
 		connectionRepo.save(cr);
+
+		notificationClient
+				.send(NotificationRequest.builder().email(cr.getEmail()).type("CONNECTION_APPROVED")
+						.subject("Utility connection approved").message("Your " + cr.getUtilityType()
+								+ " connection has been approved.\n\n" + "Meter Number: " + m.getMeterNumber())
+						.build());
 	}
 
 	public void reject(String id, String reason) {
@@ -67,6 +78,11 @@ public class MeterService {
 		cr.setStatus(ConnectionStatus.REJECTED);
 		cr.setRejectionReason(reason);
 		connectionRepo.save(cr);
+
+		notificationClient.send(NotificationRequest.builder().email(cr.getEmail()).type("CONNECTION_REJECTED")
+				.subject("Utility connection request rejected")
+				.message("Your " + cr.getUtilityType() + " connection request was rejected.\n\n" + "Reason: " + reason)
+				.build());
 	}
 
 	public MeterDetailsResponse getMeter(String meterNumber) {

@@ -14,6 +14,8 @@ public class ConnectionRequest{
     private String id;
 
     private String consumerId;
+    
+    private String email;
 
     private UtilityType utilityType;
 
