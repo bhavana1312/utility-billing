@@ -1,6 +1,6 @@
 package com.utilitybilling.paymentservice.service;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.utilitybilling.paymentservice.client.BillResponse;
 import com.utilitybilling.paymentservice.client.BillStatus;
 import com.utilitybilling.paymentservice.client.BillingClient;
@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Base64;
 import java.util.List;
 import java.util.Random;
 
@@ -24,6 +25,7 @@ public class PaymentService {
 	private final InvoiceRepository invoiceRepo;
 	private final BillingClient billingClient;
 	private final NotificationClient notificationClient;
+	private final InvoicePdfService invoicePdfService;
 
 	public Object initiate(InitiatePaymentRequest request) {
 		BillResponse bill = billingClient.getBill(request.getBillId());
@@ -83,19 +85,43 @@ public class PaymentService {
 		p.setCompletedAt(Instant.now());
 		paymentRepo.save(p);
 
+		BillResponse bill = billingClient.getBill(p.getBillId());
+
 		Invoice inv = new Invoice();
+
 		inv.setPaymentId(p.getId());
-		inv.setBillId(p.getBillId());
-		inv.setConsumerId(p.getConsumerId());
-		inv.setAmount(p.getAmount());
-		inv.setMode(p.getMode());
+		inv.setBillId(bill.getId());
+		inv.setConsumerId(bill.getConsumerId());
+		inv.setEmail(bill.getEmail());
+		inv.setMeterNumber(bill.getMeterNumber());
+		inv.setUtilityType(bill.getUtilityType());
+
+		inv.setPreviousReading(bill.getPreviousReading());
+		inv.setCurrentReading(bill.getCurrentReading());
+		inv.setUnitsConsumed(bill.getUnitsConsumed());
+
+		inv.setEnergyCharge(bill.getEnergyCharge());
+		inv.setFixedCharge(bill.getFixedCharge());
+		inv.setTaxAmount(bill.getTaxAmount());
+		inv.setPenaltyAmount(bill.getPenaltyAmount());
+		inv.setTotalAmount(bill.getTotalAmount());
+
+		inv.setPaymentMode(p.getMode());
+		inv.setPaymentDate(Instant.now());
+
+		inv.setBillDueDate(bill.getDueDate());
+		inv.setBillGeneratedAt(bill.getGeneratedAt());
+
 		invoiceRepo.save(inv);
 
-		notificationClient.send(
-				NotificationRequest.builder().email(p.getEmail()).type("PAYMENT_SUCCESS").subject("Payment successful")
-						.message("Your payment of ₹" + p.getAmount() + " for " + p.getUtilityType() + " bill with id:"
-								+ p.getBillId() + " was successful.\n\n" + "Payment ID: " + p.getId())
-						.build());
+		InvoicePdfData pdfData = toPdfData(inv);
+		byte[] pdf = invoicePdfService.generate(pdfData);
+		String base64 = Base64.getEncoder().encodeToString(pdf);
+
+		notificationClient.send(NotificationRequest.builder().email(inv.getEmail()).type("INVOICE_PDF")
+				.subject("Invoice for " + inv.getUtilityType() + " Bill")
+				.message("Please find attached your invoice for payment ID: " + inv.getPaymentId())
+				.attachmentBase64(base64).attachmentName("invoice-" + inv.getId() + ".pdf").build());
 
 		return inv;
 	}
@@ -119,12 +145,32 @@ public class PaymentService {
 		billingClient.markPaid(bill.getId());
 
 		Invoice inv = new Invoice();
+
 		inv.setPaymentId(p.getId());
-		inv.setBillId(p.getBillId());
-		inv.setConsumerId(p.getConsumerId());
-		inv.setAmount(p.getAmount());
-		inv.setMode(p.getMode());
+		inv.setBillId(bill.getId());
+		inv.setConsumerId(bill.getConsumerId());
+		inv.setEmail(bill.getEmail());
+		inv.setMeterNumber(bill.getMeterNumber());
+		inv.setUtilityType(bill.getUtilityType());
+
+		inv.setPreviousReading(bill.getPreviousReading());
+		inv.setCurrentReading(bill.getCurrentReading());
+		inv.setUnitsConsumed(bill.getUnitsConsumed());
+
+		inv.setEnergyCharge(bill.getEnergyCharge());
+		inv.setFixedCharge(bill.getFixedCharge());
+		inv.setTaxAmount(bill.getTaxAmount());
+		inv.setPenaltyAmount(bill.getPenaltyAmount());
+		inv.setTotalAmount(bill.getTotalAmount());
+
+		inv.setPaymentMode(p.getMode());
+		inv.setPaymentDate(p.getCompletedAt());
+
+		inv.setBillDueDate(bill.getDueDate());
+		inv.setBillGeneratedAt(bill.getGeneratedAt());
+
 		invoiceRepo.save(inv);
+
 		notificationClient.send(NotificationRequest.builder().email(bill.getEmail()).type("PAYMENT_SUCCESS")
 				.subject("Offline payment recorded").message("Your offline payment of ₹" + p.getAmount() + " for "
 						+ bill.getUtilityType() + " bill with id:" + p.getBillId() + " has been recorded.")
@@ -143,4 +189,15 @@ public class PaymentService {
 	public Object outstanding(String consumerId) {
 		return billingClient.outstanding(consumerId);
 	}
+
+	private InvoicePdfData toPdfData(Invoice inv) {
+		return InvoicePdfData.builder().invoiceId(inv.getId()).consumerId(inv.getConsumerId()).email(inv.getEmail())
+				.meterNumber(inv.getMeterNumber()).utilityType(inv.getUtilityType())
+				.previousReading(inv.getPreviousReading()).currentReading(inv.getCurrentReading())
+				.unitsConsumed(inv.getUnitsConsumed()).energyCharge(inv.getEnergyCharge())
+				.fixedCharge(inv.getFixedCharge()).taxAmount(inv.getTaxAmount()).penaltyAmount(inv.getPenaltyAmount())
+				.totalAmount(inv.getTotalAmount()).billGeneratedAt(inv.getBillGeneratedAt())
+				.billDueDate(inv.getBillDueDate()).paymentDate(inv.getPaymentDate()).build();
+	}
+
 }

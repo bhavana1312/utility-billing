@@ -1,17 +1,18 @@
-package com.utilitybilling.paymentservice.client;
+package com.utilitybilling.paymentservice.dto;
+
+import lombok.Builder;
+import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import org.springframework.data.annotation.Id;
-import lombok.Data;
 
 @Data
-public class BillResponse {
+@Builder
+public class InvoicePdfData {
 
-	@Id
-	private String id;
-	private String email;
+	private String invoiceId;
 	private String consumerId;
+	private String email;
 	private String meterNumber;
 	private String utilityType;
 
@@ -22,13 +23,10 @@ public class BillResponse {
 	private BigDecimal energyCharge;
 	private BigDecimal fixedCharge;
 	private BigDecimal taxAmount;
-
 	private BigDecimal penaltyAmount;
 	private BigDecimal totalAmount;
 
-	private Instant dueDate;
-	private Instant lastUpdatedAt;
-
-	private BillStatus status;
-	private Instant generatedAt = Instant.now();
+	private Instant billGeneratedAt;
+	private Instant billDueDate;
+	private Instant paymentDate;
 }

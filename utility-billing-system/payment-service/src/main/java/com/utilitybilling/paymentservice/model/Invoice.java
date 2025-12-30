@@ -16,10 +16,27 @@ public class Invoice {
 
 	private String paymentId;
 	private String billId;
+
 	private String consumerId;
+	private String email;
+	private String meterNumber;
+	private String utilityType;
 
-	private BigDecimal amount;
-	private PaymentMode mode;
+	private double previousReading;
+	private double currentReading;
+	private double unitsConsumed;
 
-	private Instant generatedAt = Instant.now();
+	private BigDecimal energyCharge;
+	private BigDecimal fixedCharge;
+	private BigDecimal taxAmount;
+	private BigDecimal penaltyAmount;
+	private BigDecimal totalAmount;
+
+	private PaymentMode paymentMode;
+	private Instant paymentDate;
+
+	private Instant billDueDate;
+	private Instant billGeneratedAt;
+
+	private Instant invoiceGeneratedAt = Instant.now();
 }

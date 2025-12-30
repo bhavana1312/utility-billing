@@ -24,5 +24,8 @@ public class Notification {
 	private NotificationStatus status;
 	private String subject;
 	private String body;
+	private String attachmentBase64;
+	private String attachmentName;
+	private String attachmentType;
 	private Instant createdAt;
 }

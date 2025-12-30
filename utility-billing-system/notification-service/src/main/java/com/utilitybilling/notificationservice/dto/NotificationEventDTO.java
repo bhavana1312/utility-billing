@@ -10,17 +10,21 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class NotificationEventDTO{
+public class NotificationEventDTO {
 
-    @NotBlank
-    private String email;
+	@NotBlank
+	private String email;
 
-    @NotNull
-    private NotificationType type;
+	@NotNull
+	private NotificationType type;
 
-    @NotBlank
-    private String subject;
+	@NotBlank
+	private String subject;
 
-    @NotBlank
-    private String message;
+	@NotBlank
+	private String message;
+
+	private String attachmentBase64;
+	private String attachmentName;
+	private String attachmentType;
 }
