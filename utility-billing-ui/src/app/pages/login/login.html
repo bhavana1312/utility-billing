@@ -1,0 +1,19 @@
+<div class="container">
+  <div class="card auth-card">
+    <h2>Welcome back</h2>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <input placeholder="Username" formControlName="username" />
+      <div class="error" *ngIf="form.get('username')?.touched && form.get('username')?.invalid">
+        Username is required
+      </div>
+
+      <input type="password" placeholder="Password" formControlName="password" />
+      <div class="error" *ngIf="form.get('password')?.touched && form.get('password')?.invalid">
+        Password is required
+      </div>
+
+      <button type="submit" [disabled]="form.invalid">Login</button>
+    </form>
+  </div>
+</div>
