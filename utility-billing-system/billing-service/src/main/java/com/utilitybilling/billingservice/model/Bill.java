@@ -5,6 +5,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
+import java.util.Date;
 
 @Data
 @Document(collection="bills")
@@ -14,6 +15,7 @@ public class Bill{
     private String id;
 
     private String consumerId;
+    private String email;
     private String meterNumber;
     private String utilityType;
 
@@ -28,7 +30,7 @@ public class Bill{
     private double penaltyAmount; 
     private double totalAmount;
     
-    private Instant dueDate;     
+    private Date dueDate;     
     private Instant lastUpdatedAt;
 
     private BillStatus status;

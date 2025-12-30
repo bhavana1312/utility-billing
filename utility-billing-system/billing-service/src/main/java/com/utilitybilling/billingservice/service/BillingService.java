@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -19,6 +20,7 @@ public class BillingService {
 	private final TariffClient tariffClient;
 	private final ConsumerClient consumerClient;
 	private final BillRepository billRepo;
+	private final NotificationClient notificationClient;
 
 	public BillResponse generate(GenerateBillRequest request) {
 
@@ -51,6 +53,7 @@ public class BillingService {
 
 		Bill bill = new Bill();
 		bill.setConsumerId(meter.getConsumerId());
+		bill.setEmail(meter.getEmail());
 		bill.setMeterNumber(request.getMeterNumber());
 		bill.setUtilityType(meter.getUtilityType());
 		bill.setPreviousReading(previousReading);
@@ -61,11 +64,19 @@ public class BillingService {
 		bill.setTaxAmount(tax);
 		bill.setPenaltyAmount(0);
 		bill.setTotalAmount(energyCharge + fixedCharge + tax);
-		bill.setDueDate(bill.getGeneratedAt().plus(15, ChronoUnit.DAYS));
+		bill.setDueDate(Date.from(bill.getGeneratedAt().plus(2, ChronoUnit.DAYS)));
 		bill.setLastUpdatedAt(Instant.now());
 		bill.setStatus(BillStatus.DUE);
 
-		return map(billRepo.save(bill));
+		BillResponse billResponse = map(billRepo.save(bill));
+
+		notificationClient.send(NotificationRequest.builder().email(bill.getEmail()).type("BILL_GENERATED")
+				.subject("Your utility bill is ready")
+				.message("Your " + bill.getUtilityType() + " bill has been generated.\n\n" + "Bill ID: " + bill.getId()
+						+ "\n" + "Amount Due: ₹" + bill.getTotalAmount() + "\n" + "Due Date: " + bill.getDueDate())
+				.build());
+
+		return billResponse;
 	}
 
 	private double calculateEnergyCharge(double units, Iterable<TariffSlab> slabs) {
@@ -112,6 +123,5 @@ public class BillingService {
 		bill.setLastUpdatedAt(Instant.now());
 		billRepo.save(bill);
 	}
-	
-	
+
 }
