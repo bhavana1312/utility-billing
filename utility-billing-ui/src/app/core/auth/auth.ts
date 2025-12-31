@@ -4,9 +4,9 @@ import { Observable, tap } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private api = 'http://localhost:9090/auth';
+  private readonly api = 'http://localhost:9090/auth';
 
-  constructor(private http: HttpClient) {}
+  constructor(private readonly http: HttpClient) {}
 
   login(data: any): Observable<any> {
     return this.http.post<any>(`${this.api}/login`, data).pipe(
@@ -24,6 +24,10 @@ export class AuthService {
 
   getUserRole() {
     return localStorage.getItem('role');
+  }
+
+  isLoggedIn() {
+    return !!localStorage.getItem('token');
   }
 
   logout() {

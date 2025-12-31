@@ -12,6 +12,7 @@
 .badge {
   background: #e0ecff;
   color: #2563eb;
+  border: 1px solid #2563eb;
   padding: 10px 18px;
   border-radius: 999px;
   font-size: 13px;
@@ -274,10 +275,6 @@
 
 .stats div:hover {
   transform: translateY(-6px);
-}
-
-.badge {
-  animation: pulse 2.5s infinite;
 }
 
 @keyframes pulse {
