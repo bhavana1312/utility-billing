@@ -1,0 +1,95 @@
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  height: 80px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 40px;
+  border-bottom: 1px solid rgba(224, 236, 255, 0.8);
+}
+
+.left,
+.right {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: 700;
+  color: #020617;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.logo::after {
+  content: '.';
+  color: #2563eb;
+}
+
+a {
+  text-decoration: none;
+  color: #475569;
+  font-size: 15px;
+  font-weight: 500;
+  transition: color 0.2s, transform 0.2s;
+}
+
+a:hover {
+  color: #2563eb;
+  transform: translateY(-2px);
+}
+
+button {
+  background: #2563eb;
+  color: #ffffff;
+  padding: 12px 24px;
+  border-radius: 12px;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+button:hover {
+  background: #1d4ed8;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);
+}
+
+button:active {
+  transform: scale(0.96);
+}
+
+.right a[routerLink='/login'] {
+  border: 1.5px solid #2563eb;
+  color: #2563eb;
+  padding: 10px 22px;
+  border-radius: 12px;
+  background: transparent;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.right a[routerLink='/login']:hover {
+  background: #eff6ff;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0 24px;
+    height: 72px;
+  }
+  .left a:not(.logo) {
+    display: none;
+  }
+}

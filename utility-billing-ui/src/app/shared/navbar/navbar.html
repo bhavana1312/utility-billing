@@ -1,0 +1,13 @@
+<nav class="navbar">
+  <div class="left">
+    <a routerLink="/" class="logo">Utility Billing</a>
+
+    <a routerLink="/tariffs">Tariffs</a>
+    <a routerLink="/consumer-request">New Connection</a>
+  </div>
+
+  <div class="right">
+    <a routerLink="/login" *ngIf="!isLoggedIn()">Login</a>
+    <button *ngIf="isLoggedIn()" (click)="logout()">Logout</button>
+  </div>
+</nav>
