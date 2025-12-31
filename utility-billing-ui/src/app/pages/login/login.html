@@ -14,16 +14,8 @@
         Password is required
       </div>
 
-      <div class="api-error" *ngIf="apiError">
-        {{apiError}}
-      </div>
-
-      <div class="success" *ngIf="success">
-        {{success}}
-      </div>
-
       <button type="submit" [disabled]="form.invalid || loading">
-        {{loading?'Logging in...':'Login'}}
+        {{ loading ? 'Logging in...' : 'Login' }}
       </button>
 
     </form>

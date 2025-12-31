@@ -1,8 +1,10 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { AuthService } from '../../core/auth/auth';
+import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
+
+import { AuthService } from '../../core/auth/auth';
 
 @Component({
   selector: 'app-login',
@@ -13,12 +15,15 @@ import { Router } from '@angular/router';
 })
 export class LoginComponent {
   loading = false;
-  apiError = '';
-  success = '';
 
-  form;
+  form: FormGroup;
 
-  constructor(private fb: FormBuilder, private auth: AuthService, private router: Router) {
+  constructor(
+    private readonly fb: FormBuilder,
+    private readonly auth: AuthService,
+    private readonly router: Router,
+    private readonly toastr: ToastrService
+  ) {
     this.form = this.fb.group({
       username: ['', Validators.required],
       password: ['', Validators.required],
@@ -26,27 +31,25 @@ export class LoginComponent {
   }
 
   submit() {
-    this.apiError = '';
-    this.success = '';
-
-    if (this.form.invalid) return;
+    if (this.form.invalid) {
+      this.toastr.warning('Please fill in all required fields');
+      return;
+    }
 
     this.loading = true;
+    this.toastr.info('Logging in...');
 
     this.auth.login(this.form.value).subscribe({
       next: () => {
         this.loading = false;
-        this.success = 'Login successful';
+        this.toastr.success('Login successful');
 
         const role = this.auth.getUserRole();
-        setTimeout(() => {
-          if (role === 'ADMIN') this.router.navigate(['/admin']);
-          else this.router.navigate(['/consumer']);
-        }, 600);
+        this.router.navigate(role === 'ADMIN' ? ['/admin'] : ['/consumer']);
       },
       error: (err) => {
         this.loading = false;
-        this.apiError = err?.error?.message || 'Invalid credentials';
+        this.toastr.error(err?.error?.message || 'Invalid credentials');
       },
     });
   }
