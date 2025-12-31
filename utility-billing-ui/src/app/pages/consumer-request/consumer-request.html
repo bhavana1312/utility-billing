@@ -1,1 +1,75 @@
-<p>consumer-request works!</p>
+<div class="page">
+  <div class="card">
+
+    <h2>Create Consumer Request</h2>
+    <p class="subtitle">
+      Submit your details to request a new utility connection.
+    </p>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+
+      <div class="field">
+        <label>Full Name</label>
+        <input placeholder="Ravi Kumar" formControlName="fullName" />
+        <span class="error" *ngIf="form.get('fullName')?.touched && form.get('fullName')?.invalid">
+          Full name must be at least 3 characters
+        </span>
+      </div>
+
+      <div class="field">
+        <label>Email</label>
+        <input placeholder="ravi@gmail.com" formControlName="email" />
+        <span class="error" *ngIf="form.get('email')?.touched && form.get('email')?.invalid">
+          Enter a valid email address
+        </span>
+      </div>
+
+      <div class="field">
+        <label>Phone Number</label>
+        <input placeholder="9876543210" formControlName="phone" />
+        <span class="error" *ngIf="form.get('phone')?.touched && form.get('phone')?.invalid">
+          Enter a valid 10-digit mobile number
+        </span>
+      </div>
+
+      <div class="field">
+        <label>Address</label>
+        <input placeholder="Flat 305, Sundae Stories" formControlName="addressLine1" />
+        <span class="error" *ngIf="form.get('addressLine1')?.touched && form.get('addressLine1')?.invalid">
+          Address is required
+        </span>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label>City</label>
+          <input placeholder="Hyderabad" formControlName="city" />
+          <span class="error" *ngIf="form.get('city')?.touched && form.get('city')?.invalid">
+            City is required
+          </span>
+        </div>
+
+        <div class="field">
+          <label>State</label>
+          <input placeholder="Telangana" formControlName="state" />
+          <span class="error" *ngIf="form.get('state')?.touched && form.get('state')?.invalid">
+            State is required
+          </span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Postal Code</label>
+        <input placeholder="500081" formControlName="postalCode" />
+        <span class="error" *ngIf="form.get('postalCode')?.touched && form.get('postalCode')?.invalid">
+          Enter a valid 6-digit postal code
+        </span>
+      </div>
+
+      <button type="submit" [disabled]="loading">
+        {{loading?'Submitting...':'Submit Request'}}
+      </button>
+
+    </form>
+  </div>
+</div>
