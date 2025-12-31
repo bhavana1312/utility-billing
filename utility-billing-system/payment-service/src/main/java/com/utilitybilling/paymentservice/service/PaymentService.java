@@ -171,10 +171,14 @@ public class PaymentService {
 
 		invoiceRepo.save(inv);
 
-		notificationClient.send(NotificationRequest.builder().email(bill.getEmail()).type("PAYMENT_SUCCESS")
-				.subject("Offline payment recorded").message("Your offline payment of ₹" + p.getAmount() + " for "
-						+ bill.getUtilityType() + " bill with id:" + p.getBillId() + " has been recorded.")
-				.build());
+		InvoicePdfData pdfData = toPdfData(inv);
+		byte[] pdf = invoicePdfService.generate(pdfData);
+		String base64 = Base64.getEncoder().encodeToString(pdf);
+
+		notificationClient.send(NotificationRequest.builder().email(inv.getEmail()).type("INVOICE_PDF")
+				.subject("Invoice for " + inv.getUtilityType() + " Bill")
+				.message("Please find attached your invoice for payment ID: " + inv.getPaymentId())
+				.attachmentBase64(base64).attachmentName("invoice-" + inv.getId() + ".pdf").build());
 
 	}
 

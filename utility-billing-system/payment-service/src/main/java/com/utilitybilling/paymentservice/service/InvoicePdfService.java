@@ -1,7 +1,15 @@
 package com.utilitybilling.paymentservice.service;
 
-import com.lowagie.text.*;
-import com.lowagie.text.pdf.*;
+import com.lowagie.text.Document;
+import com.lowagie.text.Element;
+import com.lowagie.text.Font;
+import com.lowagie.text.PageSize;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.Phrase;
+import com.lowagie.text.Rectangle;
+import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfWriter;
 import com.utilitybilling.paymentservice.dto.InvoicePdfData;
 import org.springframework.stereotype.Service;
 
@@ -20,58 +28,98 @@ public class InvoicePdfService {
 			doc.open();
 
 			Font title = new Font(Font.HELVETICA, 18, Font.BOLD);
-			Font header = new Font(Font.HELVETICA, 12, Font.BOLD);
+			Font section = new Font(Font.HELVETICA, 12, Font.BOLD);
+			Font header = new Font(Font.HELVETICA, 11, Font.BOLD);
 			Font body = new Font(Font.HELVETICA, 11);
 
-			Paragraph p = new Paragraph("UTILITY BILL INVOICE\n\n", title);
-			p.setAlignment(Element.ALIGN_CENTER);
-			doc.add(p);
+			Paragraph heading = new Paragraph("UTILITY BILL INVOICE\n\n", title);
+			heading.setAlignment(Element.ALIGN_CENTER);
+			doc.add(heading);
 
-			doc.add(section("Invoice Details", header));
-			doc.add(kv("Invoice ID", d.getInvoiceId(), body));
-			doc.add(kv("Utility Type", d.getUtilityType(), body));
-			doc.add(kv("Meter Number", d.getMeterNumber(), body));
-			doc.add(kv("Consumer ID", d.getConsumerId(), body));
-			doc.add(kv("Email", d.getEmail(), body));
-			doc.add(Chunk.NEWLINE);
+			doc.add(section("Invoice Details", section));
+			PdfPTable info = table(2);
+			add(info, "Invoice ID", d.getInvoiceId(), header, body);
+			add(info, "Utility Type", d.getUtilityType(), header, body);
+			add(info, "Consumer ID", d.getConsumerId(), header, body);
+			add(info, "Meter Number", d.getMeterNumber(), header, body);
+			add(info, "Email", d.getEmail(), header, body);
+			doc.add(info);
 
-			doc.add(section("Meter Readings", header));
-			doc.add(kv("Previous Reading", String.valueOf(d.getPreviousReading()), body));
-			doc.add(kv("Current Reading", String.valueOf(d.getCurrentReading()), body));
-			doc.add(kv("Units Consumed", String.valueOf(d.getUnitsConsumed()), body));
-			doc.add(Chunk.NEWLINE);
+			doc.add(space());
 
-			doc.add(section("Charges Breakdown", header));
-			doc.add(kv("Energy Charge", "₹" + d.getEnergyCharge(), body));
-			doc.add(kv("Fixed Charge", "₹" + d.getFixedCharge(), body));
-			doc.add(kv("Tax Amount", "₹" + d.getTaxAmount(), body));
-			doc.add(kv("Penalty", "₹" + d.getPenaltyAmount(), body));
-			doc.add(Chunk.NEWLINE);
+			doc.add(section("Meter Readings", section));
+			PdfPTable readings = table(2);
+			add(readings, "Previous Reading", String.valueOf(d.getPreviousReading()), header, body);
+			add(readings, "Current Reading", String.valueOf(d.getCurrentReading()), header, body);
+			add(readings, "Units Consumed", String.valueOf(d.getUnitsConsumed()), header, body);
+			doc.add(readings);
 
-			doc.add(section("Total Amount", header));
-			doc.add(kv("Total Payable", "₹" + d.getTotalAmount(), body));
-			doc.add(Chunk.NEWLINE);
+			doc.add(space());
 
-			doc.add(section("Dates", header));
-			doc.add(kv("Bill Generated At", String.valueOf(d.getBillGeneratedAt()), body));
-			doc.add(kv("Bill Due Date", String.valueOf(d.getBillDueDate()), body));
-			doc.add(kv("Payment Date", String.valueOf(d.getPaymentDate()), body));
+			doc.add(section("Charges Breakdown", section));
+			PdfPTable charges = table(2);
+			add(charges, "Energy Charge", "Rs." + d.getEnergyCharge(), header, body);
+			add(charges, "Fixed Charge", "Rs." + d.getFixedCharge(), header, body);
+			add(charges, "Tax Amount", "Rs." + d.getTaxAmount(), header, body);
+			add(charges, "Penalty", "Rs." + d.getPenaltyAmount(), header, body);
+			doc.add(charges);
+
+			doc.add(space());
+
+			PdfPTable total = table(2);
+			PdfPCell l = new PdfPCell(new Phrase("Total Payable", header));
+			PdfPCell v = new PdfPCell(new Phrase("Rs." + d.getTotalAmount(), header));
+			l.setBorder(Rectangle.NO_BORDER);
+			v.setBorder(Rectangle.NO_BORDER);
+			l.setPadding(8);
+			v.setPadding(8);
+			v.setHorizontalAlignment(Element.ALIGN_RIGHT);
+			total.addCell(l);
+			total.addCell(v);
+			doc.add(total);
+
+			doc.add(space());
+
+			doc.add(section("Dates", section));
+			PdfPTable dates = table(2);
+			add(dates, "Bill Generated At", String.valueOf(d.getBillGeneratedAt()), header, body);
+			add(dates, "Bill Due Date", String.valueOf(d.getBillDueDate()), header, body);
+			add(dates, "Payment Date", String.valueOf(d.getPaymentDate()), header, body);
+			doc.add(dates);
 
 			doc.close();
+
 		} catch (Exception e) {
-			throw new RuntimeException("PDF generation failed", e);
+			throw new RuntimeException(e);
 		}
 
 		return out.toByteArray();
 	}
 
-	private Paragraph section(String title, Font font) {
-		Paragraph p = new Paragraph(title + "\n", font);
-		p.setSpacingAfter(8);
+	private Paragraph section(String t, Font f) {
+		Paragraph p = new Paragraph(t + "\n", f);
+		p.setSpacingAfter(6);
 		return p;
 	}
 
-	private Paragraph kv(String k, String v, Font f) {
-		return new Paragraph(k + " : " + v, f);
+	private PdfPTable table(int c) {
+		PdfPTable t = new PdfPTable(c);
+		t.setWidthPercentage(100);
+		return t;
+	}
+
+	private void add(PdfPTable t, String k, String v, Font h, Font b) {
+		PdfPCell c1 = new PdfPCell(new Phrase(k, h));
+		PdfPCell c2 = new PdfPCell(new Phrase(v, b));
+		c1.setPadding(6);
+		c2.setPadding(6);
+		t.addCell(c1);
+		t.addCell(c2);
+	}
+
+	private Paragraph space() {
+		Paragraph p = new Paragraph(" ");
+		p.setSpacingAfter(10);
+		return p;
 	}
 }
