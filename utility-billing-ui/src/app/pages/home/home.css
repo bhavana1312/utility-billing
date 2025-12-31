@@ -20,7 +20,6 @@
 }
 
 .hero h1 {
-  font-family: 'Poppins', sans-serif;
   font-size: 48px;
   font-weight: 700;
   color: #020617;
@@ -46,7 +45,7 @@
 
 .primary {
   background: #2563eb;
-  color: #fff;
+  color: #ffffff;
   padding: 16px 28px;
   border-radius: 14px;
   text-decoration: none;
@@ -60,6 +59,7 @@
   border-radius: 14px;
   text-decoration: none;
   font-weight: 500;
+  background: transparent;
 }
 
 .stats {
@@ -85,7 +85,6 @@
 
 .services h2 {
   font-size: 32px;
-  font-family: 'Poppins', sans-serif;
 }
 
 .section-sub {
@@ -101,7 +100,7 @@
 }
 
 .service-card {
-  background: #fff;
+  background: #ffffff;
   padding: 40px;
   border-radius: 20px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
@@ -117,15 +116,18 @@
   justify-content: center;
   font-size: 24px;
   margin-bottom: 20px;
+  transition: transform 0.3s;
 }
 
-.water {
+.water-icon {
   background: #e0f2fe;
 }
-.gas {
+
+.gas-icon {
   background: #fff1e6;
 }
-.electricity {
+
+.electricity-icon {
   background: #ecfdf5;
 }
 
@@ -158,6 +160,12 @@
   margin-top: 56px;
 }
 
+.why-grid > div {
+  padding: 24px;
+  border-radius: 18px;
+  transition: transform 0.25s, box-shadow 0.25s, background 0.25s;
+}
+
 .why-icon {
   width: 52px;
   height: 52px;
@@ -168,6 +176,7 @@
   justify-content: center;
   font-size: 22px;
   margin: 0 auto 16px;
+  transition: transform 0.25s, background 0.25s, color 0.25s;
 }
 
 .cta {
@@ -178,7 +187,6 @@
 
 .cta h2 {
   font-size: 36px;
-  font-family: 'Poppins', sans-serif;
 }
 
 .cta h2 span {
@@ -195,32 +203,6 @@
   display: flex;
   justify-content: center;
   gap: 16px;
-}
-
-@media (max-width: 900px) {
-  .service-grid {
-    grid-template-columns: 1fr;
-  }
-  .why-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-  .stats {
-    flex-direction: column;
-    gap: 24px;
-  }
-}
-
-@media (max-width: 600px) {
-  .hero h1 {
-    font-size: 32px;
-  }
-  .hero-actions,
-  .cta-actions {
-    flex-direction: column;
-  }
-  .why-grid {
-    grid-template-columns: 1fr;
-  }
 }
 
 .hero,
@@ -274,16 +256,6 @@
   transform: scale(1.1) rotate(4deg);
 }
 
-.icon {
-  transition: transform 0.3s;
-}
-
-.why-grid > div {
-  transition: transform 0.25s, box-shadow 0.25s, background 0.25s;
-  padding: 24px;
-  border-radius: 18px;
-}
-
 .why-grid > div:hover {
   background: #ffffff;
   transform: translateY(-8px);
@@ -294,10 +266,6 @@
   background: #2563eb;
   color: #ffffff;
   transform: scale(1.1);
-}
-
-.why-icon {
-  transition: transform 0.25s, background 0.25s, color 0.25s;
 }
 
 .stats div {
@@ -322,4 +290,54 @@
   100% {
     box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);
   }
+}
+
+@media (max-width: 900px) {
+  .service-grid {
+    grid-template-columns: 1fr;
+  }
+  .why-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .stats {
+    flex-direction: column;
+    gap: 24px;
+  }
+}
+
+@media (max-width: 600px) {
+  .hero h1 {
+    font-size: 32px;
+  }
+  .hero-actions,
+  .cta-actions {
+    flex-direction: column;
+  }
+  .why-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.service-card {
+  border: 1px solid transparent;
+  transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+}
+
+.service-card:hover {
+  transform: translateY(-10px);
+}
+
+.service-card.water:hover {
+  border-color: #7dd3fc;
+  box-shadow: 0 20px 40px rgba(14, 165, 233, 0.18);
+}
+
+.service-card.gas:hover {
+  border-color: #fdba74;
+  box-shadow: 0 20px 40px rgba(249, 115, 22, 0.18);
+}
+
+.service-card.electricity:hover {
+  border-color: #6ee7b7;
+  box-shadow: 0 20px 40px rgba(16, 185, 129, 0.18);
 }
