@@ -131,7 +131,8 @@ h3 {
 
 .card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  border: 1px solid #7dd3fc;
+  box-shadow: 0 20px 40px rgba(14, 165, 233, 0.18);
 }
 
 .card.danger:hover {
