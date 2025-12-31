@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AuthService } from '../../core/auth/auth';
-// import { ChangeDetectorRef } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -18,7 +18,7 @@ export class LoginComponent {
 
   form;
 
-  constructor(private fb: FormBuilder, private auth: AuthService) {
+  constructor(private fb: FormBuilder, private auth: AuthService, private router: Router) {
     this.form = this.fb.group({
       username: ['', Validators.required],
       password: ['', Validators.required],
@@ -36,13 +36,17 @@ export class LoginComponent {
     this.auth.login(this.form.value).subscribe({
       next: () => {
         this.loading = false;
-        this.success = 'Login successful. Redirecting...';
-        // this.cdr.detectChanges();
+        this.success = 'Login successful';
+
+        const role = this.auth.getUserRole();
+        setTimeout(() => {
+          if (role === 'ADMIN') this.router.navigate(['/admin']);
+          else this.router.navigate(['/consumer']);
+        }, 600);
       },
       error: (err) => {
         this.loading = false;
-        this.apiError = err?.error?.message || 'Invalid username or password';
-        // this.cdr.detectChanges();
+        this.apiError = err?.error?.message || 'Invalid credentials';
       },
     });
   }

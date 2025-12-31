@@ -9,16 +9,24 @@ export class AuthService {
   constructor(private http: HttpClient) {}
 
   login(data: any): Observable<any> {
-    return this.http
-      .post<any>(`${this.api}/login`, data)
-      .pipe(tap((res) => localStorage.setItem('token', res.token)));
+    return this.http.post<any>(`${this.api}/login`, data).pipe(
+      tap((res) => {
+        localStorage.setItem('token', res.token);
+        localStorage.setItem('role', this.getRole(res.token));
+      })
+    );
+  }
+
+  getRole(token: string) {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.roles?.[0];
+  }
+
+  getUserRole() {
+    return localStorage.getItem('role');
   }
 
   logout() {
     localStorage.clear();
-  }
-
-  isLoggedIn() {
-    return !!localStorage.getItem('token');
   }
 }
