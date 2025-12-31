@@ -1,0 +1,151 @@
+.page.theme-Water {
+  --brand-primary: #2563eb;
+  --brand-light: #f0f7ff;
+  --brand-border: #dbeafe;
+}
+
+.page.theme-Gas {
+  --brand-primary: #ea580c;
+  --brand-light: #fff7ed;
+  --brand-border: #ffedd5;
+}
+
+.page.theme-Electricity {
+  --brand-primary: #ca8a04;
+  --brand-light: #fefce8;
+  --brand-border: #fef9c3;
+}
+
+.page {
+  min-height: 100vh;
+  background: #ffffff;
+  padding: 80px 24px;
+  font-family: 'Inter', -apple-system, sans-serif;
+  color: #0f172a;
+  transition: all 0.4s ease;
+}
+
+.container {
+  max-width: 1100px;
+  margin: auto;
+  text-align: center;
+}
+
+.header h2 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin-bottom: 12px;
+}
+
+.subtitle {
+  color: #475569;
+  max-width: 580px;
+  margin: 0 auto 50px;
+  font-size: 1.1rem;
+  font-weight: 400;
+}
+
+.tabs-container {
+  border-bottom: 1px solid #e2e8f0;
+  display: inline-flex;
+  gap: 32px;
+  margin-bottom: 60px;
+  padding: 0 20px;
+}
+
+.tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 4px;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  font-weight: 500;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+.tab-btn:hover {
+  color: #475569;
+}
+
+.tab-btn.active {
+  color: var(--brand-primary);
+}
+
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--brand-primary);
+  border-radius: 2px;
+}
+
+.selection-area h3 {
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #94a3b8;
+  margin-bottom: 32px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 32px;
+}
+
+.consumer-card {
+  background: #ffffff;
+  border: 1px solid #f1f5f9;
+  border-radius: 12px;
+  padding: 48px 32px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.5s cubic-bezier(0.2, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.icon-wrapper {
+  width: 48px;
+  height: 48px;
+  background: #f8fafc;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  color: #64748b;
+  transition: all 0.4s ease;
+}
+
+.consumer-card h4 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #1e293b;
+}
+
+.consumer-card p {
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.consumer-card:hover {
+  border-color: var(--brand-border);
+  background: var(--brand-light);
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+}
+
+.consumer-card:hover .icon-wrapper {
+  background: var(--brand-primary);
+  color: #ffffff;
+}

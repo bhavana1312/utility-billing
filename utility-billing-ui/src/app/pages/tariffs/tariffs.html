@@ -1,1 +1,35 @@
-<p>tariffs works!</p>
+<div [class]="'page theme-' + selectedUtility">
+  <div class="container">
+    <div class="header">
+      <h2>Tariff Plans</h2>
+      <p class="subtitle">
+        Explore our transparent pricing structure for all utilities. Select a utility and consumer type to view detailed
+        tariff slabs.
+      </p>
+    </div>
+
+    <div class="tabs-container">
+      <button *ngFor="let u of utilities" (click)="selectedUtility = u" [class.active]="selectedUtility === u"
+        class="tab-btn">
+        <span class="icon" [innerHTML]="getUtilityIcon(u)"></span>
+        {{ u }}
+      </button>
+    </div>
+
+    <div class="selection-area">
+      <h3>Select Consumer Type</h3>
+
+      <div class="grid">
+        <div *ngFor="let plan of plans" class="consumer-card" (click)="explore(selectedUtility, plan)">
+
+          <div class="icon-wrapper">
+            <span [innerHTML]="getPlanIcon(plan)"></span>
+          </div>
+
+          <h4>{{ plan }}</h4>
+          <p>{{ getPlanDescription(plan) }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

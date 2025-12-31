@@ -1,1 +1,59 @@
-<p>tariff-details works!</p>
+<div class="page">
+  <div class="container" *ngIf="!loading && tariff">
+
+    <div class="header">
+      <a class="back" routerLink="/tariffs">← Back to consumer types</a>
+      <h2>{{ utility }} – {{ plan }}</h2>
+      <p class="sub">Tariff slabs and penalty structure</p>
+    </div>
+
+    <div class="card info-card">
+      <div><span>Fixed Charge</span><strong>₹{{ tariff.fixedCharge }}</strong></div>
+      <div><span>Tax</span><strong>{{ tariff.taxPercentage }}%</strong></div>
+      <div><span>Effective From</span><strong>{{ tariff.effectiveFrom | date }}</strong></div>
+    </div>
+
+    <div class="card">
+      <h3>Consumption Slabs</h3>
+      <p class="muted">Rates per unit based on consumption range</p>
+
+      <div class="table">
+        <div class="row head">
+          <span>Unit Range</span>
+          <span>Rate per Unit</span>
+        </div>
+
+        <div class="row" *ngFor="let slab of tariff.slabs">
+          <span>
+            {{ slab.fromUnit }} -
+            {{ slab.toUnit === 2147483647 ? 'Above' : slab.toUnit }}
+          </span>
+          <span class="pill blue">₹{{ slab.ratePerUnit }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card danger">
+      <h3>Late Payment Penalties</h3>
+      <p class="muted">Additional charges for overdue payments</p>
+
+      <div class="table">
+        <div class="row head">
+          <span>Days Overdue</span>
+          <span>Penalty</span>
+        </div>
+
+        <div class="row" *ngFor="let p of tariff.overduePenaltySlabs">
+          <span>
+            {{ p.fromDay }} -
+            {{ p.toDay === 2147483647 ? 'Above' : p.toDay }} days
+          </span>
+          <span class="pill red">{{ p.penaltyPercentage }}%</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="loading" *ngIf="loading">Loading tariff details...</div>
+</div>

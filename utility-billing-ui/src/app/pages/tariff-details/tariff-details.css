@@ -1,0 +1,185 @@
+.page {
+  min-height: 100vh;
+  background: #f8fafc;
+  padding: 64px 24px;
+}
+
+.container {
+  max-width: 960px;
+  margin: auto;
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.back {
+  font-size: 13px;
+  color: #2563eb;
+  text-decoration: none;
+  display: inline-block;
+  margin-bottom: 8px;
+}
+
+.header h2 {
+  font-family: 'Poppins', sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: #020617;
+}
+
+.sub {
+  font-size: 14px;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+}
+
+.info-card {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.info-card span {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.info-card strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 15px;
+  color: #020617;
+}
+
+h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.muted {
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 16px;
+}
+
+.table {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.row:not(.head) {
+  border: 1px solid #e2e8f0;
+}
+
+.row.head {
+  background: #f1f5f9;
+  font-size: 13px;
+  font-weight: 500;
+  color: #475569;
+}
+
+.pill {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.pill.blue {
+  background: #e0ecff;
+  color: #2563eb;
+}
+
+.pill.red {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.card.danger {
+  border: 1px solid #fecaca;
+}
+
+.loading {
+  text-align: center;
+  padding: 120px;
+  color: #64748b;
+}
+
+.card {
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+}
+
+.card.danger:hover {
+  border-color: #fca5a5;
+  box-shadow: 0 20px 40px rgba(220, 38, 38, 0.12);
+}
+
+.back {
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.back:hover {
+  color: #1d4ed8;
+  transform: translateX(-2px);
+}
+
+.row {
+  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.row:not(.head):hover {
+  background: #f8fafc;
+  transform: translateX(4px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.04);
+}
+
+.row:not(.head):active {
+  transform: scale(0.98);
+}
+
+.pill {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pill.blue:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+}
+
+.pill.red:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.35);
+}
+
+.info-card div {
+  transition: transform 0.2s ease;
+}
+
+.info-card div:hover {
+  transform: translateY(-2px);
+}
