@@ -3,6 +3,7 @@
     <h2>Welcome back</h2>
 
     <form [formGroup]="form" (ngSubmit)="submit()">
+
       <input placeholder="Username" formControlName="username" />
       <div class="error" *ngIf="form.get('username')?.touched && form.get('username')?.invalid">
         Username is required
@@ -13,7 +14,18 @@
         Password is required
       </div>
 
-      <button type="submit" [disabled]="form.invalid">Login</button>
+      <div class="api-error" *ngIf="apiError">
+        {{apiError}}
+      </div>
+
+      <div class="success" *ngIf="success">
+        {{success}}
+      </div>
+
+      <button type="submit" [disabled]="form.invalid || loading">
+        {{loading?'Logging in...':'Login'}}
+      </button>
+
     </form>
   </div>
 </div>
