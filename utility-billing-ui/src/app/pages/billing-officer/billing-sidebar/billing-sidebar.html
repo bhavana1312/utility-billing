@@ -1,1 +1,57 @@
-<p>billing-sidebar works!</p>
+<div class="mobile-overlay" *ngIf="!collapsed" (click)="toggleSidebar()"></div>
+
+<aside class="sidebar" [class.collapsed]="collapsed">
+  <div class="sidebar-header">
+    <div class="brand" *ngIf="!collapsed">
+      <div class="brand-icon">
+        <span class="bolt">💳</span>
+      </div>
+      <span class="brand-name">Utility<span>Billing</span></span>
+    </div>
+
+    <button class="toggle-btn" (click)="toggleSidebar()" [class.is-collapsed]="collapsed">
+      <span class="arrow">‹</span>
+    </button>
+  </div>
+
+  <nav class="nav-container">
+    <a routerLink="/billing" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-item">
+      <div class="icon-wrapper">🏠</div>
+      <span class="label" *ngIf="!collapsed">Dashboard</span>
+      <div class="tooltip" *ngIf="collapsed">Dashboard</div>
+    </a>
+
+    <a routerLink="/billing/readings" routerLinkActive="active" class="nav-item">
+      <div class="icon-wrapper">🧮</div>
+      <span class="label" *ngIf="!collapsed">Meter Readings</span>
+      <div class="tooltip" *ngIf="collapsed">Readings</div>
+    </a>
+
+    <a routerLink="/billing/bills" routerLinkActive="active" class="nav-item">
+      <div class="icon-wrapper">🧾</div>
+      <span class="label" *ngIf="!collapsed">Generate Bills</span>
+      <div class="tooltip" *ngIf="collapsed">Bills</div>
+    </a>
+
+    <a routerLink="/billing/history" routerLinkActive="active" class="nav-item">
+      <div class="icon-wrapper">📊</div>
+      <span class="label" *ngIf="!collapsed">Billing History</span>
+      <div class="tooltip" *ngIf="collapsed">History</div>
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-card" [class.is-collapsed]="collapsed">
+      <div class="avatar">B</div>
+
+      <div class="user-details" *ngIf="!collapsed">
+        <p class="name">Billing Officer</p>
+        <button class="logout-link" (click)="openLogoutConfirm()">Logout →</button>
+      </div>
+    </div>
+  </div>
+
+  <app-confirm-dialog [visible]="showLogoutConfirm" title="Logout" message="Are you sure you want to logout?"
+    confirmText="Logout" cancelText="Cancel" (confirm)="confirmLogout()" (cancel)="cancelLogout()">
+  </app-confirm-dialog>
+</aside>
