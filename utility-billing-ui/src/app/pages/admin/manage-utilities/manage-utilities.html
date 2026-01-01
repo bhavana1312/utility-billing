@@ -1,1 +1,86 @@
-<p>manage-utilities works!</p>
+<div class="layout">
+  <app-admin-sidebar></app-admin-sidebar>
+
+  <main class="content">
+    <h2>Manage Utilities</h2>
+
+    <div class="selectors">
+      <select [(ngModel)]="selectedUtility" (change)="loadTariff()">
+        <option value="">Select Utility</option>
+        <option *ngFor="let u of utilities" [value]="u">{{ u }}</option>
+      </select>
+
+      <select [(ngModel)]="selectedPlan" (change)="loadTariff()">
+        <option value="">Select Plan</option>
+        <option *ngFor="let p of plans" [value]="p">{{ p }}</option>
+      </select>
+    </div>
+
+    <form [formGroup]="form" *ngIf="selectedUtility && selectedPlan">
+      <div class="row">
+        <div>
+          <label>Fixed Charge</label>
+          <input type="number" formControlName="fixedCharge" />
+        </div>
+
+        <div>
+          <label>Tax Percentage</label>
+          <input type="number" formControlName="taxPercentage" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Effective From</label>
+          <input type="date" formControlName="effectiveFrom" [min]="today" />
+        </div>
+      </div>
+
+      <h3>Tariff Slabs</h3>
+      <div class="slabs">
+        <div class="slab" *ngFor="let s of slabGroups; let i = index" [formGroup]="s">
+          <input type="number" placeholder="From Unit" formControlName="fromUnit" />
+          <input type="number" placeholder="To Unit" formControlName="toUnit" />
+          <input type="number" placeholder="Rate / Unit" formControlName="ratePerUnit" />
+          <button type="button" *ngIf="editMode" (click)="removeSlab(i)">✕</button>
+        </div>
+      </div>
+
+      <button type="button" class="add" *ngIf="editMode" (click)="addSlab()">
+        Add Slab
+      </button>
+
+      <h3>Overdue Penalty Slabs</h3>
+      <div class="slabs">
+        <div class="slab" *ngFor="let p of penaltyGroups; let i = index" [formGroup]="p">
+          <input type="number" placeholder="From Day" formControlName="fromDay" />
+          <input type="number" placeholder="To Day" formControlName="toDay" />
+          <input type="number" placeholder="Penalty %" formControlName="penaltyPercentage" />
+          <button type="button" *ngIf="editMode" (click)="removePenaltySlab(i)">✕</button>
+        </div>
+      </div>
+
+      <button type="button" class="add" *ngIf="editMode" (click)="addPenaltySlab()">
+        Add Penalty Slab
+      </button>
+
+      <div class="actions">
+        <button type="button" class="primary" *ngIf="tariff && !editMode" (click)="enableEdit()">
+          Edit Tariff
+        </button>
+
+        <button type="button" class="primary" *ngIf="editMode" (click)="save()">
+          {{ tariff ? 'Update' : 'Create' }} Tariff
+        </button>
+
+        <button type="button" class="secondary" *ngIf="editMode && tariff" (click)="cancelEdit()">
+          Cancel
+        </button>
+
+        <button type="button" class="danger" *ngIf="tariff && editMode" (click)="deactivate()">
+          Deactivate
+        </button>
+      </div>
+    </form>
+  </main>
+</div>
