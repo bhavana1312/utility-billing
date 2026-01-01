@@ -38,26 +38,38 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 		String header = request.getHeader("Authorization");
 
-		if (header != null && header.startsWith("Bearer ")) {
-			try {
-				String token = header.substring(7);
+		if (header == null || !header.startsWith("Bearer ")) {
+			chain.doFilter(request, response);
+			return;
+		}
 
-				Claims claims = Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token)
-						.getBody();
+		try {
+			String token = header.substring(7);
 
-				String username = claims.getSubject();
-				List<String> roles = claims.get("roles", List.class);
+			Claims claims = Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token).getBody();
 
-				var authorities = roles.stream().map(SimpleGrantedAuthority::new).toList();
+			String username = claims.getSubject();
+			List<String> roles = claims.get("roles", List.class);
 
-				SecurityContextHolder.getContext()
-						.setAuthentication(new UsernamePasswordAuthenticationToken(username, null, authorities));
+			var authorities = roles.stream().map(SimpleGrantedAuthority::new).toList();
+			
+			var authentication =
+				    new UsernamePasswordAuthenticationToken(username, null, authorities);
 
-			} catch (JwtException e) {
-				SecurityContextHolder.clearContext();
-				response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-				return;
-			}
+				SecurityContextHolder.getContext().setAuthentication(authentication);
+
+				// OPTIONAL DEBUG LOG
+				authentication.getAuthorities()
+				    .forEach(a -> System.out.println("AUTHORITY = " + a.getAuthority()));
+
+
+//			SecurityContextHolder.getContext()
+//					.setAuthentication(new UsernamePasswordAuthenticationToken(username, null, authorities));
+
+		} catch (JwtException e) {
+			SecurityContextHolder.clearContext();
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+			return;
 		}
 
 		chain.doFilter(request, response);

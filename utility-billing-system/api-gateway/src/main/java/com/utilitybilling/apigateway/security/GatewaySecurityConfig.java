@@ -51,6 +51,7 @@ public class GatewaySecurityConfig {
 
 				.requestMatchers(HttpMethod.POST, "/meters/connection-requests").permitAll()
 				.requestMatchers(HttpMethod.POST, "/meters/connection-requests/**").hasRole("ADMIN")
+				.requestMatchers(HttpMethod.GET, "meters/consumer/**").hasAnyRole("USER", "ADMIN", "BILLING_OFFICER", "ACCOUNTS_OFFICER")
 
 				.requestMatchers(HttpMethod.POST, "/meters/readings").hasRole("BILLING_OFFICER")
 

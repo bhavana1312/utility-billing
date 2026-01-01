@@ -48,6 +48,11 @@ public class MeterController {
 		return ResponseEntity.ok(service.getMeter(meterNumber));
 	}
 
+	@GetMapping("/count")
+	public ResponseEntity<Long> countMeters() {
+		return ResponseEntity.ok(service.getMeterCount());
+	}
+
 	@GetMapping("/consumer/{consumerId}")
 	public ResponseEntity<List<Meter>> byConsumer(@PathVariable("consumerId") String consumerId) {
 		return ResponseEntity.ok(service.getMetersByConsumer(consumerId));

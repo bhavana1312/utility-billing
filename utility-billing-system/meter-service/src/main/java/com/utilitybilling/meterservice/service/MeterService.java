@@ -141,4 +141,9 @@ public class MeterService {
 		return meterRepo.findById(meterNumber).orElseThrow(() -> new IllegalArgumentException("Meter not found"))
 				.getLastReading();
 	}
+
+	public long getMeterCount() {
+		return meterRepo.count();
+	}
+
 }
