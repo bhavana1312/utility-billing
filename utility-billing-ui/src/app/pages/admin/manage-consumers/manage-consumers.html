@@ -50,7 +50,7 @@
                   <span class="badge active">ACTIVE</span>
                 </td>
                 <td>
-                  <button class="danger" (click)="deactivateMeter(m.meterNumber, c.id)">
+                  <button class="danger" (click)="openDeactivate(m.meterNumber, c.id); $event.stopPropagation()">
                     Deactivate
                   </button>
                 </td>
@@ -61,4 +61,7 @@
       </div>
     </div>
   </main>
+  <app-confirm-dialog [visible]="showConfirm" title="Deactivate Meter"
+    message="Are you sure you want to deactivate this meter? This action cannot be undone." confirmText="Deactivate"
+    cancelText="Cancel" (confirm)="confirmDeactivate()" (cancel)="cancelDeactivate()"></app-confirm-dialog>
 </div>

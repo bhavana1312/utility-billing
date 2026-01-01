@@ -8,6 +8,7 @@
       </div>
       <span class="brand-name">Utility<span>Admin</span></span>
     </div>
+
     <button class="toggle-btn" (click)="toggleSidebar()" [class.is-collapsed]="collapsed">
       <span class="arrow">‹</span>
     </button>
@@ -43,10 +44,16 @@
   <div class="sidebar-footer">
     <div class="user-card" [class.is-collapsed]="collapsed">
       <div class="avatar">A</div>
+
       <div class="user-details" *ngIf="!collapsed">
         <p class="name">Admin User</p>
-        <button class="logout-link" (click)="logout()">Logout →</button>
+        <button class="logout-link" (click)="openLogoutConfirm()">
+          Logout →
+        </button>
       </div>
     </div>
   </div>
+
+  <app-confirm-dialog [visible]="showLogoutConfirm" title="Logout" message="Are you sure you want to logout?"
+    confirmText="Logout" cancelText="Cancel" (confirm)="confirmLogout()" (cancel)="cancelLogout()"></app-confirm-dialog>
 </aside>

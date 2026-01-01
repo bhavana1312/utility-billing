@@ -3,10 +3,11 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { ToastrService } from 'ngx-toastr';
 import { AdminSidebar } from '../admin-sidebar/admin-sidebar';
+import { ConfirmDialog } from '../../../shared/confirm-dialog/confirm-dialog';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, AdminSidebar],
+  imports: [CommonModule, AdminSidebar, ConfirmDialog],
   templateUrl: './manage-consumers.html',
   styleUrl: './manage-consumers.css',
 })
@@ -15,6 +16,9 @@ export class ManageConsumers {
   expandedConsumerId: string | null = null;
   connectionsMap: { [key: string]: any[] } = {};
   utilitiesMap: { [key: string]: string[] } = {};
+  showConfirm = false;
+  selectedMeterNumber = '';
+  selectedConsumerId = '';
 
   constructor(private http: HttpClient, private toast: ToastrService) {
     this.loadConsumers();
@@ -62,5 +66,20 @@ export class ManageConsumers {
       },
       error: () => this.toast.error('Failed to deactivate meter'),
     });
+  }
+
+  openDeactivate(meterNumber: string, consumerId: string) {
+    this.selectedMeterNumber = meterNumber;
+    this.selectedConsumerId = consumerId;
+    this.showConfirm = true;
+  }
+
+  confirmDeactivate() {
+    this.deactivateMeter(this.selectedMeterNumber, this.selectedConsumerId);
+    this.showConfirm = false;
+  }
+
+  cancelDeactivate() {
+    this.showConfirm = false;
   }
 }
