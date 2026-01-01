@@ -18,8 +18,8 @@ export class Navbar {
     return this.auth.isLoggedIn();
   }
 
-  isAdminPage(): boolean {
-    return this.router.url.includes('/admin');
+  isPageWithRole(): boolean {
+    return this.router.url.includes('/admin') || this.router.url.includes('/billing');
   }
 
   logout() {

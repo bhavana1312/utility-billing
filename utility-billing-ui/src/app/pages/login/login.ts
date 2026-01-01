@@ -46,7 +46,13 @@ export class LoginComponent {
 
         const role = this.auth.getUserRole();
         console.log(role);
-        this.router.navigate(role === 'ROLE_ADMIN' ? ['/admin'] : ['/consumer']);
+        this.router.navigate(
+          role === 'ROLE_ADMIN'
+            ? ['/admin']
+            : role === 'ROLE_BILLING_OFFICER'
+            ? ['/billing']
+            : ['/consumer']
+        );
       },
       error: (err) => {
         this.loading = false;
