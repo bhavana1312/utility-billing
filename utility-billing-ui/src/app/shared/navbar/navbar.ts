@@ -21,4 +21,25 @@ export class Navbar {
     this.auth.logout();
     this.router.navigate(['/login']);
   }
+
+  getDashboardRoute(): string | null {
+    const role = this.auth.getUserRole();
+
+    switch (role) {
+      case 'ROLE_ADMIN':
+        return '/admin';
+
+      case 'ROLE_USER':
+        return '/user';
+
+      case 'ROLE_BILLING_OFFICER':
+        return '/billing';
+
+      case 'ROLE_ACCOUNTS_OFFICER':
+        return '/accounts';
+
+      default:
+        return null;
+    }
+  }
 }

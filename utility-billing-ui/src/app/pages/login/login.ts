@@ -45,7 +45,8 @@ export class LoginComponent {
         this.toastr.success('Login successful');
 
         const role = this.auth.getUserRole();
-        this.router.navigate(role === 'ADMIN' ? ['/admin'] : ['/consumer']);
+        console.log(role);
+        this.router.navigate(role === 'ROLE_ADMIN' ? ['/admin'] : ['/consumer']);
       },
       error: (err) => {
         this.loading = false;

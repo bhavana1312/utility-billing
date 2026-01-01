@@ -3,7 +3,10 @@
     <a routerLink="/" class="logo">Utility Billing</a>
 
     <a routerLink="/tariffs">Tariffs</a>
-    <a routerLink="/consumer-request">New Connection</a>
+    <a *ngIf="!isLoggedIn()" routerLink="/consumer-request">Become Consumer</a>
+    <a *ngIf="isLoggedIn() && getDashboardRoute()" [routerLink]="getDashboardRoute()">
+      Dashboard
+    </a>
   </div>
 
   <div class="right">
