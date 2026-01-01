@@ -1,0 +1,118 @@
+<div class="layout">
+  <app-admin-sidebar></app-admin-sidebar>
+
+  <main class="content">
+    <section class="request-section">
+      <div class="section-header-row">
+        <div class="title-group">
+          <h3>Consumer Requests</h3>
+          <p>Review and manage connection requests</p>
+        </div>
+
+        <div class="filter-bar">
+          <label>Status</label>
+          <select [(ngModel)]="selectedStatus" (change)="onStatusChange()">
+            <option value="ALL">All Requests</option>
+            <option value="PENDING">Pending</option>
+            <option value="APPROVED">Approved</option>
+            <option value="REJECTED">Rejected</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="request-list">
+        <div class="request-card" *ngFor="let r of consumerRequests">
+          <div class="card-body">
+            <div class="user-info">
+              <div class="name-row">
+                <h4>{{ r.fullName }}</h4>
+                <span class="badge" [ngClass]="r.status.toLowerCase()">
+                  {{ r.status }}
+                </span>
+              </div>
+              <p class="email">{{ r.email }}</p>
+              <p class="address">{{ r.addressLine1 }}, {{ r.city }}</p>
+            </div>
+
+            <div class="actions" *ngIf="r.status === 'PENDING'">
+              <button class="btn-approve" (click)="approveConsumer(r.id)">
+                Approve
+              </button>
+              <button class="btn-reject" (click)="openRejectModal(r.id, 'CONSUMER')">
+                Reject
+              </button>
+            </div>
+
+            <div class="rejection-note" *ngIf="r.status === 'REJECTED'">
+              <strong>Rejection Reason:</strong> {{ r.rejectionReason }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="request-section">
+      <div class="section-header-row">
+        <div class="title-group">
+          <h3>Connection Requests</h3>
+          <p>Meter connection approval requests</p>
+        </div>
+      </div>
+
+      <div class="request-list">
+        <div class="request-card" *ngFor="let r of filteredConnectionRequests">
+          <div class="card-body">
+            <div class="user-info">
+              <div class="name-row">
+                <h4>
+                  {{
+                  consumerMap[r.consumerId]?.fullName || 'Loading...'
+                  }}
+                </h4>
+                <span class="badge" [ngClass]="r.status.toLowerCase()">
+                  {{ r.status }}
+                </span>
+              </div>
+
+              <p class="email">
+                {{ consumerMap[r.consumerId]?.email }}
+              </p>
+              <p class="address">
+                Utility: {{ r.utilityType }}
+              </p>
+            </div>
+
+            <div class="actions" *ngIf="r.status === 'PENDING'">
+              <button class="btn-approve" (click)="approveConnection(r.id)">
+                Approve
+              </button>
+              <button class="btn-reject" (click)="openRejectModal(r.id, 'CONNECTION')">
+                Reject
+              </button>
+            </div>
+
+            <div class="rejection-note" *ngIf="r.status === 'REJECTED'">
+              <strong>Rejection Reason:</strong> {{ r.rejectionReason }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="modal-backdrop" *ngIf="showRejectModal">
+  <div class="modal">
+    <h3>Reject Request</h3>
+    <p>Please provide a reason for rejection.</p>
+    <textarea [(ngModel)]="rejectReason" rows="4" placeholder="Enter reason..."></textarea>
+    <div class="modal-actions">
+      <button class="btn-cancel" (click)="closeRejectModal()">
+        Cancel
+      </button>
+      <button class="btn-reject-confirm" (click)="confirmReject()">
+        Reject
+      </button>
+    </div>
+  </div>
+</div>

@@ -33,4 +33,10 @@ export const routes: Routes = [
       import('./pages/admin/manage-consumers/manage-consumers').then((m) => m.ManageConsumers),
     canActivate: [authGuard],
   },
+  {
+    path: 'admin/requests',
+    loadComponent: () =>
+      import('./pages/admin/manage-requests/manage-requests').then((m) => m.ManageRequests),
+    canActivate: [authGuard],
+  },
 ];

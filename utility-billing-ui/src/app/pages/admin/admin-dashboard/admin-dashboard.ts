@@ -19,6 +19,7 @@ export class AdminDashboard implements AfterViewInit {
 
   requests: any[] = [];
   consumers: any[] = [];
+  metersCount = 0;
   isSidebarCollapsed = false;
   today = new Date();
 
@@ -31,6 +32,7 @@ export class AdminDashboard implements AfterViewInit {
   constructor(private http: HttpClient, private toast: ToastrService) {
     this.loadRequests();
     this.loadConsumers();
+    this.loadMetersCount();
   }
 
   onSidebarToggle(collapsed: boolean) {
@@ -53,6 +55,16 @@ export class AdminDashboard implements AfterViewInit {
         this.renderCharts();
       },
       error: () => this.toast.error('Failed to load requests'),
+    });
+  }
+
+  loadMetersCount() {
+    this.http.get<number>('http://localhost:9090/meters/count').subscribe({
+      next: (res) => {
+        this.metersCount = res;
+        this.renderCharts();
+      },
+      error: () => this.toast.error('Failed to load meter count'),
     });
   }
 
@@ -98,9 +110,12 @@ export class AdminDashboard implements AfterViewInit {
         new Chart(comparisonCtx, {
           type: 'bar',
           data: {
-            labels: ['Consumers', 'Pending'],
+            labels: ['Consumers', 'Connections', 'Pending'],
             datasets: [
-              { data: [this.consumers.length, pending], backgroundColor: ['#2563eb', '#f97316'] },
+              {
+                data: [this.consumers.length, this.metersCount, pending],
+                backgroundColor: ['#2563eb', '#22c55e', '#f97316'],
+              },
             ],
           },
           options: {
