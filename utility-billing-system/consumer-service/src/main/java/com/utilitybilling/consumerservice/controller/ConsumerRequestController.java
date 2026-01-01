@@ -23,7 +23,7 @@ public class ConsumerRequestController{
     }
 
     @GetMapping
-    public ResponseEntity<List<ConsumerRequest>> getAll(@RequestParam(required=false) String status){
+    public ResponseEntity<List<ConsumerRequest>> getAll(String status){
         return ResponseEntity.ok(service.getAll(status));
     }
 

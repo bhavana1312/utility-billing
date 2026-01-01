@@ -1,6 +1,7 @@
 package com.utilitybilling.consumerservice.service;
 
 import com.utilitybilling.consumerservice.client.AuthClient;
+import com.utilitybilling.consumerservice.client.NotificationClient;
 import com.utilitybilling.consumerservice.dto.*;
 import com.utilitybilling.consumerservice.exception.NotFoundException;
 import com.utilitybilling.consumerservice.model.Consumer;
@@ -8,6 +9,7 @@ import com.utilitybilling.consumerservice.model.ConsumerRequest;
 import com.utilitybilling.consumerservice.repository.ConsumerRepository;
 import com.utilitybilling.consumerservice.repository.ConsumerRequestRepository;
 import com.utilitybilling.consumerservice.util.PasswordGenerator;
+import com.utilitybilling.consumerservice.client.NotificationRequest;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,8 +24,9 @@ public class ConsumerService {
 	private final ConsumerRepository consumerRepo;
 	private final ConsumerRequestRepository requestRepo;
 	private final AuthClient authClient;
+	private final NotificationClient notificationClient;
 
-	public ConsumerResponse createFromRequest(String requestId) {
+	public ConsumerResponse approve(String requestId) {
 
 		ConsumerRequest r = requestRepo.findById(requestId)
 				.orElseThrow(() -> new NotFoundException("Request not found"));
@@ -44,7 +47,13 @@ public class ConsumerService {
 		r.setStatus("APPROVED");
 		r.setUpdatedAt(Instant.now());
 		requestRepo.save(r);
-
+		
+		notificationClient
+		.send(NotificationRequest.builder().email(c.getEmail()).type("CONSUMER_APPROVED")
+				.subject("Consumer Request approved").message("You are added as a consumer with id: " + c.getId()
+						+ "Your login credentials are: \n Username: " + c.getFullName() + "\n Password: " + password + "\n \n Please change ur password upon login for the first time.")
+				.build());
+	
 		return ConsumerResponse.builder().id(c.getId()).fullName(c.getFullName()).email(c.getEmail()).password(password)
 				.phone(c.getPhone()).active(true).build();
 	}

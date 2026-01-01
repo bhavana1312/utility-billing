@@ -1,6 +1,8 @@
 package com.utilitybilling.consumerservice.service;
 
 import com.utilitybilling.consumerservice.dto.CreateConsumerRequest;
+import com.utilitybilling.consumerservice.client.NotificationClient;
+import com.utilitybilling.consumerservice.client.NotificationRequest;
 import com.utilitybilling.consumerservice.dto.ConsumerRequestResponse;
 import com.utilitybilling.consumerservice.exception.NotFoundException;
 import com.utilitybilling.consumerservice.model.ConsumerRequest;
@@ -16,6 +18,7 @@ import java.util.List;
 public class ConsumerRequestService {
 
 	private final ConsumerRequestRepository repository;
+	private final NotificationClient notificationClient;
 
 	public ConsumerRequestResponse submit(CreateConsumerRequest r) {
 
@@ -50,6 +53,14 @@ public class ConsumerRequestService {
 		r.setStatus("REJECTED");
 		r.setRejectionReason(reason);
 		r.setUpdatedAt(Instant.now());
+		
+		notificationClient
+		.send(NotificationRequest.builder().email(r.getEmail()).type("CONSUMER_REJECTED")
+				.subject("Consumer Request rejected").message("Your request for consumer has been rejected" +
+						"\n Reason for rejection: " + reason)
+				.build());
+		
+
 
 		repository.save(r);
 	}
