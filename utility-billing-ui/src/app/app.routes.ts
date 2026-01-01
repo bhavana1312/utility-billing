@@ -21,4 +21,10 @@ export const routes: Routes = [
   { path: 'admin', component: AdminDashboard, canActivate: [authGuard] },
   { path: 'billing', component: BillingDashboard, canActivate: [authGuard] },
   { path: 'accounts', component: AccountsDashboard, canActivate: [authGuard] },
+  {
+    path: 'admin/utilities',
+    loadComponent: () =>
+      import('./pages/admin/manage-utilities/manage-utilities').then((m) => m.ManageUtilities),
+    canActivate: [authGuard],
+  },
 ];
