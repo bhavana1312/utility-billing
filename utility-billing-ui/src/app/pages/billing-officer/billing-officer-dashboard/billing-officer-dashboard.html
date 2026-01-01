@@ -1,1 +1,85 @@
-<p>billing-officer-dashboard works!</p>
+<div class="layout" [class.sidebar-collapsed]="isSidebarCollapsed">
+  <app-billing-sidebar #sidebar (sidebarToggle)="onSidebarToggle($event)"></app-billing-sidebar>
+
+  <main class="content">
+    <header class="mobile-top-nav">
+      <button class="toggle-btn" (click)="sidebar.toggleSidebar()" [class.is-collapsed]="isSidebarCollapsed">
+        <span class="arrow">‹</span>
+      </button>
+      <div class="mobile-brand">
+        <span class="bolt">💳</span>
+        <span class="brand-name">Utility<span>Billing</span></span>
+      </div>
+    </header>
+
+    <div class="dashboard-header">
+      <h2>Billing Dashboard</h2>
+      <span class="date-display">{{ today | date:'fullDate' }}</span>
+    </div>
+
+    <div class="stats">
+      <div class="card">
+        <h4>Total Bills</h4>
+        <p>{{ totalBills }}</p>
+      </div>
+
+      <div class="card">
+        <h4>Total Revenue</h4>
+        <p>₹ {{ totalRevenue | number:'1.2-2' }}</p>
+      </div>
+
+      <div class="card">
+        <h4>Outstanding</h4>
+        <p>₹ {{ outstandingAmount | number:'1.2-2' }}</p>
+      </div>
+    </div>
+
+    <div class="charts-row">
+      <div class="chart-box">
+        <h3>Bill Status</h3>
+        <canvas id="statusChart"></canvas>
+      </div>
+
+      <div class="chart-box">
+        <h3>Revenue by Utility</h3>
+        <canvas id="utilityChart"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-box full">
+      <h3>Bills Over Time</h3>
+      <canvas id="timeChart"></canvas>
+    </div>
+
+    <div class="table-box">
+      <h3>Recent Bills</h3>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Bill ID</th>
+            <th>Utility</th>
+            <th>Units</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Due Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let b of bills">
+            <td>{{ b.billId }}</td>
+            <td>{{ b.utilityType }}</td>
+            <td>{{ b.unitsConsumed }}</td>
+            <td>₹ {{ b.totalAmount }}</td>
+            <td class="status" [class.paid]="b.status==='PAID'" [class.due]="b.status==='DUE'"
+              [class.overdue]="b.status==='OVERDUE'">
+              {{ b.status }}
+            </td>
+            <td>{{ b.dueDate | date:'mediumDate' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+</div>
