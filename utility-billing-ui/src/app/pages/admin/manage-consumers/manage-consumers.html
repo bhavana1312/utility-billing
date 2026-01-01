@@ -1,0 +1,64 @@
+<div class="layout">
+  <app-admin-sidebar></app-admin-sidebar>
+
+  <main class="content">
+    <h2>Manage Consumers</h2>
+
+    <div class="consumer-list">
+      <div class="consumer-card" *ngFor="let c of consumers">
+        <div class="consumer-header" (click)="toggleConnections(c.id)">
+          <div class="consumer-info">
+            <div class="name-row">
+              <h4>{{ c.fullName }}</h4>
+
+              <div class="utility-badges" *ngIf="utilitiesMap[c.id]?.length">
+                <span class="utility-badge" *ngFor="let u of utilitiesMap[c.id]" [ngClass]="'theme-' + u">
+                  {{ u }}
+                </span>
+              </div>
+            </div>
+
+            <p>{{ c.email }}</p>
+            <p>{{ c.phone }}</p>
+          </div>
+
+          <span class="toggle">
+            {{ expandedConsumerId === c.id ? '▲' : '▼' }}
+          </span>
+        </div>
+
+        <div class="meters" *ngIf="expandedConsumerId === c.id">
+          <div *ngIf="!connectionsMap[c.id]?.length" class="empty">
+            No active connections
+          </div>
+
+          <table *ngIf="connectionsMap[c.id]?.length">
+            <thead>
+              <tr>
+                <th>Meter Number</th>
+                <th>Utility</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr *ngFor="let m of connectionsMap[c.id]">
+                <td>{{ m.meterNumber }}</td>
+                <td>{{ m.utilityType }}</td>
+                <td>
+                  <span class="badge active">ACTIVE</span>
+                </td>
+                <td>
+                  <button class="danger" (click)="deactivateMeter(m.meterNumber, c.id)">
+                    Deactivate
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
