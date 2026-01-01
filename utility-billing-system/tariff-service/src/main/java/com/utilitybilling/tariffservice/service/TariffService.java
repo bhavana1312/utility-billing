@@ -21,15 +21,14 @@ public class TariffService {
 				.orElse(Tariff.builder().utilityType(r.getUtilityType()).plans(new ArrayList<>()).build());
 
 		tariff.getPlans().stream().filter(p -> p.getPlan() == r.getPlan() && p.isActive()).findFirst().ifPresent(p -> {
-			throw new BusinessException("Active plan already exists for " + r.getPlan());
+			throw new BusinessException("Active plan already exists");
 		});
 
-		TariffPlanConfig plan = TariffPlanConfig.builder().plan(r.getPlan()).slabs(r.getSlabs())
-				.fixedCharge(r.getFixedCharge()).taxPercentage(r.getTaxPercentage())
-				.overduePenaltySlabs(r.getOverduePenaltySlabs()).effectiveFrom(r.getEffectiveFrom()).active(true)
-				.build();
+		tariff.getPlans()
+				.add(TariffPlanConfig.builder().plan(r.getPlan()).slabs(r.getSlabs()).fixedCharge(r.getFixedCharge())
+						.taxPercentage(r.getTaxPercentage()).overduePenaltySlabs(r.getOverduePenaltySlabs())
+						.effectiveFrom(r.getEffectiveFrom()).active(true).build());
 
-		tariff.getPlans().add(plan);
 		repo.save(tariff);
 	}
 
@@ -38,7 +37,7 @@ public class TariffService {
 		Tariff tariff = repo.findByUtilityType(type).orElseThrow(() -> new NotFoundException("Tariff not found"));
 
 		TariffPlanConfig p = tariff.getPlans().stream().filter(tp -> tp.getPlan() == plan && tp.isActive()).findFirst()
-				.orElseThrow(() -> new NotFoundException("Active tariff plan not found"));
+				.orElseThrow(() -> new NotFoundException("Active plan not found"));
 
 		return map(type, p);
 	}
@@ -59,7 +58,7 @@ public class TariffService {
 		Tariff tariff = repo.findByUtilityType(type).orElseThrow(() -> new NotFoundException("Tariff not found"));
 
 		TariffPlanConfig existing = tariff.getPlans().stream().filter(tp -> tp.getPlan() == plan && tp.isActive())
-				.findFirst().orElseThrow(() -> new BusinessException("No active plan to update"));
+				.findFirst().orElseThrow(() -> new BusinessException("No active plan"));
 
 		existing.setActive(false);
 

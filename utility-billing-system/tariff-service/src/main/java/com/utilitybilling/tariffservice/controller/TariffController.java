@@ -36,6 +36,7 @@ public class TariffController {
 	@PutMapping("/{utilityType}/plans/{plan}")
 	public ResponseEntity<Void> updatePlan(@PathVariable UtilityType utilityType, @PathVariable TariffPlan plan,
 			@Valid @RequestBody UpdateTariffPlanRequest r) {
+		System.out.println("Hello");
 		service.updatePlan(utilityType, plan, r);
 		return ResponseEntity.noContent().build();
 	}
