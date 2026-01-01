@@ -5,7 +5,7 @@ import { TariffDetails } from './pages/tariff-details/tariff-details';
 import { ConsumerRequest } from './pages/consumer-request/consumer-request';
 import { LoginComponent } from './pages/login/login';
 import { UserDashboard } from './pages/dashboards/user-dashboard/user-dashboard';
-import { AdminDashboard } from './pages/dashboards/admin-dashboard/admin-dashboard';
+import { AdminDashboard } from './pages/admin/admin-dashboard/admin-dashboard';
 import { BillingDashboard } from './pages/dashboards/billing-dashboard/billing-dashboard';
 import { AccountsDashboard } from './pages/dashboards/accounts-dashboard/accounts-dashboard';
 import { authGuard } from './core/auth/auth-guard';

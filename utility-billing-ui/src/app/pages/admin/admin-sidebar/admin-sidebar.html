@@ -1,0 +1,52 @@
+<div class="mobile-overlay" *ngIf="!collapsed" (click)="toggleSidebar()"></div>
+
+<aside class="sidebar" [class.collapsed]="collapsed">
+  <div class="sidebar-header">
+    <div class="brand" *ngIf="!collapsed">
+      <div class="brand-icon">
+        <span class="bolt">⚡</span>
+      </div>
+      <span class="brand-name">Utility<span>Admin</span></span>
+    </div>
+    <button class="toggle-btn" (click)="toggleSidebar()" [class.is-collapsed]="collapsed">
+      <span class="arrow">‹</span>
+    </button>
+  </div>
+
+  <nav class="nav-container">
+    <a routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-item">
+      <div class="icon-wrapper">🏠</div>
+      <span class="label" *ngIf="!collapsed">Dashboard</span>
+      <div class="tooltip" *ngIf="collapsed">Dashboard</div>
+    </a>
+
+    <a routerLink="/admin/utilities" routerLinkActive="active" class="nav-item">
+      <div class="icon-wrapper">⚙️</div>
+      <span class="label" *ngIf="!collapsed">Manage Utilities</span>
+      <div class="tooltip" *ngIf="collapsed">Utilities</div>
+    </a>
+
+    <a routerLink="/admin/requests" routerLinkActive="active" class="nav-item">
+      <div class="icon-wrapper">📩</div>
+      <span class="label" *ngIf="!collapsed">Requests</span>
+      <span class="badge-dot" *ngIf="!collapsed"></span>
+      <div class="tooltip" *ngIf="collapsed">Requests</div>
+    </a>
+
+    <a routerLink="/admin/consumers" routerLinkActive="active" class="nav-item">
+      <div class="icon-wrapper">👥</div>
+      <span class="label" *ngIf="!collapsed">Consumers</span>
+      <div class="tooltip" *ngIf="collapsed">Consumers</div>
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-card" [class.is-collapsed]="collapsed">
+      <div class="avatar">A</div>
+      <div class="user-details" *ngIf="!collapsed">
+        <p class="name">Admin User</p>
+        <button class="logout-link" (click)="logout()">Logout →</button>
+      </div>
+    </div>
+  </div>
+</aside>
