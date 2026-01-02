@@ -23,6 +23,7 @@ interface ConnectionRequest {
   id: string;
   consumerId: string;
   utilityType: string;
+  tariffPlan: string;
   status: RequestStatus;
   createdAt: string;
   rejectionReason?: string;

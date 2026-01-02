@@ -45,7 +45,7 @@ public class BillingService {
 
 		double units = currentReading - previousReading;
 
-		TariffResponse tariff = tariffClient.getActive(meter.getUtilityType());
+		TariffResponse tariff = tariffClient.getActive(meter.getUtilityType(), meter.getTariffPlan());
 
 		BigDecimal energyCharge = calculateEnergyCharge(units, tariff.getSlabs());
 		BigDecimal fixedCharge = BigDecimal.valueOf(tariff.getFixedCharge());
@@ -60,6 +60,7 @@ public class BillingService {
 		bill.setEmail(meter.getEmail());
 		bill.setMeterNumber(request.getMeterNumber());
 		bill.setUtilityType(meter.getUtilityType());
+		bill.setTariffPlan(meter.getTariffPlan());
 		bill.setPreviousReading(previousReading);
 		bill.setCurrentReading(currentReading);
 		bill.setUnitsConsumed(units);
@@ -70,7 +71,7 @@ public class BillingService {
 		bill.setPenaltyAmount(BigDecimal.ZERO);
 		bill.setTotalAmount(totalAmount);
 
-		bill.setDueDate(Date.from(bill.getGeneratedAt().plus(2, ChronoUnit.SECONDS)));
+		bill.setDueDate(Date.from(bill.getGeneratedAt().plus(2, ChronoUnit.DAYS)));
 		bill.setLastUpdatedAt(Instant.now());
 		bill.setStatus(BillStatus.DUE);
 
@@ -113,6 +114,7 @@ public class BillingService {
 		r.setEmail(bill.getEmail());
 		r.setMeterNumber(bill.getMeterNumber());
 		r.setUtilityType(bill.getUtilityType());
+		r.setTariffPlan(bill.getTariffPlan());
 		r.setPreviousReading(bill.getPreviousReading());
 		r.setCurrentReading(bill.getCurrentReading());
 		r.setUnitsConsumed(bill.getUnitsConsumed());

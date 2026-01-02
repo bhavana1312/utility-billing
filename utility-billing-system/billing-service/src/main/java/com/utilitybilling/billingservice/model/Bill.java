@@ -19,6 +19,7 @@ public class Bill {
 	private String email;
 	private String meterNumber;
 	private String utilityType;
+	private String tariffPlan;
 
 	private double previousReading;
 	private double currentReading;

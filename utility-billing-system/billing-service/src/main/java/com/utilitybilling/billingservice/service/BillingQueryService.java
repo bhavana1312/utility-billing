@@ -32,6 +32,7 @@ public class BillingQueryService {
 		r.setEmail(bill.getEmail());
 		r.setMeterNumber(bill.getMeterNumber());
 		r.setUtilityType(bill.getUtilityType());
+		r.setTariffPlan(bill.getTariffPlan());
 		r.setPreviousReading(bill.getPreviousReading());
 		r.setCurrentReading(bill.getCurrentReading());
 		r.setUnitsConsumed(bill.getUnitsConsumed());

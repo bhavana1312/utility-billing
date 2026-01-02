@@ -37,6 +37,7 @@
               <tr>
                 <th>Meter Number</th>
                 <th>Utility</th>
+                <th>Tariff Plan</th>
                 <th>Status</th>
                 <th>Action</th>
               </tr>
@@ -46,6 +47,7 @@
               <tr *ngFor="let m of connectionsMap[c.id]">
                 <td>{{ m.meterNumber }}</td>
                 <td>{{ m.utilityType }}</td>
+                <td>{{m.tariffPlan}}</td>
                 <td>
                   <span class="badge active">ACTIVE</span>
                 </td>

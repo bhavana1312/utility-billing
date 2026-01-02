@@ -18,6 +18,8 @@ public class ConnectionRequest{
     private String email;
 
     private UtilityType utilityType;
+    
+    private TariffPlan tariffPlan;
 
     private String address;
 

@@ -1,0 +1,69 @@
+<div class="layout" [class.sidebar-collapsed]="isSidebarCollapsed">
+  <app-accounts-officer-sidebar #sidebar (sidebarToggle)="onSidebarToggle($event)">
+  </app-accounts-officer-sidebar>
+
+  <main class="content">
+    <header class="mobile-top-nav">
+      <button class="toggle-btn" (click)="sidebar.toggleSidebar()" [class.is-collapsed]="isSidebarCollapsed">
+        <span class="arrow">‹</span>
+      </button>
+      <div class="mobile-brand">
+        <span class="bolt">💼</span>
+        <span class="brand-name">Accounts<span>Officer</span></span>
+      </div>
+    </header>
+
+    <div class="dashboard-header">
+      <h2>Accounts Dashboard</h2>
+      <span class="date-display">{{ today | date:'fullDate' }}</span>
+    </div>
+
+    <div class="stats mobile-scroll">
+      <div class="stat-card">
+        <div class="icon">💰</div>
+        <div>
+          <span>Total Collection</span>
+          <h3>₹ {{ totalCollected }}</h3>
+        </div>
+      </div>
+
+      <div class="stat-card success">
+        <div class="icon">🧾</div>
+        <div>
+          <span>Total Payments</span>
+          <h3>{{ payments.length }}</h3>
+        </div>
+      </div>
+
+      <div class="stat-card warning">
+        <div class="icon">🏦</div>
+        <div>
+          <span>Offline Payments</span>
+          <h3>{{ offlinePaymentsCount }}</h3>
+        </div>
+      </div>
+    </div>
+
+    <div class="charts">
+      <div class="chart-card">
+        <h4>Payment Method Distribution</h4>
+        <div class="canvas">
+          <canvas id="paymentChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <h4>Recent Payments</h4>
+        <div class="payment-list">
+          <div class="payment-row" *ngFor="let p of recentPayments">
+            <div>
+              <strong>{{ p.consumerName }}</strong>
+              <p>{{ p.method }}</p>
+            </div>
+            <span class="amount">₹ {{ p.amount }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

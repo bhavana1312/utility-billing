@@ -4,9 +4,7 @@ import { Tariffs } from './pages/tariffs/tariffs';
 import { TariffDetails } from './pages/tariff-details/tariff-details';
 import { ConsumerRequest } from './pages/consumer-request/consumer-request';
 import { LoginComponent } from './pages/login/login';
-import { UserDashboard } from './pages/dashboards/user-dashboard/user-dashboard';
 import { AdminDashboard } from './pages/admin/admin-dashboard/admin-dashboard';
-import { AccountsDashboard } from './pages/dashboards/accounts-dashboard/accounts-dashboard';
 import { authGuard } from './core/auth/auth-guard';
 
 export const routes: Routes = [
@@ -18,18 +16,18 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
 
   /* User dashboard */
-  {
-    path: 'user',
-    component: UserDashboard,
-    canActivate: [authGuard],
-  },
+  // {
+  //   path: 'user',
+  //   component: UserDashboard,
+  //   canActivate: [authGuard],
+  // },
 
-  /* Accounts dashboard */
-  {
-    path: 'accounts',
-    component: AccountsDashboard,
-    canActivate: [authGuard],
-  },
+  // /* Accounts dashboard */
+  // {
+  //   path: 'accounts',
+  //   component: AccountsDashboard,
+  //   canActivate: [authGuard],
+  // },
 
   /* Admin section */
   {
@@ -58,7 +56,6 @@ export const routes: Routes = [
     ],
   },
 
-  /* Billing officer section */
   {
     path: 'billing',
     canActivate: [authGuard],
@@ -77,9 +74,36 @@ export const routes: Routes = [
       },
 
       {
-        path: 'generate',
+        path: 'bills',
+        loadComponent: () => import('./pages/billing-officer/bills/bills').then((m) => m.Bills),
+        canActivate: [authGuard],
+      },
+    ],
+  },
+  {
+    path: 'accounts',
+    children: [
+      {
+        path: '',
         loadComponent: () =>
-          import('./pages/billing-officer/generate-bill/generate-bill').then((m) => m.GenerateBill),
+          import(
+            './pages/accounts-officer/accounts-officer-dashboard/accounts-officer-dashboard'
+          ).then((m) => m.AccountsOfficerDashboard),
+        canActivate: [authGuard],
+      },
+      {
+        path: 'offline-payment',
+        loadComponent: () =>
+          import('./pages/accounts-officer/offline-payment/offline-payment').then(
+            (m) => m.OfflinePayment
+          ),
+        canActivate: [authGuard],
+      },
+      {
+        path: 'payments',
+        loadComponent: () =>
+          import('./pages/accounts-officer/payments/payments').then((m) => m.Payments),
+        canActivate: [authGuard],
       },
     ],
   },

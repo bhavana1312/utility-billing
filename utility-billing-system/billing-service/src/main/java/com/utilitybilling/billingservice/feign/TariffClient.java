@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 public interface TariffClient{
 
     @CircuitBreaker(name="tariffService",fallbackMethod="fallback")
-    @GetMapping("/utilities/tariffs/{utilityType}")
-    TariffResponse getActive(@PathVariable("utilityType") String utilityType);
+    @GetMapping("/utilities/tariffs/{utilityType}/plans/{plan}")
+    TariffResponse getActive(@PathVariable("utilityType") String utilityType, @PathVariable("plan") String plan);
 
     default TariffResponse fallback(String utilityType,Throwable t){
         throw new IllegalStateException("Tariff service unavailable");

@@ -8,5 +8,6 @@ public class MeterResponse{
     private String email;
     private String consumerId;
     private String utilityType;
+    private String tariffPlan;
     private boolean active;
 }

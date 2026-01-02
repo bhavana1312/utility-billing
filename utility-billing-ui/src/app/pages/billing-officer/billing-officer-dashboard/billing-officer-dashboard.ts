@@ -31,16 +31,18 @@ export class BillingDashboard implements AfterViewInit {
 
   onSidebarToggle(collapsed: boolean) {
     this.isSidebarCollapsed = collapsed;
-    setTimeout(() => this.charts.forEach((c) => c?.resize()), 310);
+    setTimeout(() => {
+      this.charts.forEach((c) => c?.resize());
+    }, 310);
   }
 
   ngAfterViewInit() {
-    setTimeout(() => this.renderCharts(), 400);
+    setTimeout(() => this.renderCharts(), 500);
   }
 
   loadBills() {
-    this.http.get<any[]>('/billing').subscribe((bills) => {
-      this.bills = bills;
+    this.http.get<any[]>('http://localhost:9090/billing').subscribe((res) => {
+      this.bills = res;
       this.calculateStats();
       this.renderCharts();
     });
@@ -82,6 +84,7 @@ export class BillingDashboard implements AfterViewInit {
           datasets: [
             {
               data: [counts['PAID'] || 0, counts['DUE'] || 0, counts['OVERDUE'] || 0],
+              backgroundColor: ['#22c55e', '#facc15', '#ef4444'],
             },
           ],
         },
@@ -92,7 +95,6 @@ export class BillingDashboard implements AfterViewInit {
 
   renderUtilityChart() {
     const revenue: any = {};
-
     this.bills.forEach((b) => {
       revenue[b.utilityType] = (revenue[b.utilityType] || 0) + Number(b.totalAmount);
     });
@@ -109,6 +111,7 @@ export class BillingDashboard implements AfterViewInit {
             {
               label: 'Revenue',
               data: Object.values(revenue),
+              backgroundColor: '#2563eb',
             },
           ],
         },
@@ -119,7 +122,6 @@ export class BillingDashboard implements AfterViewInit {
 
   renderTimeChart() {
     const grouped: any = {};
-
     this.bills.forEach((b) => {
       const d = new Date(b.generatedAt).toISOString().split('T')[0];
       grouped[d] = (grouped[d] || 0) + 1;
@@ -138,6 +140,7 @@ export class BillingDashboard implements AfterViewInit {
               label: 'Bills Generated',
               data: Object.values(grouped),
               tension: 0.3,
+              borderColor: '#2563eb',
             },
           ],
         },

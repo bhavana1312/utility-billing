@@ -31,6 +31,7 @@ public class MeterService {
 		cr.setConsumerId(request.getConsumerId());
 		cr.setEmail(request.getEmail());
 		cr.setUtilityType(request.getUtilityType());
+		cr.setTariffPlan(request.getTariffPlan());
 		cr.setAddress(request.getAddress());
 		connectionRepo.save(cr);
 	}
@@ -54,6 +55,7 @@ public class MeterService {
 		m.setConsumerId(cr.getConsumerId());
 		m.setEmail(cr.getEmail());
 		m.setUtilityType(cr.getUtilityType());
+		m.setTariffPlan(cr.getTariffPlan());
 		m.setInstallationDate(Instant.now());
 		m.setLastReading(0);
 		m.setActive(true);
@@ -62,11 +64,11 @@ public class MeterService {
 		cr.setStatus(ConnectionStatus.APPROVED);
 		connectionRepo.save(cr);
 
-		notificationClient
-				.send(NotificationRequest.builder().email(cr.getEmail()).type("CONNECTION_APPROVED")
-						.subject("Utility connection approved").message("Your " + cr.getUtilityType()
-								+ " connection has been approved.\n\n" + "Meter Number: " + m.getMeterNumber())
-						.build());
+		notificationClient.send(NotificationRequest.builder().email(cr.getEmail()).type("CONNECTION_APPROVED")
+				.subject("Utility connection approved")
+				.message("Your " + cr.getUtilityType() + " connection has been approved.\n" + "Plan: "
+						+ cr.getTariffPlan() + "\nMeter Number: " + m.getMeterNumber())
+				.build());
 	}
 
 	public void reject(String id, String reason) {
@@ -94,6 +96,7 @@ public class MeterService {
 		r.setEmail(m.getEmail());
 		r.setConsumerId(m.getConsumerId());
 		r.setUtilityType(m.getUtilityType());
+		r.setTariffPlan(m.getTariffPlan());
 		r.setActive(m.isActive());
 		r.setLastReading(m.getLastReading());
 		return r;
@@ -142,8 +145,8 @@ public class MeterService {
 				.getLastReading();
 	}
 
-	public long getMeterCount() {
-		return meterRepo.count();
+	public List<Meter> getAllMeters() {
+		return meterRepo.findAll();
 	}
 
 }

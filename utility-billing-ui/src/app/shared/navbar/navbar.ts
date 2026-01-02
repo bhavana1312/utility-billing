@@ -19,7 +19,11 @@ export class Navbar {
   }
 
   isPageWithRole(): boolean {
-    return this.router.url.includes('/admin') || this.router.url.includes('/billing');
+    return (
+      this.router.url.includes('/admin') ||
+      this.router.url.includes('/billing') ||
+      this.router.url.includes('/accounts')
+    );
   }
 
   logout() {

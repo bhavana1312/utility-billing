@@ -1,101 +1,140 @@
+:host {
+  --primary: #2563eb;
+  --bg-main: #f8fafc;
+  --border: #e2e8f0;
+  --text-dark: #020617;
+  --text-gray: #64748b;
+}
+
 .layout {
   display: flex;
   min-height: 100vh;
+  background: var(--bg-main);
 }
 
 .content {
   flex: 1;
-  padding: 24px;
-  background: #f8fafc;
+  padding: 32px;
+  transition: padding 0.3s ease;
+  overflow-x: hidden;
 }
 
 .mobile-top-nav {
   display: none;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 16px;
+  background: white;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 900;
+}
+
+.toggle-btn {
+  width: 36px;
+  height: 36px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.toggle-btn .arrow {
+  font-size: 22px;
+  display: inline-block;
+  transform: rotate(180deg);
+  transition: transform 0.3s ease;
+}
+
+.toggle-btn.is-collapsed .arrow {
+  transform: rotate(0deg);
+}
+
+.mobile-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+}
+
+.mobile-brand span span {
+  color: var(--primary);
 }
 
 .dashboard-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 }
 
 .stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
 }
 
 .card {
   background: white;
-  padding: 16px;
-  border-radius: 14px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
-}
-
-.card h4 {
-  margin: 0;
-  color: #64748b;
-  font-size: 14px;
-}
-
-.card p {
-  margin-top: 8px;
-  font-size: 22px;
-  font-weight: 700;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
 .charts-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
   gap: 24px;
 }
 
 .chart-box {
   background: white;
-  padding: 16px;
-  border-radius: 14px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  border-radius: 16px;
+  height: 340px;
 }
 
 .chart-box.full {
+  height: 380px;
   margin-top: 24px;
 }
 
-.table-box {
-  margin-top: 24px;
+.chart-canvas {
+  height: 100%;
+}
+
+canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.mobile-cards {
+  display: none;
+}
+
+.bill-card {
   background: white;
   padding: 16px;
-  border-radius: 14px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  border-radius: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-th,
-td {
-  padding: 12px;
-  border-bottom: 1px solid #e2e8f0;
-  font-size: 13px;
+.bill-card div {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
 }
 
 .status.paid {
   color: #16a34a;
   font-weight: 600;
 }
-
 .status.due {
   color: #eab308;
   font-weight: 600;
 }
-
 .status.overdue {
   color: #dc2626;
   font-weight: 600;
@@ -104,5 +143,64 @@ td {
 @media (max-width: 768px) {
   .mobile-top-nav {
     display: flex;
+  }
+
+  .dashboard-header {
+    display: none;
+  }
+
+  .content {
+    padding: 20px;
+  }
+
+  .mobile-cards {
+    display: block;
+    margin-top: 24px;
+  }
+}
+
+.table-box {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 16px;
+  margin-top: 32px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+.table-box h3 {
+  margin-bottom: 14px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.table-box table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-box th,
+.table-box td {
+  padding: 14px 12px;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 13px;
+  text-align: left;
+}
+
+.table-box th {
+  font-weight: 600;
+  color: #475569;
+}
+
+.table-box tr:hover {
+  background: #f8fafc;
+}
+
+.desktop-only {
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none;
   }
 }

@@ -18,6 +18,8 @@ public class Meter {
 	private String email;
 
 	private UtilityType utilityType;
+	
+	private TariffPlan tariffPlan;
 
 	private double lastReading;
 

@@ -1,1 +1,33 @@
-<p>add-reading works!</p>
+<div class="layout">
+  <app-billing-sidebar></app-billing-sidebar>
+
+  <main class="content">
+    <h2>Add Meter Reading</h2>
+
+    <div class="grid">
+      <div class="meter-card" *ngFor="let m of meters" (click)="selectMeter(m)"
+        [class.active]="selectedMeter?.meterNumber===m.meterNumber">
+
+        <h4>{{m.meterNumber}}</h4>
+        <p>{{m.utilityType}}</p>
+        <p>{{m.tariffPlan}}</p>
+        <p class="email">{{m.email}}</p>
+        <p class="small">Last Reading: {{m.lastReading}}</p>
+      </div>
+    </div>
+
+    <div class="reading-panel" *ngIf="selectedMeter">
+      <h3>Add Reading</h3>
+
+      <p><strong>Meter:</strong> {{selectedMeter.meterNumber}}</p>
+      <p><strong>Utility:</strong> {{selectedMeter.utilityType}}</p>
+      <p><strong>Tariff Plan:</strong> {{selectedMeter.tariffPlan}}</p>
+
+      <input type="number" placeholder="Enter current reading" [(ngModel)]="readingValue" />
+
+      <button (click)="submitReading()" [disabled]="loading">
+        {{loading?'Submitting...':'Submit Reading & Generate Bill'}}
+      </button>
+    </div>
+  </main>
+</div>

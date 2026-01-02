@@ -114,7 +114,9 @@
 }
 
 .email,
-.address {
+.address,
+.utility,
+.plan {
   font-size: 14px;
   color: #64748b;
   margin: 2px 0;

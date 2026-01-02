@@ -1,0 +1,60 @@
+<div class="layout">
+  <app-billing-sidebar></app-billing-sidebar>
+
+  <main class="content">
+    <h2>Bills</h2>
+
+    <div class="filters">
+      <select [(ngModel)]="status" (change)="onFilterChange()">
+        <option value="">Status</option>
+        <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
+      </select>
+
+      <select [(ngModel)]="utility" (change)="applyFilters()">
+        <option value="">Utility</option>
+        <option *ngFor="let u of utilities" [value]="u">{{ u }}</option>
+      </select>
+
+      <select [(ngModel)]="tariffPlan" (change)="applyFilters()">
+        <option value="">Plan</option>
+        <option *ngFor="let p of tariffPlans" [value]="p">{{ p }}</option>
+      </select>
+    </div>
+
+
+
+    <table>
+      <thead>
+        <tr>
+          <th>Bill ID</th>
+          <th>Email</th>
+          <th>Utility</th>
+          <th>Plan</th>
+          <th>Units</th>
+          <th>Total (₹)</th>
+          <th>Status</th>
+          <th>Generated</th>
+          <th>Due Date</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let b of filtered">
+          <td data-label="Bill ID">{{b.billId}}</td>
+          <td data-label="Email">{{b.email}}</td>
+          <td data-label="Utility">{{b.utilityType}}</td>
+          <td data-label="Plan">{{b.tariffPlan}}</td>
+          <td data-label="Units">{{b.unitsConsumed}}</td>
+          <td data-label="Total (₹)">{{b.totalAmount}}</td>
+          <td data-label="Status">
+            <span class="badge" [ngClass]="b.status.toLowerCase()">
+              {{b.status}}
+            </span>
+          </td>
+          <td data-label="Generated">{{b.generatedAt | date:'short'}}</td>
+          <td data-label="Due Date">{{b.dueDate | date:'shortDate'}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </main>
+</div>

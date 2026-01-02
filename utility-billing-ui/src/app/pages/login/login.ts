@@ -51,6 +51,8 @@ export class LoginComponent {
             ? ['/admin']
             : role === 'ROLE_BILLING_OFFICER'
             ? ['/billing']
+            : role === 'ROLE_ACCOUNTS_OFFICER'
+            ? ['/accounts']
             : ['/consumer']
         );
       },

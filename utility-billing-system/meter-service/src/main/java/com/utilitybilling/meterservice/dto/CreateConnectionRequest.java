@@ -1,5 +1,6 @@
 package com.utilitybilling.meterservice.dto;
 
+import com.utilitybilling.meterservice.model.TariffPlan;
 import com.utilitybilling.meterservice.model.UtilityType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -16,6 +17,9 @@ public class CreateConnectionRequest{
 
     @NotNull(message="Utility type is required")
     private UtilityType utilityType;
+    
+    @NotNull(message="Tariff Plan is required")
+    private TariffPlan tariffPlan;
 
     @NotBlank(message="Address is required")
     private String address;
