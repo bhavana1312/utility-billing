@@ -1,6 +1,5 @@
 <div class="layout" [class.sidebar-collapsed]="isSidebarCollapsed">
-  <app-accounts-officer-sidebar #sidebar (sidebarToggle)="onSidebarToggle($event)">
-  </app-accounts-officer-sidebar>
+  <app-accounts-officer-sidebar #sidebar (sidebarToggle)="onSidebarToggle($event)"></app-accounts-officer-sidebar>
 
   <main class="content">
     <header class="mobile-top-nav">
@@ -18,7 +17,7 @@
       <span class="date-display">{{ today | date:'fullDate' }}</span>
     </div>
 
-    <div class="stats mobile-scroll">
+    <div class="stats">
       <div class="stat-card">
         <div class="icon">💰</div>
         <div>
@@ -28,10 +27,10 @@
       </div>
 
       <div class="stat-card success">
-        <div class="icon">🧾</div>
+        <div class="icon">✅</div>
         <div>
-          <span>Total Payments</span>
-          <h3>{{ payments.length }}</h3>
+          <span>Successful Payments</span>
+          <h3>{{ successCount }}</h3>
         </div>
       </div>
 
@@ -42,14 +41,40 @@
           <h3>{{ offlinePaymentsCount }}</h3>
         </div>
       </div>
+
+      <div class="stat-card danger">
+        <div class="icon">❌</div>
+        <div>
+          <span>Failed Payments</span>
+          <h3>{{ failedCount }}</h3>
+        </div>
+      </div>
     </div>
 
     <div class="charts">
       <div class="chart-card">
         <h4>Payment Method Distribution</h4>
-        <div class="canvas">
-          <canvas id="paymentChart"></canvas>
-        </div>
+        <div class="canvas"><canvas id="modeChart"></canvas></div>
+      </div>
+
+      <div class="chart-card">
+        <h4>Payments Over Time</h4>
+        <div class="canvas"><canvas id="timelineChart"></canvas></div>
+      </div>
+
+      <div class="chart-card">
+        <h4>Amount by Payment Mode</h4>
+        <div class="canvas"><canvas id="amountModeChart"></canvas></div>
+      </div>
+
+      <div class="chart-card">
+        <h4>Payment Status</h4>
+        <div class="canvas"><canvas id="statusChart"></canvas></div>
+      </div>
+
+      <div class="chart-card wide">
+        <h4>Top Consumers by Collection</h4>
+        <div class="canvas"><canvas id="topConsumersChart"></canvas></div>
       </div>
 
       <div class="chart-card">
@@ -57,8 +82,8 @@
         <div class="payment-list">
           <div class="payment-row" *ngFor="let p of recentPayments">
             <div>
-              <strong>{{ p.consumerName }}</strong>
-              <p>{{ p.method }}</p>
+              <strong>{{ p.consumer }}</strong>
+              <p>{{ p.mode }}</p>
             </div>
             <span class="amount">₹ {{ p.amount }}</span>
           </div>

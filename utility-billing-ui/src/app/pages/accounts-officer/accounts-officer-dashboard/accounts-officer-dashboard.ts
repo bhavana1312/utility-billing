@@ -6,6 +6,17 @@ import { AccountsOfficerSidebar } from '../accounts-officer-sidebar/accounts-off
 
 Chart.register(...registerables);
 
+type PaymentMode = 'ONLINE' | 'CASH' | 'CHEQUE';
+type PaymentStatus = 'SUCCESS' | 'FAILED' | 'INITIATED';
+
+interface Payment {
+  mode: PaymentMode;
+  amount: number;
+  status: PaymentStatus;
+  email: string;
+  completedAt: string;
+}
+
 @Component({
   standalone: true,
   imports: [CommonModule, AccountsOfficerSidebar],
@@ -15,83 +26,201 @@ Chart.register(...registerables);
 export class AccountsOfficerDashboard implements AfterViewInit {
   @ViewChild('sidebar') sidebar: any;
 
-  isSidebarCollapsed = false;
   today = new Date();
+  isSidebarCollapsed = false;
 
-  payments: any[] = [];
-  recentPayments: any[] = [];
+  payments: Payment[] = [];
+  recentPayments: { consumer: string; mode: PaymentMode; amount: number }[] = [];
 
   totalCollected = 0;
   offlinePaymentsCount = 0;
+  successCount = 0;
+  failedCount = 0;
+
+  private charts: Chart[] = [];
 
   constructor(private http: HttpClient) {
     this.loadPayments();
   }
 
   ngAfterViewInit() {
-    setTimeout(() => this.renderChart(), 300);
+    setTimeout(() => this.renderAllCharts(), 300);
   }
 
-  onSidebarToggle(val: boolean) {
-    this.isSidebarCollapsed = val;
+  /* ✅ Sidebar toggle preserved */
+  onSidebarToggle(collapsed: boolean) {
+    this.isSidebarCollapsed = collapsed;
   }
 
+  /* ✅ Fetch large page for dashboard analytics */
   loadPayments() {
-    this.http.get<any[]>('http://localhost:9090/payments').subscribe({
-      next: (res) => {
-        this.payments = res;
-        this.calculateStats();
-        this.prepareRecentPayments();
-        this.renderChart();
-      },
+    this.http.get<any>('http://localhost:9090/payments?page=0&size=1000').subscribe((res) => {
+      this.payments = res.content;
+      this.computeStats();
+      this.prepareRecent();
+      this.renderAllCharts();
     });
   }
 
-  calculateStats() {
-    this.totalCollected = this.payments.reduce((sum, p) => sum + p.amount, 0);
+  computeStats() {
+    this.totalCollected = this.payments
+      .filter((p) => p.status === 'SUCCESS')
+      .reduce((sum, p) => sum + p.amount, 0);
 
     this.offlinePaymentsCount = this.payments.filter(
       (p) => p.mode === 'CASH' || p.mode === 'CHEQUE'
     ).length;
+
+    this.successCount = this.payments.filter((p) => p.status === 'SUCCESS').length;
+
+    this.failedCount = this.payments.filter((p) => p.status === 'FAILED').length;
   }
 
-  prepareRecentPayments() {
+  prepareRecent() {
     this.recentPayments = [...this.payments]
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      .slice(0, 5)
+      .filter((p) => p.status === 'SUCCESS')
+      .sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())
+      .slice(0, 6)
       .map((p) => ({
-        consumerName: p.email,
-        method: p.mode,
+        consumer: p.email,
+        mode: p.mode,
         amount: p.amount,
       }));
   }
 
-  renderChart() {
+  renderAllCharts() {
     if (!this.payments.length) return;
 
-    const modeMap: any = { ONLINE: 0, CASH: 0, CHEQUE: 0 };
+    /* ✅ Prevent Chart.js duplication */
+    this.charts.forEach((c) => c.destroy());
+    this.charts = [];
+
+    this.renderModeChart();
+    this.renderTimelineChart();
+    this.renderAmountByMode();
+    this.renderStatusChart();
+    this.renderTopConsumers();
+  }
+
+  renderModeChart() {
+    const modeMap: Record<PaymentMode, number> = {
+      ONLINE: 0,
+      CASH: 0,
+      CHEQUE: 0,
+    };
+
     this.payments.forEach((p) => modeMap[p.mode]++);
 
-    const canvas = document.getElementById('paymentChart') as HTMLCanvasElement;
-    if (!canvas) return;
-
-    new Chart(canvas, {
-      type: 'doughnut',
-      data: {
-        labels: Object.keys(modeMap),
-        datasets: [
-          {
-            data: Object.values(modeMap),
-            backgroundColor: ['#2563eb', '#16a34a', '#f97316'],
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { position: 'bottom' },
+    this.charts.push(
+      new Chart('modeChart', {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(modeMap),
+          datasets: [{ data: Object.values(modeMap) }],
         },
-      },
+        options: {
+          plugins: { legend: { position: 'bottom' } },
+        },
+      })
+    );
+  }
+
+  renderTimelineChart() {
+    const dateMap: Record<string, number> = {};
+
+    this.payments
+      .filter((p) => p.status === 'SUCCESS')
+      .forEach((p) => {
+        const d = new Date(p.completedAt).toLocaleDateString();
+        dateMap[d] = (dateMap[d] || 0) + p.amount;
+      });
+
+    this.charts.push(
+      new Chart('timelineChart', {
+        type: 'line',
+        data: {
+          labels: Object.keys(dateMap),
+          datasets: [
+            {
+              data: Object.values(dateMap),
+              tension: 0.4,
+              fill: true,
+            },
+          ],
+        },
+      })
+    );
+  }
+
+  renderAmountByMode() {
+    const amountMap: Record<PaymentMode, number> = {
+      ONLINE: 0,
+      CASH: 0,
+      CHEQUE: 0,
+    };
+
+    this.payments
+      .filter((p) => p.status === 'SUCCESS')
+      .forEach((p) => {
+        amountMap[p.mode] += p.amount;
+      });
+
+    this.charts.push(
+      new Chart('amountModeChart', {
+        type: 'bar',
+        data: {
+          labels: Object.keys(amountMap),
+          datasets: [{ data: Object.values(amountMap) }],
+        },
+      })
+    );
+  }
+
+  renderStatusChart() {
+    const statusMap = {
+      SUCCESS: 0,
+      FAILED: 0,
+    };
+
+    this.payments.forEach((p) => {
+      if (p.status === 'SUCCESS' || p.status === 'FAILED') {
+        statusMap[p.status]++;
+      }
     });
+
+    this.charts.push(
+      new Chart('statusChart', {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(statusMap),
+          datasets: [{ data: Object.values(statusMap) }],
+        },
+      })
+    );
+  }
+
+  renderTopConsumers() {
+    const consumerMap: Record<string, number> = {};
+
+    this.payments
+      .filter((p) => p.status === 'SUCCESS')
+      .forEach((p) => {
+        consumerMap[p.email] = (consumerMap[p.email] || 0) + p.amount;
+      });
+
+    const entries = Object.entries(consumerMap)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+
+    this.charts.push(
+      new Chart('topConsumersChart', {
+        type: 'bar',
+        data: {
+          labels: entries.map((e) => e[0]),
+          datasets: [{ data: entries.map((e) => e[1]) }],
+        },
+        options: { indexAxis: 'y' },
+      })
+    );
   }
 }
