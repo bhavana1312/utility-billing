@@ -1,0 +1,71 @@
+<div class="mobile-overlay" *ngIf="!collapsed" (click)="toggleSidebar()"></div>
+
+<aside class="sidebar" [class.collapsed]="collapsed">
+  <div class="sidebar-header">
+    <div class="brand" *ngIf="!collapsed">
+      <div class="brand-icon">
+        <span class="bolt">⚡</span>
+      </div>
+      <span class="brand-name">Utility<span>Consumer</span></span>
+    </div>
+
+    <button class="toggle-btn" (click)="toggleSidebar()" [class.is-collapsed]="collapsed">
+      <span class="arrow">‹</span>
+    </button>
+  </div>
+
+  <nav class="nav-container">
+    <a routerLink="/consumer/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
+      class="nav-item">
+      <div class="icon-wrapper">🏠</div>
+      <span class="label" *ngIf="!collapsed">Dashboard</span>
+      <div class="tooltip" *ngIf="collapsed">Dashboard</div>
+    </a>
+
+    <a routerLink="/consumer/connections" routerLinkActive="active" class="nav-item">
+      <div class="icon-wrapper">🔌</div>
+      <span class="label" *ngIf="!collapsed">My Connections</span>
+      <div class="tooltip" *ngIf="collapsed">Connections</div>
+    </a>
+
+    <a routerLink="/consumer/apply-connection" routerLinkActive="active" class="nav-item">
+      <div class="icon-wrapper">📝</div>
+      <span class="label" *ngIf="!collapsed">Apply Connection</span>
+      <div class="tooltip" *ngIf="collapsed">Apply</div>
+    </a>
+
+    <a routerLink="/consumer/bills" routerLinkActive="active" class="nav-item">
+      <div class="icon-wrapper">📄</div>
+      <span class="label" *ngIf="!collapsed">Bills</span>
+      <div class="tooltip" *ngIf="collapsed">Bills</div>
+    </a>
+
+    <a routerLink="/consumer/payments" routerLinkActive="active" class="nav-item">
+      <div class="icon-wrapper">💳</div>
+      <span class="label" *ngIf="!collapsed">Payments</span>
+      <div class="tooltip" *ngIf="collapsed">Payments</div>
+    </a>
+
+    <a routerLink="/consumer/profile" routerLinkActive="active" class="nav-item">
+      <div class="icon-wrapper">👤</div>
+      <span class="label" *ngIf="!collapsed">Profile</span>
+      <div class="tooltip" *ngIf="collapsed">Profile</div>
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-card" [class.is-collapsed]="collapsed">
+      <div class="avatar">C</div>
+
+      <div class="user-details" *ngIf="!collapsed">
+        <p class="name">Consumer User</p>
+        <button class="logout-link" (click)="openLogoutConfirm()">
+          Logout →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <app-confirm-dialog [visible]="showLogoutConfirm" title="Logout" message="Are you sure you want to logout?"
+    confirmText="Logout" cancelText="Cancel" (confirm)="confirmLogout()" (cancel)="cancelLogout()"></app-confirm-dialog>
+</aside>

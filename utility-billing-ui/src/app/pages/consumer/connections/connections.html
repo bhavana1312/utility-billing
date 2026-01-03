@@ -1,0 +1,50 @@
+<div class="layout" [class.sidebar-collapsed]="isSidebarCollapsed">
+  <app-consumer-sidebar #sidebar (sidebarToggle)="onSidebarToggle($event)"></app-consumer-sidebar>
+
+  <main class="content">
+    <header class="mobile-top-nav">
+      <button class="toggle-btn" (click)="sidebar.toggleSidebar()" [class.is-collapsed]="isSidebarCollapsed">
+        <span class="arrow">‹</span>
+      </button>
+      <div class="mobile-brand">
+        <span class="brand-name">Utility<span>Consumer</span></span>
+      </div>
+    </header>
+
+    <div class="dashboard-header">
+      <h2>My Connections</h2>
+      <span class="date-display">{{ today | date:'fullDate' }}</span>
+    </div>
+
+    <div class="connections-grid">
+      <div class="connection-card" *ngFor="let m of meters">
+        <div class="card-header">
+          <h4>{{ m.utilityType }}</h4>
+          <span class="status" [class.active]="m.active" [class.inactive]="!m.active">
+            {{ m.active ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+
+        <div class="info-row">
+          <span>Meter Number</span>
+          <strong>{{ m.meterNumber }}</strong>
+        </div>
+
+        <div class="info-row">
+          <span>Tariff Plan</span>
+          <strong>{{ m.tariffPlan }}</strong>
+        </div>
+
+        <div class="info-row">
+          <span>Last Reading</span>
+          <strong>{{ m.lastReading }}</strong>
+        </div>
+
+        <div class="info-row">
+          <span>Installed On</span>
+          <strong>{{ m.installationDate | date:'mediumDate' }}</strong>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

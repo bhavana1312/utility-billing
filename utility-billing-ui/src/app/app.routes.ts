@@ -108,6 +108,48 @@ export const routes: Routes = [
     ],
   },
 
-  /* Fallback */
+  {
+    path: 'consumer',
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./pages/consumer/consumer-dashboard/consumer-dashboard').then(
+            (m) => m.ConsumerDashboard
+          ),
+        canActivate: [authGuard],
+      },
+      {
+        path: 'connections',
+        loadComponent: () =>
+          import('./pages/consumer/connections/connections').then((m) => m.Connections),
+        canActivate: [authGuard],
+      },
+      {
+        path: 'apply-connection',
+        loadComponent: () =>
+          import('./pages/consumer/apply-connection/apply-connection').then(
+            (m) => m.ApplyConnection
+          ),
+        canActivate: [authGuard],
+      },
+      {
+        path: 'bills',
+        loadComponent: () => import('./pages/consumer/bills/bills').then((m) => m.Bills),
+        canActivate: [authGuard],
+      },
+      {
+        path: 'payments',
+        loadComponent: () => import('./pages/consumer/payments/payments').then((m) => m.Payments),
+        canActivate: [authGuard],
+      },
+      {
+        path: 'profile',
+        loadComponent: () => import('./pages/consumer/profile/profile').then((m) => m.Profile),
+        canActivate: [authGuard],
+      },
+    ],
+  },
+
   { path: '**', redirectTo: '' },
 ];

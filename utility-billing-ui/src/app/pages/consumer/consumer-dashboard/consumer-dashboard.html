@@ -1,0 +1,93 @@
+<div class="layout" [class.sidebar-collapsed]="isSidebarCollapsed">
+  <app-consumer-sidebar #sidebar (sidebarToggle)="onSidebarToggle($event)"></app-consumer-sidebar>
+
+  <main class="content">
+    <header class="mobile-top-nav">
+      <button class="toggle-btn" (click)="sidebar.toggleSidebar()" [class.is-collapsed]="isSidebarCollapsed">
+        <span class="arrow">‹</span>
+      </button>
+      <div class="mobile-brand">
+        <span class="bolt">⚡</span>
+        <span class="brand-name">Utility<span>Consumer</span></span>
+      </div>
+    </header>
+
+    <div class="dashboard-header">
+      <h2>Consumer Dashboard</h2>
+      <span class="date-display">{{ today | date:'fullDate' }}</span>
+    </div>
+
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-icon-box">📄</div>
+        <div class="stat-content">
+          <span>Total Bills</span>
+          <h3>{{ bills.length }}</h3>
+        </div>
+      </div>
+
+      <div class="stat-card warning">
+        <div class="stat-icon-box">⏳</div>
+        <div class="stat-content">
+          <span>Pending Bills</span>
+          <h3>{{ pendingBills }}</h3>
+        </div>
+      </div>
+
+      <div class="stat-card success">
+        <div class="stat-icon-box">💳</div>
+        <div class="stat-content">
+          <span>Total Payments</span>
+          <h3>{{ payments.length }}</h3>
+        </div>
+      </div>
+    </div>
+
+    <div class="charts">
+      <div class="chart-card">
+        <h4>Bill Status</h4>
+        <div class="canvas-container">
+          <canvas id="billStatusChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <h4>Payments Overview</h4>
+        <div class="canvas-container">
+          <canvas id="paymentChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card full">
+        <h4>Monthly Consumption</h4>
+        <div class="canvas-container trend">
+          <canvas id="consumptionChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <section class="list-section">
+      <div class="section-header">
+        <h3>Recent Bills</h3>
+      </div>
+
+      <div class="card-list">
+        <div class="info-card" *ngFor="let b of bills">
+          <div class="info-row">
+            <strong>Month</strong>
+            <span>{{ b.month }}</span>
+          </div>
+          <div class="info-row">
+            <strong>Amount</strong>
+            <span>₹ {{ b.amount }}</span>
+          </div>
+          <div class="info-row">
+            <strong>Status</strong>
+            <span class="badge" [ngClass]="b.status.toLowerCase()">{{ b.status }}</span>
+          </div>
+          <button class="pay-btn" *ngIf="b.status==='PENDING'" (click)="pay(b.id)">Pay Now</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>

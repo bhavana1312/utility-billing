@@ -10,7 +10,13 @@ import com.utilitybilling.paymentservice.dto.*;
 import com.utilitybilling.paymentservice.model.*;
 import com.utilitybilling.paymentservice.repository.*;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.util.Base64;
@@ -204,4 +210,33 @@ public class PaymentService {
 				.billDueDate(inv.getBillDueDate()).paymentDate(inv.getPaymentDate()).build();
 	}
 
+	public List<Payment> getPayments() {
+		return paymentRepo.findAll();
+	}
+
+	public byte[] downloadInvoicePdf(String paymentId) {
+
+		Invoice inv = invoiceRepo.findByPaymentId(paymentId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invoice not found"));
+		return invoicePdfService.generate(toPdfData(inv));
+	}
+
+	public Page<Payment> getPayments(
+	        int page,
+	        int size,
+	        String search,
+	        String mode
+	) {
+
+	    PageRequest pageable = PageRequest.of(
+	            page,
+	            size,
+	            Sort.by(Sort.Direction.DESC, "completedAt")
+	    );
+
+	    String s = search == null ? "" : search;
+	    String m = mode == null || mode.isBlank() ? "" : mode;
+
+	    return paymentRepo.search(s, m, pageable);
+	}
 }
