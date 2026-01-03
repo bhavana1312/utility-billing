@@ -15,8 +15,7 @@
   </div>
 
   <nav class="nav-container">
-    <a routerLink="/consumer/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
-      class="nav-item">
+    <a routerLink="/consumer" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-item">
       <div class="icon-wrapper">🏠</div>
       <span class="label" *ngIf="!collapsed">Dashboard</span>
       <div class="tooltip" *ngIf="collapsed">Dashboard</div>
@@ -55,16 +54,20 @@
 
   <div class="sidebar-footer">
     <div class="user-card" [class.is-collapsed]="collapsed">
-      <div class="avatar">C</div>
+      <div class="avatar">
+        {{ initials }}
+      </div>
 
-      <div class="user-details" *ngIf="!collapsed">
-        <p class="name">Consumer User</p>
+      <div class="user-details" *ngIf="!collapsed && consumer">
+        <p class="name">{{ consumer.fullName }}</p>
+        <p class="email">{{ consumer.email }}</p>
         <button class="logout-link" (click)="openLogoutConfirm()">
           Logout →
         </button>
       </div>
     </div>
   </div>
+
 
   <app-confirm-dialog [visible]="showLogoutConfirm" title="Logout" message="Are you sure you want to logout?"
     confirmText="Logout" cancelText="Cancel" (confirm)="confirmLogout()" (cancel)="cancelLogout()"></app-confirm-dialog>

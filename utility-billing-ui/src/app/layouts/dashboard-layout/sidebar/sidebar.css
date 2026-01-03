@@ -1,0 +1,245 @@
+:host {
+  --primary: #002050;
+  --secondary: #605e5c;
+  --accent: #0078d4;
+  --bg-sidebar: #ffffff;
+  --bg-hover: #f3f2f1;
+  --border-color: #edebe9;
+  --text-main: #323130;
+  --text-muted: #605e5c;
+  --shadow: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.132), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.108);
+}
+
+.sidebar {
+  width: 260px;
+  height: 100vh;
+  background: var(--bg-sidebar);
+  color: var(--text-main);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1000;
+  transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-right: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+}
+
+.sidebar.collapsed {
+  width: 68px;
+}
+
+.sidebar-header {
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 72px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.brand-icon {
+  font-size: 22px;
+  filter: grayscale(100%) brightness(0.5);
+  opacity: 0.8;
+}
+
+.brand-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: -0.5px;
+}
+
+.brand-name span {
+  color: var(--accent);
+}
+
+.toggle-btn {
+  background: var(--bg-hover);
+  border: none;
+  color: var(--secondary);
+  cursor: pointer;
+  font-size: 20px;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toggle-btn.is-collapsed {
+  transform: rotate(180deg);
+  margin: 0 auto;
+}
+
+.nav-container {
+  flex: 1;
+  padding: 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 0 22px;
+  height: 44px;
+  color: var(--text-main);
+  text-decoration: none;
+  position: relative;
+  transition: background 0.1s;
+}
+
+.nav-item:hover {
+  background: var(--bg-hover);
+}
+
+.nav-item.active {
+  background: #eff6fc;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.nav-item.active .icon-wrapper {
+  filter: none;
+  color: var(--accent);
+}
+
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 4px;
+  background: var(--accent);
+  border-radius: 0 4px 4px 0;
+}
+
+.icon-wrapper {
+  min-width: 24px;
+  font-size: 18px;
+  display: flex;
+  justify-content: center;
+  margin-right: 16px;
+  transition: all 0.2s;
+  filter: grayscale(100%) opacity(0.6);
+  color: var(--primary);
+}
+
+.collapsed .icon-wrapper {
+  margin-right: 0;
+  width: 100%;
+}
+
+.nav-item:hover .icon-wrapper {
+  filter: grayscale(100%) opacity(1);
+  transform: scale(1.1);
+}
+
+.label {
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.badge-dot {
+  width: 6px;
+  height: 6px;
+  background: #d13438;
+  border-radius: 50%;
+  margin-left: auto;
+}
+
+.tooltip {
+  position: absolute;
+  left: 75px;
+  background: #323130;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.nav-item:hover .tooltip {
+  opacity: 1;
+}
+
+.sidebar-footer {
+  padding: 16px;
+  border-top: 1px solid var(--border-color);
+  background: #faf9f8;
+}
+
+.user-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  background: var(--accent);
+  color: white;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.name {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--primary);
+}
+
+.logout-link {
+  background: transparent;
+  border: none;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 0;
+  cursor: pointer;
+}
+
+.mobile-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+  z-index: 999;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    left: -260px;
+  }
+  .sidebar:not(.collapsed) {
+    left: 0;
+    width: 260px;
+  }
+  .sidebar.collapsed {
+    width: 0;
+    left: -68px;
+  }
+}

@@ -1,225 +1,210 @@
-import { Component, AfterViewInit, ViewChild } from '@angular/core';
+import { Component, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Chart, registerables } from 'chart.js';
-import { AccountsOfficerSidebar } from '../accounts-officer-sidebar/accounts-officer-sidebar';
 
 Chart.register(...registerables);
 
-type PaymentMode = 'ONLINE' | 'CASH' | 'CHEQUE';
-type PaymentStatus = 'SUCCESS' | 'FAILED' | 'INITIATED';
-
-interface Payment {
-  mode: PaymentMode;
-  amount: number;
-  status: PaymentStatus;
-  email: string;
-  completedAt: string;
-}
+type BillStatus = 'PAID' | 'DUE' | 'OVERDUE';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, AccountsOfficerSidebar],
+  imports: [CommonModule],
   templateUrl: './accounts-officer-dashboard.html',
   styleUrl: './accounts-officer-dashboard.css',
 })
 export class AccountsOfficerDashboard implements AfterViewInit {
-  @ViewChild('sidebar') sidebar: any;
-
   today = new Date();
-  isSidebarCollapsed = false;
 
-  payments: Payment[] = [];
-  recentPayments: { consumer: string; mode: PaymentMode; amount: number }[] = [];
+  payments: any[] = [];
+  bills: { status: BillStatus; totalAmount: number; dueDate: string; consumerId: string }[] = [];
+  consumers: Record<string, string> = {};
 
   totalCollected = 0;
-  offlinePaymentsCount = 0;
-  successCount = 0;
-  failedCount = 0;
+  todayCollection = 0;
+  outstandingAmount = 0;
+  overdueCount = 0;
 
-  private charts: Chart[] = [];
+  charts: Chart[] = [];
 
   constructor(private http: HttpClient) {
-    this.loadPayments();
+    this.loadData();
   }
 
   ngAfterViewInit() {
-    setTimeout(() => this.renderAllCharts(), 300);
+    setTimeout(() => this.renderCharts(), 300);
   }
 
-  /* ✅ Sidebar toggle preserved */
-  onSidebarToggle(collapsed: boolean) {
-    this.isSidebarCollapsed = collapsed;
-  }
-
-  /* ✅ Fetch large page for dashboard analytics */
-  loadPayments() {
+  loadData() {
     this.http.get<any>('http://localhost:9090/payments?page=0&size=1000').subscribe((res) => {
       this.payments = res.content;
-      this.computeStats();
-      this.prepareRecent();
-      this.renderAllCharts();
+      this.calculateKpis();
+      this.renderCharts();
+    });
+
+    this.http.get<any>('http://localhost:9090/billing?page=0&size=1000').subscribe((res) => {
+      this.bills = res.content;
+      this.calculateBillStats();
+      this.loadConsumers();
+      this.renderCharts();
     });
   }
 
-  computeStats() {
-    this.totalCollected = this.payments
-      .filter((p) => p.status === 'SUCCESS')
-      .reduce((sum, p) => sum + p.amount, 0);
+  loadConsumers() {
+    const ids = [...new Set(this.bills.map((b) => b.consumerId))];
 
-    this.offlinePaymentsCount = this.payments.filter(
-      (p) => p.mode === 'CASH' || p.mode === 'CHEQUE'
-    ).length;
+    ids.forEach((id) => {
+      if (this.consumers[id]) return;
 
-    this.successCount = this.payments.filter((p) => p.status === 'SUCCESS').length;
-
-    this.failedCount = this.payments.filter((p) => p.status === 'FAILED').length;
+      this.http.get<any>(`http://localhost:9090/consumers/${id}`).subscribe((res) => {
+        this.consumers[id] = res.fullName;
+        this.renderCharts();
+      });
+    });
   }
 
-  prepareRecent() {
-    this.recentPayments = [...this.payments]
+  calculateKpis() {
+    const todayStr = new Date().toDateString();
+
+    let total = 0;
+    let todayTotal = 0;
+
+    this.payments
       .filter((p) => p.status === 'SUCCESS')
-      .sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())
-      .slice(0, 6)
-      .map((p) => ({
-        consumer: p.email,
-        mode: p.mode,
-        amount: p.amount,
-      }));
+      .forEach((p) => {
+        total += p.amount;
+        if (new Date(p.completedAt).toDateString() === todayStr) {
+          todayTotal += p.amount;
+        }
+      });
+
+    this.totalCollected = Number(total.toFixed(2));
+    this.todayCollection = Number(todayTotal.toFixed(2));
   }
 
-  renderAllCharts() {
-    if (!this.payments.length) return;
+  calculateBillStats() {
+    let outstanding = 0;
+    let overdue = 0;
 
-    /* ✅ Prevent Chart.js duplication */
+    this.bills.forEach((b) => {
+      if (b.status !== 'PAID') {
+        outstanding += b.totalAmount;
+      }
+      if (b.status === 'OVERDUE') {
+        overdue++;
+      }
+    });
+
+    this.outstandingAmount = Number(outstanding.toFixed(2));
+    this.overdueCount = overdue;
+  }
+
+  renderCharts() {
     this.charts.forEach((c) => c.destroy());
     this.charts = [];
 
-    this.renderModeChart();
-    this.renderTimelineChart();
-    this.renderAmountByMode();
-    this.renderStatusChart();
-    this.renderTopConsumers();
+    if (this.payments.length) {
+      this.renderCollectionTrend();
+      this.renderModeChart();
+    }
+
+    if (this.bills.length) {
+      this.renderBillStatus();
+      this.renderDefaulters();
+    }
   }
 
-  renderModeChart() {
-    const modeMap: Record<PaymentMode, number> = {
-      ONLINE: 0,
-      CASH: 0,
-      CHEQUE: 0,
-    };
-
-    this.payments.forEach((p) => modeMap[p.mode]++);
-
-    this.charts.push(
-      new Chart('modeChart', {
-        type: 'doughnut',
-        data: {
-          labels: Object.keys(modeMap),
-          datasets: [{ data: Object.values(modeMap) }],
-        },
-        options: {
-          plugins: { legend: { position: 'bottom' } },
-        },
-      })
-    );
-  }
-
-  renderTimelineChart() {
-    const dateMap: Record<string, number> = {};
+  renderCollectionTrend() {
+    const map: Record<string, number> = {};
 
     this.payments
       .filter((p) => p.status === 'SUCCESS')
       .forEach((p) => {
         const d = new Date(p.completedAt).toLocaleDateString();
-        dateMap[d] = (dateMap[d] || 0) + p.amount;
+        map[d] = Number(((map[d] || 0) + p.amount).toFixed(2));
       });
 
     this.charts.push(
-      new Chart('timelineChart', {
+      new Chart('collectionTrend', {
         type: 'line',
         data: {
-          labels: Object.keys(dateMap),
-          datasets: [
-            {
-              data: Object.values(dateMap),
-              tension: 0.4,
-              fill: true,
-            },
-          ],
+          labels: Object.keys(map),
+          datasets: [{ data: Object.values(map), tension: 0.4, fill: true }],
         },
+        options: { plugins: { legend: { display: false } } },
       })
     );
   }
 
-  renderAmountByMode() {
-    const amountMap: Record<PaymentMode, number> = {
-      ONLINE: 0,
-      CASH: 0,
-      CHEQUE: 0,
-    };
-
-    this.payments
-      .filter((p) => p.status === 'SUCCESS')
-      .forEach((p) => {
-        amountMap[p.mode] += p.amount;
-      });
-
-    this.charts.push(
-      new Chart('amountModeChart', {
-        type: 'bar',
-        data: {
-          labels: Object.keys(amountMap),
-          datasets: [{ data: Object.values(amountMap) }],
-        },
-      })
-    );
-  }
-
-  renderStatusChart() {
-    const statusMap = {
-      SUCCESS: 0,
-      FAILED: 0,
-    };
+  renderModeChart() {
+    const m = { ONLINE: 0, OFFLINE: 0 };
 
     this.payments.forEach((p) => {
-      if (p.status === 'SUCCESS' || p.status === 'FAILED') {
-        statusMap[p.status]++;
-      }
+      if (p.mode === 'ONLINE') m.ONLINE++;
+      else m.OFFLINE++;
     });
 
     this.charts.push(
-      new Chart('statusChart', {
-        type: 'doughnut',
+      new Chart('modeChart', {
+        type: 'pie',
         data: {
-          labels: Object.keys(statusMap),
-          datasets: [{ data: Object.values(statusMap) }],
+          labels: Object.keys(m),
+          datasets: [{ data: Object.values(m) }],
         },
       })
     );
   }
 
-  renderTopConsumers() {
-    const consumerMap: Record<string, number> = {};
+  renderBillStatus() {
+    const s: Record<BillStatus, number> = {
+      PAID: 0,
+      DUE: 0,
+      OVERDUE: 0,
+    };
 
-    this.payments
-      .filter((p) => p.status === 'SUCCESS')
-      .forEach((p) => {
-        consumerMap[p.email] = (consumerMap[p.email] || 0) + p.amount;
+    this.bills.forEach((b) => {
+      s[b.status]++;
+    });
+
+    this.charts.push(
+      new Chart('billStatusChart', {
+        type: 'bar',
+        data: {
+          labels: Object.keys(s),
+          datasets: [{ data: Object.values(s) }],
+        },
+        options: {
+          plugins: { legend: { display: false } },
+        },
+      })
+    );
+  }
+
+  renderDefaulters() {
+    const map: Record<string, number> = {};
+
+    this.bills
+      .filter((b) => b.status === 'OVERDUE')
+      .forEach((b) => {
+        map[b.consumerId] = Number(((map[b.consumerId] || 0) + b.totalAmount).toFixed(2));
       });
 
-    const entries = Object.entries(consumerMap)
-      .sort((a, b) => b[1] - a[1])
+    const entries = Object.entries(map)
+      .map(([id, amount]) => ({
+        name: this.consumers[id] || 'Loading...',
+        amount,
+      }))
+      .sort((a, b) => b.amount - a.amount)
       .slice(0, 5);
 
     this.charts.push(
-      new Chart('topConsumersChart', {
+      new Chart('defaultersChart', {
         type: 'bar',
         data: {
-          labels: entries.map((e) => e[0]),
-          datasets: [{ data: entries.map((e) => e[1]) }],
+          labels: entries.map((e) => e.name),
+          datasets: [{ data: entries.map((e) => e.amount) }],
         },
-        options: { indexAxis: 'y' },
+        options: { indexAxis: 'y', plugins: { legend: { display: false } } },
       })
     );
   }

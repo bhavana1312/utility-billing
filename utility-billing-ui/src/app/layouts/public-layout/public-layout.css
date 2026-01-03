@@ -1,0 +1,7 @@
+:host {
+  display: block;
+  background: #ffffff;
+}
+.public-content {
+  min-height: calc(100vh - 64);
+}

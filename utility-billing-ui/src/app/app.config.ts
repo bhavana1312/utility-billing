@@ -7,7 +7,7 @@ import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { jwtInterceptor } from './core/auth/jwt-interceptor';
+import { jwtInterceptor } from './core/interceptor/jwt-interceptor';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideToastr } from 'ngx-toastr';
 

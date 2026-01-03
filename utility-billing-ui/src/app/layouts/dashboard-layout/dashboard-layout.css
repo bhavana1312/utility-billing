@@ -1,0 +1,111 @@
+:host {
+  --primary: #0f766e;
+  --success: #16a34a;
+  --warning: #f59e0b;
+  --danger: #dc2626;
+  --bg: #f8fafc;
+  --border: #e2e8f0;
+  --text-dark: #020617;
+  --text-gray: #64748b;
+}
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.layout.sidebar-collapsed app-sidebar {
+  width: 72px;
+}
+
+.content {
+  flex: 1;
+  padding: 32px;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.mobile-top-nav {
+  display: none;
+  background: white;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 900;
+}
+
+.toggle-btn {
+  width: 36px;
+  height: 36px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.3s;
+  color: var(--text-gray);
+}
+
+.toggle-btn:hover {
+  background: #f1f5f9;
+}
+
+.toggle-btn .arrow {
+  font-size: 24px;
+  transform: rotate(180deg);
+  transition: transform 0.3s ease;
+}
+
+.toggle-btn.is-collapsed .arrow {
+  transform: rotate(0deg);
+}
+
+.mobile-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.mobile-brand .bolt {
+  font-size: 20px;
+}
+
+.mobile-brand .brand-name span {
+  color: var(--primary);
+}
+
+@media (max-width: 1024px) {
+  .content {
+    padding: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .mobile-top-nav {
+    display: flex;
+    margin-bottom: 10px;
+  }
+
+  .layout {
+    flex-direction: row;
+  }
+
+  .content {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding: 16px;
+  }
+}

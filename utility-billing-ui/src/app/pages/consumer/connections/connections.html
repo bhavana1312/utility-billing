@@ -2,22 +2,18 @@
   <app-consumer-sidebar #sidebar (sidebarToggle)="onSidebarToggle($event)"></app-consumer-sidebar>
 
   <main class="content">
-    <header class="mobile-top-nav">
-      <button class="toggle-btn" (click)="sidebar.toggleSidebar()" [class.is-collapsed]="isSidebarCollapsed">
-        <span class="arrow">‹</span>
-      </button>
-      <div class="mobile-brand">
-        <span class="brand-name">Utility<span>Consumer</span></span>
-      </div>
-    </header>
 
     <div class="dashboard-header">
       <h2>My Connections</h2>
       <span class="date-display">{{ today | date:'fullDate' }}</span>
     </div>
 
+    <div class="filters">
+      <input type="text" placeholder="Search by meter number / utility / plan" [(ngModel)]="search" />
+    </div>
+
     <div class="connections-grid">
-      <div class="connection-card" *ngFor="let m of meters">
+      <div class="connection-card" *ngFor="let m of filteredMeters">
         <div class="card-header">
           <h4>{{ m.utilityType }}</h4>
           <span class="status" [class.active]="m.active" [class.inactive]="!m.active">

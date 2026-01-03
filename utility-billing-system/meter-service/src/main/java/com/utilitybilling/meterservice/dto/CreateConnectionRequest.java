@@ -20,7 +20,4 @@ public class CreateConnectionRequest{
     
     @NotNull(message="Tariff Plan is required")
     private TariffPlan tariffPlan;
-
-    @NotBlank(message="Address is required")
-    private String address;
 }

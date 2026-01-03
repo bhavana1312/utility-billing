@@ -3,11 +3,20 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
-import { AccountsOfficerSidebar } from '../accounts-officer-sidebar/accounts-officer-sidebar';
+import { forkJoin, map } from 'rxjs';
+
+interface Payment {
+  id: string;
+  billId: string;
+  mode: string;
+  consumerId: string;
+  consumerName?: string;
+  email?: string;
+}
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, AccountsOfficerSidebar],
+  imports: [CommonModule, FormsModule],
   templateUrl: './payments.html',
   styleUrl: './payments.css',
 })
@@ -30,15 +39,38 @@ export class Payments {
 
   loadPayments(page: number = 0) {
     this.http
-      .get<any>(
+      .get<{
+        content: Payment[];
+        number: number;
+        totalPages: number;
+      }>(
         `http://localhost:9090/payments?page=${page}&size=${this.pageSize}&search=${this.search}&mode=${this.mode}`
       )
+
       .subscribe({
         next: (res) => {
-          this.payments = res.content;
           this.currentPage = res.number;
           this.totalPages = res.totalPages;
-          this.applyFilters();
+
+          const paymentRequests = res.content.map((p: any) =>
+            this.getConsumer(p.consumerId).pipe(
+              map((c) => ({
+                ...p,
+                consumerName: c.fullName,
+                email: c.email,
+              }))
+            )
+          );
+
+          forkJoin(paymentRequests).subscribe({
+            next: (paymentsWithConsumers) => {
+              this.payments = paymentsWithConsumers;
+              this.applyFilters();
+            },
+            error: () => {
+              this.toast.error('Failed to load consumers');
+            },
+          });
         },
         error: () => this.toast.error('Failed to load payments'),
       });
@@ -54,6 +86,7 @@ export class Payments {
       const matchesSearch =
         !this.search ||
         p.billId?.toLowerCase().includes(this.search.toLowerCase()) ||
+        p.consumerName?.toLowerCase().includes(this.search.toLowerCase()) ||
         p.email?.toLowerCase().includes(this.search.toLowerCase());
       return matchesMode && matchesSearch;
     });
@@ -87,5 +120,9 @@ export class Payments {
     if (this.currentPage > 0) {
       this.loadPayments(this.currentPage - 1);
     }
+  }
+
+  getConsumer(id: string) {
+    return this.http.get<any>(`http://localhost:9090/consumers/${id}`);
   }
 }

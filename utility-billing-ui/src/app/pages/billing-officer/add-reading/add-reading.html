@@ -1,32 +1,58 @@
 <div class="layout">
-  <app-billing-sidebar></app-billing-sidebar>
-
   <main class="content">
     <h2>Add Meter Reading</h2>
 
+    <table class="meter-table">
+      <thead>
+        <tr>
+          <th>Meter</th>
+          <th>Utility</th>
+          <th>Plan</th>
+          <th>Consumer</th>
+          <th>Email</th>
+          <th>Last Reading</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let m of meters" (click)="selectMeter(m)"
+          [class.active]="selectedMeter?.meterNumber === m.meterNumber">
+          <td>{{ m.meterNumber }}</td>
+          <td>{{ m.utilityType }}</td>
+          <td>{{ m.tariffPlan }}</td>
+          <td>{{ m.consumerName }}</td>
+          <td class="email">{{ m.email }}</td>
+          <td>{{ m.lastReading }}</td>
+        </tr>
+      </tbody>
+    </table>
+
     <div class="grid">
       <div class="meter-card" *ngFor="let m of meters" (click)="selectMeter(m)"
-        [class.active]="selectedMeter?.meterNumber===m.meterNumber">
-
-        <h4>{{m.meterNumber}}</h4>
-        <p>{{m.utilityType}}</p>
-        <p>{{m.tariffPlan}}</p>
-        <p class="email">{{m.email}}</p>
-        <p class="small">Last Reading: {{m.lastReading}}</p>
+        [class.active]="selectedMeter?.meterNumber === m.meterNumber">
+        <h4>{{ m.meterNumber }}</h4>
+        <p>{{ m.utilityType }}</p>
+        <p>{{ m.tariffPlan }}</p>
+        <p><strong>{{ m.consumerName }}</strong></p>
+        <p class="email">{{ m.email }}</p>
+        <p class="small">Last Reading: {{ m.lastReading }}</p>
       </div>
     </div>
 
     <div class="reading-panel" *ngIf="selectedMeter">
-      <h3>Add Reading</h3>
+      <div class="panel-header">
+        <h3>Add Reading</h3>
+        <button class="close-btn" (click)="closePanel()">×</button>
+      </div>
 
-      <p><strong>Meter:</strong> {{selectedMeter.meterNumber}}</p>
-      <p><strong>Utility:</strong> {{selectedMeter.utilityType}}</p>
-      <p><strong>Tariff Plan:</strong> {{selectedMeter.tariffPlan}}</p>
+      <p><strong>Meter:</strong> {{ selectedMeter.meterNumber }}</p>
+      <p><strong>Utility:</strong> {{ selectedMeter.utilityType }}</p>
+      <p><strong>Tariff Plan:</strong> {{ selectedMeter.tariffPlan }}</p>
 
       <input type="number" placeholder="Enter current reading" [(ngModel)]="readingValue" />
 
       <button (click)="submitReading()" [disabled]="loading">
-        {{loading?'Submitting...':'Submit Reading & Generate Bill'}}
+        {{ loading ? 'Submitting...' : 'Submit Reading & Generate Bill' }}
       </button>
     </div>
   </main>

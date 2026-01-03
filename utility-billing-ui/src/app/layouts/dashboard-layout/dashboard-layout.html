@@ -1,0 +1,20 @@
+<header class="mobile-top-nav">
+  <button class="toggle-btn" (click)="toggleSidebar()" [class.is-collapsed]="sidebarCollapsed">
+    <span class="arrow">‹</span>
+  </button>
+
+  <div class="mobile-brand">
+    <span class="bolt">⚡</span>
+    <span class="brand-name">
+      Utility <span>{{ roleLabel() }}</span>
+    </span>
+  </div>
+</header>
+
+<div class="layout" [class.sidebar-collapsed]="sidebarCollapsed">
+  <app-sidebar [collapsed]="sidebarCollapsed" (sidebarToggle)="onSidebarToggle($event)"></app-sidebar>
+
+  <main class="content" (click)="sidebarCollapsed = true">
+    <router-outlet></router-outlet>
+  </main>
+</div>

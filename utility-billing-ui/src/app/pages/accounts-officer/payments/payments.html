@@ -1,11 +1,10 @@
 <div class="layout">
-  <app-accounts-officer-sidebar></app-accounts-officer-sidebar>
 
   <main class="content">
     <h2>Payments</h2>
 
     <div class="filters">
-      <input placeholder="Search by Bill ID or Email" [(ngModel)]="search" (input)="loadPayments(0)" />
+      <input placeholder="Search by Bill ID or Email or Name" [(ngModel)]="search" (input)="loadPayments(0)" />
 
       <select [(ngModel)]="mode" (change)="loadPayments(0)">
         <option value="">All Modes</option>
@@ -20,7 +19,7 @@
         <tr>
           <th>Payment ID</th>
           <th>Bill ID</th>
-          <th>Email</th>
+          <th>Consumer</th>
           <th>Mode</th>
           <th>Amount (₹)</th>
           <th>Date</th>
@@ -32,7 +31,11 @@
         <tr *ngFor="let p of filtered">
           <td>{{p.id}}</td>
           <td>{{p.billId}}</td>
-          <td>{{p.email}}</td>
+          <td>
+            <strong>{{p.consumerName}}</strong><br>
+            <span class="email">{{p.email}}</span>
+          </td>
+
           <td>
             <span class="badge" [ngClass]="p.mode.toLowerCase()">
               {{p.mode}}

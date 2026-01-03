@@ -1,8 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router, NavigationEnd } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../core/auth/auth';
-import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-navbar',
@@ -12,17 +11,25 @@ import { filter } from 'rxjs/operators';
   styleUrl: './navbar.css',
 })
 export class Navbar {
-  constructor(private readonly auth: AuthService, private readonly router: Router) {}
+  constructor(private readonly auth: AuthService, private readonly router: Router) {
+    console.log('navbar');
+  }
 
   isLoggedIn() {
     return this.auth.isLoggedIn();
   }
 
-  isPageWithRole(): boolean {
+  isDashboardRoute(): boolean {
+    const url = this.router.url;
     return (
-      this.router.url.includes('/admin') ||
-      this.router.url.includes('/billing') ||
-      this.router.url.includes('/accounts')
+      url === '/admin' ||
+      url.startsWith('/admin/') ||
+      url === '/billing' ||
+      url.startsWith('/billing/') ||
+      url === '/accounts' ||
+      url.startsWith('/accounts/') ||
+      url === '/consumer' ||
+      url.startsWith('/consumer/')
     );
   }
 
@@ -36,12 +43,12 @@ export class Navbar {
     switch (role) {
       case 'ROLE_ADMIN':
         return '/admin';
-      case 'ROLE_USER':
-        return '/user';
       case 'ROLE_BILLING_OFFICER':
         return '/billing';
       case 'ROLE_ACCOUNTS_OFFICER':
         return '/accounts';
+      case 'ROLE_USER':
+        return '/consumer';
       default:
         return null;
     }

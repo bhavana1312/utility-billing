@@ -1,5 +1,4 @@
 <div class="layout">
-  <app-billing-sidebar></app-billing-sidebar>
 
   <main class="content">
     <h2>Bills</h2>
@@ -27,7 +26,7 @@
       <thead>
         <tr>
           <th>Bill ID</th>
-          <th>Email</th>
+          <th>Consumer</th>
           <th>Utility</th>
           <th>Plan</th>
           <th>Units</th>
@@ -41,7 +40,10 @@
       <tbody>
         <tr *ngFor="let b of filtered">
           <td data-label="Bill ID">{{b.billId}}</td>
-          <td data-label="Email">{{b.email}}</td>
+          <td data-label="Consumer">
+            <strong>{{b.consumerName}}</strong><br>
+            <span class="email">{{b.email}}</span>
+          </td>
           <td data-label="Utility">{{b.utilityType}}</td>
           <td data-label="Plan">{{b.tariffPlan}}</td>
           <td data-label="Units">{{b.unitsConsumed}}</td>
@@ -56,5 +58,20 @@
         </tr>
       </tbody>
     </table>
+    <div class="pagination">
+      <button class="nav" (click)="prevPage()" [disabled]="page === 0">
+        ‹
+      </button>
+
+      <button *ngFor="let p of [].constructor(totalPages); let i = index" class="page" [class.active]="i === page"
+        (click)="loadBills(i)">
+        {{ i + 1 }}
+      </button>
+
+      <button class="nav" (click)="nextPage()" [disabled]="page + 1 === totalPages">
+        ›
+      </button>
+    </div>
+
   </main>
 </div>

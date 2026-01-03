@@ -1,5 +1,4 @@
 <div class="layout">
-  <app-admin-sidebar></app-admin-sidebar>
 
   <main class="content">
     <h2>Manage Utilities</h2>
@@ -34,6 +33,19 @@
           <label>Effective From</label>
           <input type="date" formControlName="effectiveFrom" [min]="today" />
         </div>
+
+        <div class="selectors">
+          <label>Billing Cycle</label>
+          <select formControlName="billingCycle">
+            <option value="" disabled>Select billing cycle</option>
+            <option value="MONTHLY">Monthly</option>
+            <option value="BIMONTHLY">Bi-Monthly</option>
+            <option value="QUARTERLY">Quarterly</option>
+            <option value="HALF_YEARLY">Half-Yearly</option>
+            <option value="YEARLY">Yearly</option>
+          </select>
+        </div>
+
       </div>
 
       <h3>Tariff Slabs</h3>

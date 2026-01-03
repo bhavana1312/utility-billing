@@ -47,4 +47,10 @@ public class ConsumerController {
 	public ResponseEntity<ExistsResponse> exists(@PathVariable("id") String id) {
 		return ResponseEntity.ok(new ExistsResponse(service.exists(id)));
 	}
+	
+	@GetMapping("/username/{username}")
+	public ResponseEntity<ConsumerResponse> getByUsername(@PathVariable("username") String username){
+		return ResponseEntity.ok(service.getByUsername(username));
+	}
+
 }

@@ -1,5 +1,7 @@
 package com.utilitybilling.consumerservice.dto;
 
+import java.time.Instant;
+
 import lombok.*;
 
 @Data
@@ -9,6 +11,6 @@ public class ConsumerResponse{
     private String fullName;
     private String email;
     private String phone;
-    private String password;
+    private Instant createdAt;
     private boolean active;
 }

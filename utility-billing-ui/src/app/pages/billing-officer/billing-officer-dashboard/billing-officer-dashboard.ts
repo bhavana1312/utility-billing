@@ -1,39 +1,29 @@
-import { Component, AfterViewInit, ViewChild } from '@angular/core';
+import { Component, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Chart, registerables } from 'chart.js';
-import { BillingSidebar } from '../billing-sidebar/billing-sidebar';
 
 Chart.register(...registerables);
 
 @Component({
   standalone: true,
-  imports: [CommonModule, BillingSidebar],
+  imports: [CommonModule],
   templateUrl: './billing-officer-dashboard.html',
   styleUrl: './billing-officer-dashboard.css',
 })
 export class BillingDashboard implements AfterViewInit {
-  @ViewChild(BillingSidebar) sidebar!: BillingSidebar;
-
   bills: any[] = [];
-  charts: any[] = [];
+  charts: Chart[] = [];
 
-  totalBills = 0;
-  totalRevenue = 0;
-  outstandingAmount = 0;
+  metersAssigned = 0;
+  readingsPending = 0;
+  billsToday = 0;
+  avgUnitsPerBill = 0;
 
-  isSidebarCollapsed = false;
   today = new Date();
 
   constructor(private http: HttpClient) {
     this.loadBills();
-  }
-
-  onSidebarToggle(collapsed: boolean) {
-    this.isSidebarCollapsed = collapsed;
-    setTimeout(() => {
-      this.charts.forEach((c) => c?.resize());
-    }, 310);
   }
 
   ngAfterViewInit() {
@@ -41,110 +31,128 @@ export class BillingDashboard implements AfterViewInit {
   }
 
   loadBills() {
-    this.http.get<any[]>('http://localhost:9090/billing').subscribe((res) => {
-      this.bills = res;
+    this.http.get<any>('http://localhost:9090/billing?page=0&size=1000').subscribe((res) => {
+      this.bills = res.content;
       this.calculateStats();
       this.renderCharts();
     });
   }
 
   calculateStats() {
-    this.totalBills = this.bills.length;
+    this.metersAssigned = new Set(this.bills.map((b) => b.meterNumber)).size;
 
-    this.totalRevenue = this.bills.reduce((sum, b) => sum + Number(b.totalAmount), 0);
+    this.readingsPending = this.bills.filter(
+      (b) => b.status === 'DUE' || b.status === 'OVERDUE'
+    ).length;
 
-    this.outstandingAmount = this.bills
-      .filter((b) => b.status === 'DUE' || b.status === 'OVERDUE')
-      .reduce((sum, b) => sum + Number(b.totalAmount), 0);
+    const todayStr = new Date().toISOString().split('T')[0];
+    this.billsToday = this.bills.filter((b) => b.generatedAt?.startsWith(todayStr)).length;
+
+    const totalUnits = this.bills.reduce((sum, b) => sum + Number(b.unitsConsumed || 0), 0);
+    this.avgUnitsPerBill = this.bills.length ? Math.round(totalUnits / this.bills.length) : 0;
   }
 
   renderCharts() {
     this.charts.forEach((c) => c.destroy());
     this.charts = [];
 
-    this.renderStatusChart();
-    this.renderUtilityChart();
-    this.renderTimeChart();
+    this.renderTariffSlabChart();
+    this.renderConsumptionTrend();
+    this.renderBillsPerDay();
+    this.renderAvgUnitsPerDay();
   }
 
-  renderStatusChart() {
-    const counts = this.bills.reduce((a, b) => {
-      a[b.status] = (a[b.status] || 0) + 1;
-      return a;
-    }, {});
-
-    const ctx = document.getElementById('statusChart') as HTMLCanvasElement;
-    if (!ctx) return;
-
-    this.charts.push(
-      new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels: ['PAID', 'DUE', 'OVERDUE'],
-          datasets: [
-            {
-              data: [counts['PAID'] || 0, counts['DUE'] || 0, counts['OVERDUE'] || 0],
-              backgroundColor: ['#22c55e', '#facc15', '#ef4444'],
-            },
-          ],
-        },
-        options: { responsive: true, maintainAspectRatio: false },
-      })
-    );
-  }
-
-  renderUtilityChart() {
-    const revenue: any = {};
+  renderTariffSlabChart() {
+    const slabs: any = {};
     this.bills.forEach((b) => {
-      revenue[b.utilityType] = (revenue[b.utilityType] || 0) + Number(b.totalAmount);
+      slabs[b.tariffPlan] = (slabs[b.tariffPlan] || 0) + 1;
     });
 
-    const ctx = document.getElementById('utilityChart') as HTMLCanvasElement;
+    const ctx = document.getElementById('slabChart') as HTMLCanvasElement;
     if (!ctx) return;
 
     this.charts.push(
       new Chart(ctx, {
-        type: 'bar',
+        type: 'pie',
         data: {
-          labels: Object.keys(revenue),
-          datasets: [
-            {
-              label: 'Revenue',
-              data: Object.values(revenue),
-              backgroundColor: '#2563eb',
-            },
-          ],
+          labels: Object.keys(slabs),
+          datasets: [{ data: Object.values(slabs) }],
         },
-        options: { responsive: true, maintainAspectRatio: false },
+        options: { indexAxis: 'y', plugins: { legend: { display: false } } },
       })
     );
   }
 
-  renderTimeChart() {
-    const grouped: any = {};
+  renderConsumptionTrend() {
+    const dailyUnits: any = {};
     this.bills.forEach((b) => {
       const d = new Date(b.generatedAt).toISOString().split('T')[0];
-      grouped[d] = (grouped[d] || 0) + 1;
+      dailyUnits[d] = (dailyUnits[d] || 0) + Number(b.unitsConsumed);
     });
 
-    const ctx = document.getElementById('timeChart') as HTMLCanvasElement;
+    const ctx = document.getElementById('consumptionChart') as HTMLCanvasElement;
     if (!ctx) return;
 
     this.charts.push(
       new Chart(ctx, {
         type: 'line',
         data: {
-          labels: Object.keys(grouped),
-          datasets: [
-            {
-              label: 'Bills Generated',
-              data: Object.values(grouped),
-              tension: 0.3,
-              borderColor: '#2563eb',
-            },
-          ],
+          labels: Object.keys(dailyUnits),
+          datasets: [{ data: Object.values(dailyUnits), tension: 0.3 }],
         },
-        options: { responsive: true, maintainAspectRatio: false },
+        options: { indexAxis: 'x', plugins: { legend: { display: false } } },
+      })
+    );
+  }
+
+  renderBillsPerDay() {
+    const dailyBills: any = {};
+    this.bills.forEach((b) => {
+      const d = new Date(b.generatedAt).toISOString().split('T')[0];
+      dailyBills[d] = (dailyBills[d] || 0) + 1;
+    });
+
+    const ctx = document.getElementById('billsPerDayChart') as HTMLCanvasElement;
+    if (!ctx) return;
+
+    this.charts.push(
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: Object.keys(dailyBills),
+          datasets: [{ data: Object.values(dailyBills) }],
+        },
+        options: { indexAxis: 'x', plugins: { legend: { display: false } } },
+      })
+    );
+  }
+
+  renderAvgUnitsPerDay() {
+    const totals: any = {};
+    const counts: any = {};
+
+    this.bills.forEach((b) => {
+      const d = new Date(b.generatedAt).toISOString().split('T')[0];
+      totals[d] = (totals[d] || 0) + Number(b.unitsConsumed);
+      counts[d] = (counts[d] || 0) + 1;
+    });
+
+    const averages = Object.keys(totals).reduce((a: any, d) => {
+      a[d] = Math.round(totals[d] / counts[d]);
+      return a;
+    }, {});
+
+    const ctx = document.getElementById('avgUnitsChart') as HTMLCanvasElement;
+    if (!ctx) return;
+
+    this.charts.push(
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: Object.keys(averages),
+          datasets: [{ data: Object.values(averages), tension: 0.3 }],
+        },
+        options: { indexAxis: 'x', plugins: { legend: { display: false } } },
       })
     );
   }

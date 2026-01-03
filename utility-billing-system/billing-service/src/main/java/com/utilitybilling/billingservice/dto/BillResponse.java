@@ -29,3 +29,4 @@ public class BillResponse {
 	private String status;
 	private Instant generatedAt;
 }
+

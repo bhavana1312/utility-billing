@@ -1,178 +1,244 @@
-import { Component, AfterViewInit, ViewChild } from '@angular/core';
+import { Component, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { FormsModule } from '@angular/forms';
-import { ToastrService } from 'ngx-toastr';
-import { AdminSidebar } from '../admin-sidebar/admin-sidebar';
 import { Chart, registerables } from 'chart.js';
+import { forkJoin } from 'rxjs';
 
 Chart.register(...registerables);
 
+interface PageResponse<T> {
+  content: T[];
+}
+
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, AdminSidebar],
+  imports: [CommonModule],
   templateUrl: './admin-dashboard.html',
   styleUrl: './admin-dashboard.css',
 })
 export class AdminDashboard implements AfterViewInit {
-  @ViewChild(AdminSidebar) sidebar!: AdminSidebar;
-
-  requests: any[] = [];
   consumers: any[] = [];
-  meters: any[] = [];
-  isSidebarCollapsed = false;
+  consumerMap: Record<string, any> = {};
+  bills: any[] = [];
+  charts: Chart[] = [];
+
+  totalConsumers = 0;
+  activeConnections = 0;
+  monthlyRevenue = 0;
+  overdueCount = 0;
+
   today = new Date();
 
-  selectedStatus: string = 'ALL';
-  showRejectModal = false;
-  rejectReason = '';
-  rejectingRequestId: string | null = null;
-  private charts: any[] = [];
-
-  constructor(private http: HttpClient, private toast: ToastrService) {
-    this.loadRequests();
-    this.loadConsumers();
-    this.loadMeters();
-  }
-
-  onSidebarToggle(collapsed: boolean) {
-    this.isSidebarCollapsed = collapsed;
-    setTimeout(() => {
-      this.charts.forEach((c) => {
-        if (c) c.resize();
-      });
-    }, 310);
+  constructor(private http: HttpClient) {
+    this.loadData();
   }
 
   ngAfterViewInit() {
     setTimeout(() => this.renderCharts(), 500);
   }
 
-  loadRequests() {
-    this.http.get<any[]>('http://localhost:9090/consumer-requests').subscribe({
-      next: (res) => {
-        this.requests = res;
+  loadData() {
+    this.http.get<any[]>('http://localhost:9090/consumers').subscribe((c) => {
+      this.consumers = c;
+      c.forEach((x) => (this.consumerMap[x.id] = x));
+      this.totalConsumers = c.length;
+      this.activeConnections = c.filter((x) => x.active).length;
+      this.renderCharts();
+    });
+
+    this.http
+      .get<PageResponse<any>>('http://localhost:9090/billing?page=0&size=1000')
+      .subscribe((b) => {
+        this.bills = b.content;
+        this.loadMissingConsumers();
+        this.calculateStats();
         this.renderCharts();
-      },
-      error: () => this.toast.error('Failed to load requests'),
+      });
+  }
+
+  loadMissingConsumers() {
+    const ids = [
+      ...new Set(this.bills.map((b) => b.consumerId).filter((id) => !this.consumerMap[id])),
+    ];
+
+    if (!ids.length) return;
+
+    forkJoin(
+      ids.map((id) => this.http.get<any>(`http://localhost:9090/consumers/${id}`))
+    ).subscribe((res) => {
+      res.forEach((c) => (this.consumerMap[c.id] = c));
+      this.renderCharts();
     });
   }
 
-  loadMeters() {
-    this.http.get<any[]>('http://localhost:9090/meters/all').subscribe({
-      next: (res) => {
-        this.meters = res;
-        this.renderCharts();
-      },
-      error: () => this.toast.error('Failed to load meter count'),
-    });
-  }
+  calculateStats() {
+    const now = new Date();
+    const month = now.getMonth();
+    const year = now.getFullYear();
 
-  loadConsumers() {
-    this.http.get<any[]>('http://localhost:9090/consumers').subscribe({
-      next: (res) => {
-        this.consumers = res;
-        this.renderCharts();
-      },
-    });
+    this.monthlyRevenue = this.bills
+      .filter((b) => {
+        const d = new Date(b.generatedAt);
+        return !isNaN(d.getTime()) && d.getMonth() === month && d.getFullYear() === year;
+      })
+      .reduce((s, b) => s + Number(b.totalAmount), 0);
+
+    this.overdueCount = this.bills.filter((b) => b.status === 'OVERDUE').length;
   }
 
   renderCharts() {
     this.charts.forEach((c) => c.destroy());
     this.charts = [];
 
-    const pending = this.requests.filter((r) => r.status === 'PENDING').length;
-    const approved = this.requests.filter((r) => r.status === 'APPROVED').length;
-    const rejected = this.requests.filter((r) => r.status === 'REJECTED').length;
-
-    const statusCtx = document.getElementById('statusChart') as HTMLCanvasElement;
-    if (statusCtx) {
-      this.charts.push(
-        new Chart(statusCtx, {
-          type: 'doughnut',
-          data: {
-            labels: ['Pending', 'Approved', 'Rejected'],
-            datasets: [
-              {
-                data: [pending, approved, rejected],
-                backgroundColor: ['#facc15', '#22c55e', '#ef4444'],
-              },
-            ],
-          },
-          options: { responsive: true, maintainAspectRatio: false },
-        })
-      );
-    }
-
-    const comparisonCtx = document.getElementById('comparisonChart') as HTMLCanvasElement;
-    if (comparisonCtx) {
-      this.charts.push(
-        new Chart(comparisonCtx, {
-          type: 'bar',
-          data: {
-            labels: ['Consumers', 'Connections', 'Pending'],
-            datasets: [
-              {
-                data: [this.consumers.length, this.meters.length, pending],
-                backgroundColor: ['#2563eb', '#22c55e', '#f97316'],
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-          },
-        })
-      );
-    }
+    this.renderConsumerGrowth();
+    this.renderRevenueByUtility();
+    this.renderTopConsumers();
+    this.renderAverageBillValue();
   }
 
-  approve(id: string) {
-    this.http.post(`http://localhost:9090/consumers/from-request/${id}`, {}).subscribe({
-      next: () => {
-        this.toast.success('Consumer approved');
-        this.loadRequests();
-        this.loadConsumers();
-      },
+  renderConsumerGrowth() {
+    const grouped: Record<string, number> = {};
+    console.log(this.consumers);
+    this.consumers.forEach((c) => {
+      const dateValue = c.createdAt || c.createdDate || c.registeredAt;
+      if (!dateValue) return;
+
+      const d = new Date(dateValue);
+      if (isNaN(d.getTime())) return;
+
+      const key =
+        d.getFullYear() +
+        '-' +
+        String(d.getMonth() + 1).padStart(2, '0') +
+        '-' +
+        String(d.getDate()).padStart(2, '0');
+
+      grouped[key] = (grouped[key] || 0) + 1;
     });
-  }
 
-  openRejectModal(id: string) {
-    this.rejectingRequestId = id;
-    this.showRejectModal = true;
-  }
+    if (!Object.keys(grouped).length) {
+      const now = new Date();
+      const today =
+        now.getFullYear() +
+        '-' +
+        String(now.getMonth() + 1).padStart(2, '0') +
+        '-' +
+        String(now.getDate()).padStart(2, '0');
 
-  closeRejectModal() {
-    this.showRejectModal = false;
-    this.rejectingRequestId = null;
-    this.rejectReason = '';
-  }
+      grouped[today] = this.consumers.length;
+    }
 
-  confirmReject() {
-    if (!this.rejectReason.trim()) return;
-    this.http
-      .put(`http://localhost:9090/consumer-requests/${this.rejectingRequestId}/reject`, {
-        reason: this.rejectReason,
-      })
-      .subscribe({
-        next: () => {
-          this.toast.success('Request rejected');
-          this.loadRequests();
-          this.closeRejectModal();
+    const labels = Object.keys(grouped).sort();
+    const values = labels.map((l) => grouped[l]);
+
+    const ctx = document.getElementById('consumerGrowthChart') as HTMLCanvasElement;
+    if (!ctx) return;
+
+    this.charts.push(
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              data: values,
+              fill: true,
+              tension: 0.3,
+            },
+          ],
         },
-      });
+        options: {
+          plugins: {
+            legend: { display: false },
+          },
+        },
+      })
+    );
   }
 
-  get filteredRequests() {
-    let list =
-      this.selectedStatus === 'ALL'
-        ? this.requests
-        : this.requests.filter((r) => r.status === this.selectedStatus);
-    return list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  renderRevenueByUtility() {
+    const grouped: Record<string, number> = {};
+
+    this.bills.forEach((b) => {
+      grouped[b.utilityType] = (grouped[b.utilityType] || 0) + Number(b.totalAmount);
+    });
+
+    const ctx = document.getElementById('revenueUtilityChart') as HTMLCanvasElement;
+    if (!ctx) return;
+
+    this.charts.push(
+      new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(grouped),
+          datasets: [{ data: Object.values(grouped) }],
+        },
+      })
+    );
   }
 
-  get pendingRequestsCount() {
-    return this.requests.filter((r) => r.status === 'PENDING').length;
+  renderTopConsumers() {
+    const totals: Record<string, number> = {};
+
+    this.bills.forEach((b) => {
+      totals[b.consumerId] = (totals[b.consumerId] || 0) + Number(b.totalAmount);
+    });
+
+    const top = Object.entries(totals)
+      .map(([consumerId, amount]) => ({
+        name: this.consumerMap[consumerId]?.fullName || consumerId,
+        amount,
+      }))
+      .sort((a, b) => b.amount - a.amount)
+      .slice(0, 5);
+
+    const ctx = document.getElementById('topConsumersChart') as HTMLCanvasElement;
+    if (!ctx) return;
+
+    this.charts.push(
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: top.map((x) => x.name),
+          datasets: [{ data: top.map((x) => x.amount) }],
+        },
+        options: {
+          indexAxis: 'y',
+          plugins: { legend: { display: false } },
+        },
+      })
+    );
+  }
+
+  renderAverageBillValue() {
+    const totals: Record<string, number> = {};
+    const counts: Record<string, number> = {};
+
+    this.bills.forEach((b) => {
+      if (!b.generatedAt) return;
+      const d = new Date(b.generatedAt);
+      if (isNaN(d.getTime())) return;
+
+      const key = d.toISOString().split('T')[0];
+      totals[key] = (totals[key] || 0) + Number(b.totalAmount);
+      counts[key] = (counts[key] || 0) + 1;
+    });
+
+    const labels = Object.keys(totals).sort();
+    const values = labels.map((l) => Math.round(totals[l] / counts[l]));
+
+    const ctx = document.getElementById('avgBillChart') as HTMLCanvasElement;
+    if (!ctx || !labels.length) return;
+
+    this.charts.push(
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{ data: values, tension: 0.3 }],
+        },
+        options: { plugins: { legend: { display: false } } },
+      })
+    );
   }
 }

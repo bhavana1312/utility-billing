@@ -21,8 +21,6 @@ public class ConnectionRequest{
     
     private TariffPlan tariffPlan;
 
-    private String address;
-
     private ConnectionStatus status=ConnectionStatus.PENDING;
 
     private String rejectionReason;

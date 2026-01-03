@@ -53,14 +53,10 @@ public class ConsumerRequestService {
 		r.setStatus("REJECTED");
 		r.setRejectionReason(reason);
 		r.setUpdatedAt(Instant.now());
-		
-		notificationClient
-		.send(NotificationRequest.builder().email(r.getEmail()).type("CONSUMER_REJECTED")
-				.subject("Consumer Request rejected").message("Your request for consumer has been rejected" +
-						"\n Reason for rejection: " + reason)
-				.build());
-		
 
+		notificationClient.send(NotificationRequest.builder().email(r.getEmail()).type("CONSUMER_REJECTED")
+				.subject("Consumer Request rejected")
+				.message("Your request for consumer has been rejected" + "\n Reason for rejection: " + reason).build());
 
 		repository.save(r);
 	}

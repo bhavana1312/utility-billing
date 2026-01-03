@@ -47,15 +47,16 @@ public class ConsumerService {
 		r.setStatus("APPROVED");
 		r.setUpdatedAt(Instant.now());
 		requestRepo.save(r);
-		
-		notificationClient
-		.send(NotificationRequest.builder().email(c.getEmail()).type("CONSUMER_APPROVED")
-				.subject("Consumer Request approved").message("You are added as a consumer with id: " + c.getId()
-						+ "Your login credentials are: \n Username: " + c.getFullName() + "\n Password: " + password + "\n \n Please change ur password upon login for the first time.")
+
+		notificationClient.send(NotificationRequest.builder().email(c.getEmail()).type("CONSUMER_APPROVED")
+				.subject("Consumer Request approved")
+				.message("You are added as a consumer with id: " + c.getId()
+						+ "Your login credentials are: \n Username: " + c.getFullName() + "\n Password: " + password
+						+ "\n \n Please change ur password upon login for the first time.")
 				.build());
-	
-		return ConsumerResponse.builder().id(c.getId()).fullName(c.getFullName()).email(c.getEmail()).password(password)
-				.phone(c.getPhone()).active(true).build();
+
+		return ConsumerResponse.builder().id(c.getId()).fullName(c.getFullName()).email(c.getEmail())
+				.createdAt(c.getCreatedAt()).phone(c.getPhone()).active(true).build();
 	}
 
 	public ConsumerResponse getById(String id) {
@@ -100,6 +101,13 @@ public class ConsumerService {
 
 	private ConsumerResponse map(Consumer c) {
 		return ConsumerResponse.builder().id(c.getId()).fullName(c.getFullName()).email(c.getEmail())
-				.phone(c.getPhone()).active(c.isActive()).build();
+				.phone(c.getPhone()).createdAt(c.getCreatedAt()).active(c.isActive()).build();
 	}
+
+	public ConsumerResponse getByUsername(String username) {
+		Consumer c = consumerRepo.findByFullName(username)
+				.orElseThrow(() -> new IllegalArgumentException("Consumer not found"));
+		return map(c);
+	}
+
 }

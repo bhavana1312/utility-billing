@@ -1,94 +1,57 @@
-<div class="layout" [class.sidebar-collapsed]="isSidebarCollapsed">
-  <app-accounts-officer-sidebar #sidebar (sidebarToggle)="onSidebarToggle($event)"></app-accounts-officer-sidebar>
-
+<div class="layout">
   <main class="content">
-    <header class="mobile-top-nav">
-      <button class="toggle-btn" (click)="sidebar.toggleSidebar()" [class.is-collapsed]="isSidebarCollapsed">
-        <span class="arrow">‹</span>
-      </button>
-      <div class="mobile-brand">
-        <span class="bolt">💼</span>
-        <span class="brand-name">Accounts<span>Officer</span></span>
-      </div>
-    </header>
 
     <div class="dashboard-header">
-      <h2>Accounts Dashboard</h2>
+      <div>
+        <h2>Accounts Dashboard</h2>
+        <p class="subtitle">Financial overview & recovery insights</p>
+      </div>
       <span class="date-display">{{ today | date:'fullDate' }}</span>
     </div>
 
-    <div class="stats">
-      <div class="stat-card">
-        <div class="icon">💰</div>
-        <div>
-          <span>Total Collection</span>
-          <h3>₹ {{ totalCollected }}</h3>
-        </div>
+    <div class="kpis">
+      <div class="kpi-card">
+        <span>Total Collected</span>
+        <h3>₹ {{ totalCollected }}</h3>
       </div>
 
-      <div class="stat-card success">
-        <div class="icon">✅</div>
-        <div>
-          <span>Successful Payments</span>
-          <h3>{{ successCount }}</h3>
-        </div>
+      <div class="kpi-card">
+        <span>Today's Collection</span>
+        <h3>₹ {{ todayCollection }}</h3>
       </div>
 
-      <div class="stat-card warning">
-        <div class="icon">🏦</div>
-        <div>
-          <span>Offline Payments</span>
-          <h3>{{ offlinePaymentsCount }}</h3>
-        </div>
+      <div class="kpi-card">
+        <span>Outstanding Amount</span>
+        <h3>₹ {{ outstandingAmount }}</h3>
       </div>
 
-      <div class="stat-card danger">
-        <div class="icon">❌</div>
-        <div>
-          <span>Failed Payments</span>
-          <h3>{{ failedCount }}</h3>
-        </div>
+      <div class="kpi-card danger">
+        <span>Overdue Bills</span>
+        <h3>{{ overdueCount }}</h3>
       </div>
     </div>
 
-    <div class="charts">
-      <div class="chart-card">
-        <h4>Payment Method Distribution</h4>
-        <div class="canvas"><canvas id="modeChart"></canvas></div>
+    <div class="grid">
+      <div class="card wide">
+        <div class="card-header">Collection Trend</div>
+        <canvas id="collectionTrend"></canvas>
       </div>
 
-      <div class="chart-card">
-        <h4>Payments Over Time</h4>
-        <div class="canvas"><canvas id="timelineChart"></canvas></div>
+      <div class="card">
+        <div class="card-header">Payment Modes</div>
+        <canvas id="modeChart"></canvas>
       </div>
 
-      <div class="chart-card">
-        <h4>Amount by Payment Mode</h4>
-        <div class="canvas"><canvas id="amountModeChart"></canvas></div>
+      <div class="card">
+        <div class="card-header">Paid vs Unpaid Bills</div>
+        <canvas id="billStatusChart"></canvas>
       </div>
 
-      <div class="chart-card">
-        <h4>Payment Status</h4>
-        <div class="canvas"><canvas id="statusChart"></canvas></div>
-      </div>
-
-      <div class="chart-card wide">
-        <h4>Top Consumers by Collection</h4>
-        <div class="canvas"><canvas id="topConsumersChart"></canvas></div>
-      </div>
-
-      <div class="chart-card">
-        <h4>Recent Payments</h4>
-        <div class="payment-list">
-          <div class="payment-row" *ngFor="let p of recentPayments">
-            <div>
-              <strong>{{ p.consumer }}</strong>
-              <p>{{ p.mode }}</p>
-            </div>
-            <span class="amount">₹ {{ p.amount }}</span>
-          </div>
-        </div>
+      <div class="card wide">
+        <div class="card-header">Top Defaulters</div>
+        <canvas id="defaultersChart"></canvas>
       </div>
     </div>
+
   </main>
 </div>

@@ -1,1 +1,94 @@
-<p>bills works!</p>
+<div class="layout" [class.sidebar-collapsed]="isSidebarCollapsed">
+  <app-consumer-sidebar #sidebar (sidebarToggle)="onSidebarToggle($event)"></app-consumer-sidebar>
+
+  <main class="content">
+    <div class="dashboard-header">
+      <h2>My Bills</h2>
+      <span class="date-display">{{ today | date:'fullDate' }}</span>
+    </div>
+
+    <table class="bills-table">
+      <thead>
+        <tr>
+          <th>Utility</th>
+          <th>Bill ID</th>
+          <th>Amount</th>
+          <th>Due Date</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let b of bills">
+          <td>{{ b.utilityType }}</td>
+          <td>{{ b.billId }}</td>
+          <td>₹{{ b.totalAmount }}</td>
+          <td>{{ b.dueDate | date:'mediumDate' }}</td>
+          <td>
+            <span class="badge" [ngClass]="b.status.toLowerCase()">
+              {{ b.status }}
+            </span>
+          </td>
+          <td>
+            <button *ngIf="b.status==='DUE'||b.status==='OVERDUE'" class="pay-btn" (click)="initiate(b)">
+              Pay
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="bills-grid">
+      <div class="bill-card" *ngFor="let b of bills">
+        <div class="bill-header">
+          <strong>{{ b.utilityType }}</strong>
+          <span class="badge" [ngClass]="b.status.toLowerCase()">
+            {{ b.status }}
+          </span>
+        </div>
+
+        <div class="info-row">
+          <span>Bill ID</span>
+          <strong>{{ b.billId }}</strong>
+        </div>
+
+        <div class="info-row">
+          <span>Amount</span>
+          <strong>₹{{ b.totalAmount }}</strong>
+        </div>
+
+        <div class="info-row">
+          <span>Due Date</span>
+          <strong>{{ b.dueDate | date:'mediumDate' }}</strong>
+        </div>
+
+        <button *ngIf="b.status==='DUE'||b.status==='OVERDUE'" (click)="initiate(b)">
+          Pay Now
+        </button>
+      </div>
+    </div>
+
+    <div class="otp-backdrop" *ngIf="showOtp">
+      <div class="otp-card">
+        <div class="otp-header">
+          <h3>OTP Verification</h3>
+          <button class="close-btn" (click)="closeOtp()">×</button>
+        </div>
+
+        <p class="otp-sub">Enter the 6-digit OTP sent to your email</p>
+
+        <input type="text" maxlength="6" [(ngModel)]="otp" (input)="otpTouched=true" placeholder="Enter OTP" />
+
+        <span class="error-text" *ngIf="otpTouched && otp.length!==6">
+          OTP is required
+        </span>
+
+        <div class="otp-actions">
+          <button [disabled]="otp.length!==6" (click)="confirm()">
+            Confirm Payment
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

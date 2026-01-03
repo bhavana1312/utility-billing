@@ -75,17 +75,23 @@
         <div class="info-card" *ngFor="let b of bills">
           <div class="info-row">
             <strong>Month</strong>
-            <span>{{ b.month }}</span>
+            <span>{{ b.generatedAt | date:'MMM yyyy' }}</span>
           </div>
+
           <div class="info-row">
             <strong>Amount</strong>
-            <span>₹ {{ b.amount }}</span>
+            <span>₹ {{ b.totalAmount }}</span>
           </div>
+
           <div class="info-row">
             <strong>Status</strong>
             <span class="badge" [ngClass]="b.status.toLowerCase()">{{ b.status }}</span>
           </div>
-          <button class="pay-btn" *ngIf="b.status==='PENDING'" (click)="pay(b.id)">Pay Now</button>
+
+          <button class="pay-btn" *ngIf="b.status==='DUE'||b.status==='OVERDUE'" (click)="pay(b._id)">
+            Pay Now
+          </button>
+
         </div>
       </div>
     </section>

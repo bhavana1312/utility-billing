@@ -9,9 +9,19 @@
         Username is required
       </div>
 
-      <input type="password" placeholder="Password" formControlName="password" />
+      <div class="password-field">
+        <input [type]="showPassword ? 'text' : 'password'" placeholder="Password" formControlName="password" />
+        <button type="button" class="toggle" (click)="showPassword=!showPassword">
+          {{ showPassword ? 'Hide' : 'Show' }}
+        </button>
+      </div>
+
       <div class="error" *ngIf="form.get('password')?.touched && form.get('password')?.invalid">
         Password is required
+      </div>
+
+      <div class="forgot-row">
+        <a routerLink="/forgot-password">Forgot password?</a>
       </div>
 
       <button type="submit" [disabled]="form.invalid || loading">

@@ -7,6 +7,7 @@ import com.utilitybilling.authservice.exception.*;
 import com.utilitybilling.authservice.model.User;
 import com.utilitybilling.authservice.repository.UserRepository;
 import com.utilitybilling.authservice.security.JwtUtil;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -41,7 +42,7 @@ public class AuthService {
 
 	public LoginResponse login(LoginRequest r) {
 		User u = repo.findByUsername(r.getUsername()).orElseThrow(UserNotFoundException::new);
-
+		
 		if (!encoder.matches(r.getPassword(), u.getPassword()))
 			throw new InvalidCredentialsException("Invalid credentials");
 
@@ -76,7 +77,7 @@ public class AuthService {
 		u.setResetTokenExpiry(Instant.now().plusSeconds(900));
 		repo.save(u);
 
-		String resetLink = "http://localhost:8089/reset-password?token=" + token;
+		String resetLink = "http://localhost:4200/reset-password?token=" + token;
 
 		notificationClient.send(NotificationRequest.builder().email(u.getEmail()).type("PASSWORD_RESET")
 				.subject("Reset your password").message("Click the link below to reset your password:\n\n" + resetLink

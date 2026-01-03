@@ -1,21 +1,20 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
-
 import { AuthService } from '../../core/auth/auth';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './login.html',
   styleUrl: './login.css',
 })
-export class LoginComponent {
+export class Login {
   loading = false;
-
+  showPassword = false;
   form: FormGroup;
 
   constructor(
@@ -45,7 +44,6 @@ export class LoginComponent {
         this.toastr.success('Login successful');
 
         const role = this.auth.getUserRole();
-        console.log(role);
         this.router.navigate(
           role === 'ROLE_ADMIN'
             ? ['/admin']

@@ -1,1 +1,44 @@
-<p>apply-connection works!</p>
+<div class="layout" [class.sidebar-collapsed]="isSidebarCollapsed">
+  <app-consumer-sidebar #sidebar (sidebarToggle)="onSidebarToggle($event)"></app-consumer-sidebar>
+
+  <main class="content">
+    <div class="dashboard-header">
+      <h2>Apply for Connection</h2>
+      <span class="date-display">{{ today | date:'fullDate' }}</span>
+    </div>
+
+    <div class="form-card">
+      <label>Utility Type</label>
+      <select [(ngModel)]="form.utilityType">
+        <option value="ELECTRICITY">Electricity</option>
+        <option value="WATER">Water</option>
+        <option value="GAS">Gas</option>
+      </select>
+
+      <label>Tariff Plan</label>
+      <select [(ngModel)]="form.tariffPlan">
+        <option value="DOMESTIC">DOMESTIC</option>
+        <option value="COMMERCIAL">COMMERCIAL</option>
+        <option value="INDUSTRIAL">INDUSTRIAL</option>
+      </select>
+
+      <button (click)="apply()">Submit Request</button>
+    </div>
+
+    <h3 class="section-title">My Applications</h3>
+
+    <div class="applications-grid">
+      <div class="app-card" *ngFor="let a of applications">
+        <div class="app-header">
+          <strong>{{ a.utilityType }}</strong>
+          <span class="badge" [ngClass]="a.status.toLowerCase()">
+            {{ a.status }}
+          </span>
+        </div>
+
+        <p>Plan: {{ a.tariffPlan }}</p>
+        <small>Applied on {{ a.createdAt | date:'mediumDate' }}</small>
+      </div>
+    </div>
+  </main>
+</div>

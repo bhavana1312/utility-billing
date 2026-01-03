@@ -3,11 +3,10 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
-import { BillingSidebar } from '../billing-sidebar/billing-sidebar';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, BillingSidebar],
+  imports: [CommonModule, FormsModule],
   templateUrl: './add-reading.html',
   styleUrl: './add-reading.css',
 })
@@ -23,7 +22,24 @@ export class AddReading {
 
   loadMeters() {
     this.http.get<any[]>('http://localhost:9090/meters/all').subscribe({
-      next: (res) => (this.meters = res.filter((m) => m.active)),
+      next: (res) => {
+        const activeMeters = res.filter((m) => m.active);
+
+        activeMeters.forEach((meter) => {
+          this.getConsumer(meter.consumerId).subscribe({
+            next: (consumer) => {
+              meter.consumerName = consumer.fullName;
+              meter.email = consumer.email;
+            },
+            error: () => {
+              meter.consumerName = 'Unknown';
+              meter.email = '-';
+            },
+          });
+        });
+
+        this.meters = activeMeters;
+      },
       error: () => this.toast.error('Failed to load connections'),
     });
   }
@@ -59,6 +75,10 @@ export class AddReading {
       });
   }
 
+  getConsumer(id: string) {
+    return this.http.get<any>(`http://localhost:9090/consumers/${id}`);
+  }
+
   generateBill() {
     this.http
       .post('http://localhost:9090/billing/generate', {
@@ -73,5 +93,9 @@ export class AddReading {
         },
         error: () => this.toast.error('Bill generation failed'),
       });
+  }
+  closePanel() {
+    this.selectedMeter = null;
+    this.readingValue = null;
   }
 }

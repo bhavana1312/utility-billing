@@ -278,3 +278,13 @@
     padding: 20px;
   }
 }
+
+.badge.due {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.badge.overdue {
+  background: #fee2e2;
+  color: #991b1b;
+}

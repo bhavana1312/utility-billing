@@ -1,1 +1,85 @@
-<p>profile works!</p>
+<div class="layout">
+
+  <main class="content">
+    <div class="dashboard-header">
+      <h2>My Profile</h2>
+      <span class="date-display">{{ today | date:'fullDate' }}</span>
+    </div>
+
+    <div class="profile-card">
+      <div class="profile-header">
+        <div class="avatar">
+          {{ consumer?.fullName?.charAt(0) || 'C' }}
+        </div>
+        <div class="header-info">
+          <h3>{{ consumer?.fullName }}</h3>
+          <p>{{ consumer?.email }}</p>
+        </div>
+      </div>
+
+      <div class="profile-info">
+        <div class="row">
+          <span>Phone</span>
+          <strong>{{ consumer?.phone || '-' }}</strong>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <button class="reset-trigger" *ngIf="!showReset" (click)="showReset=true">
+        Reset Password
+      </button>
+
+      <div class="reset-section" *ngIf="showReset">
+        <div class="password-wrapper">
+          <input [type]="showOld ? 'text' : 'password'" [(ngModel)]="password.oldPassword" />
+          <button type="button" class="text-toggle" (click)="showOld = !showOld">
+            {{ showOld ? 'Hide' : 'Show' }}
+          </button>
+        </div>
+
+        <label>New Password</label>
+        <div class="password-wrapper">
+          <input [type]="showNew ? 'text' : 'password'" [(ngModel)]="password.newPassword" (input)="checkStrength()" />
+          <button type="button" class="text-toggle" (click)="showNew = !showNew">
+            {{ showNew ? 'Hide' : 'Show' }}
+          </button>
+        </div>
+        <div class="strength">
+          <div class="bar" [class.active]="strength>=1"></div>
+          <div class="bar" [class.active]="strength>=2"></div>
+          <div class="bar" [class.active]="strength>=3"></div>
+          <div class="bar" [class.active]="strength>=4"></div>
+          <div class="bar" [class.active]="strength>=5"></div>
+        </div>
+
+        <ul class="rules">
+          <li [class.ok]="rules.lowercase">Lowercase letter</li>
+          <li [class.ok]="rules.uppercase">Uppercase letter</li>
+          <li [class.ok]="rules.number">Number</li>
+          <li [class.ok]="rules.symbol">Special character</li>
+          <li [class.ok]="rules.length">At least 8 characters</li>
+        </ul>
+
+        <label>Confirm New Password</label>
+        <div class="password-wrapper">
+          <input [type]="showConfirm ? 'text' : 'password'" [(ngModel)]="password.confirmPassword" />
+          <button type="button" class="text-toggle" (click)="showConfirm = !showConfirm">
+            {{ showConfirm ? 'Hide' : 'Show' }}
+          </button>
+        </div>
+
+        <span class="error" *ngIf="password.confirmPassword && password.newPassword!==password.confirmPassword">
+          Passwords do not match
+        </span>
+
+        <div class="actions">
+          <button class="primary" [disabled]="!isPasswordValid()" (click)="changePassword()">
+            Update Password
+          </button>
+          <button class="secondary" (click)="cancelReset()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { ToastrService } from 'ngx-toastr';
-import { AdminSidebar } from '../admin-sidebar/admin-sidebar';
 import { forkJoin } from 'rxjs';
 
 type RequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
@@ -37,7 +36,7 @@ interface Consumer {
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, AdminSidebar],
+  imports: [CommonModule, FormsModule],
   templateUrl: './manage-requests.html',
   styleUrl: './manage-requests.css',
 })
@@ -55,6 +54,8 @@ export class ManageRequests {
   rejectType: 'CONSUMER' | 'CONNECTION' | null = null;
   rejectId: string | null = null;
 
+  loadingMap: Record<string, boolean> = {};
+
   constructor(private http: HttpClient, private toast: ToastrService) {
     this.loadConsumerRequests();
     this.loadConnectionRequests();
@@ -64,9 +65,7 @@ export class ManageRequests {
     const status = this.selectedStatus === 'ALL' ? '' : `?status=${this.selectedStatus}`;
 
     this.http.get<ConsumerRequest[]>(`http://localhost:9090/consumer-requests${status}`).subscribe({
-      next: (res) => {
-        this.consumerRequests = this.sortRequests(res);
-      },
+      next: (res) => (this.consumerRequests = this.sortRequests(res)),
       error: () => this.toast.error('Failed to load consumer requests'),
     });
   }
@@ -86,17 +85,15 @@ export class ManageRequests {
 
   loadConsumersForConnections(requests: ConnectionRequest[]) {
     const ids = [...new Set(requests.map((r) => r.consumerId))];
-    const missingIds = ids.filter((id) => !this.consumerMap[id]);
+    const missing = ids.filter((id) => !this.consumerMap[id]);
 
-    if (!missingIds.length) return;
+    if (!missing.length) return;
 
     forkJoin(
-      missingIds.map((id) => this.http.get<Consumer>(`http://localhost:9090/consumers/${id}`))
+      missing.map((id) => this.http.get<Consumer>(`http://localhost:9090/consumers/${id}`))
     ).subscribe({
       next: (res) => {
-        res.forEach((c) => {
-          this.consumerMap[c.id] = c;
-        });
+        res.forEach((c) => (this.consumerMap[c.id] = c));
       },
       error: () => this.toast.error('Failed to load consumer details'),
     });
@@ -124,29 +121,41 @@ export class ManageRequests {
     };
 
     return [...list].sort((a, b) => {
-      const statusDiff = order[a.status] - order[b.status];
-      if (statusDiff !== 0) return statusDiff;
+      const s = order[a.status] - order[b.status];
+      if (s !== 0) return s;
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
   }
 
   approveConsumer(id: string) {
+    this.loadingMap[id] = true;
+
     this.http.post(`http://localhost:9090/consumers/from-request/${id}`, {}).subscribe({
       next: () => {
+        this.loadingMap[id] = false;
         this.toast.success('Consumer approved');
         this.loadConsumerRequests();
       },
-      error: () => this.toast.error('Approval failed'),
+      error: () => {
+        this.loadingMap[id] = false;
+        this.toast.error('Approval failed');
+      },
     });
   }
 
   approveConnection(id: string) {
+    this.loadingMap[id] = true;
+
     this.http.post(`http://localhost:9090/meters/connection-requests/${id}/approve`, {}).subscribe({
       next: () => {
+        this.loadingMap[id] = false;
         this.toast.success('Connection approved');
         this.loadConnectionRequests();
       },
-      error: () => this.toast.error('Approval failed'),
+      error: () => {
+        this.loadingMap[id] = false;
+        this.toast.error('Approval failed');
+      },
     });
   }
 
@@ -170,6 +179,8 @@ export class ManageRequests {
       return;
     }
 
+    this.loadingMap[this.rejectId] = true;
+
     const req =
       this.rejectType === 'CONSUMER'
         ? this.http.put(`http://localhost:9090/consumer-requests/${this.rejectId}/reject`, {
@@ -182,12 +193,16 @@ export class ManageRequests {
 
     req.subscribe({
       next: () => {
+        this.loadingMap[this.rejectId!] = false;
         this.toast.success('Request rejected');
         this.closeRejectModal();
         this.loadConsumerRequests();
         this.loadConnectionRequests();
       },
-      error: () => this.toast.error('Rejection failed'),
+      error: () => {
+        this.loadingMap[this.rejectId!] = false;
+        this.toast.error('Rejection failed');
+      },
     });
   }
 }

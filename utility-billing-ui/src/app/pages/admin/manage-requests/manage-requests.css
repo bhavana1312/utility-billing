@@ -1,273 +1,256 @@
+:host {
+  --primary: #002050;
+  --secondary: #605e5c;
+  --accent: #0078d4;
+  --success: #107c10;
+  --danger: #a4262c;
+  --bg-app: #f3f2f1;
+  --bg-card: #ffffff;
+  --border: #edebe9;
+  --shadow: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.132), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.108);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
 .layout {
-  display: flex;
+  background-color: var(--bg-app);
   min-height: 100vh;
-  background: #f8fafc;
+  padding: 24px;
+  box-sizing: border-box;
 }
 
 .content {
-  flex: 1;
-  padding: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
 }
 
 .request-section {
-  margin-bottom: 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .section-header-row {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  margin-bottom: 24px;
-  gap: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
 }
 
 .title-group h3 {
+  font-size: 20px;
+  color: var(--primary);
   margin: 0;
-  font-size: 18px;
-  font-weight: 700;
 }
 
 .title-group p {
-  font-size: 14px;
-  color: #64748b;
+  font-size: 13px;
+  color: var(--secondary);
+  margin: 4px 0 0 0;
 }
 
 .filter-bar {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  align-items: center;
+  gap: 12px;
 }
 
 .filter-bar label {
   font-size: 12px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--secondary);
+  text-transform: uppercase;
 }
 
 .filter-bar select {
-  padding: 8px 14px;
-  border-radius: 10px;
-  border: 1px solid #e2e8f0;
-  background: white;
-  font-weight: 500;
-  min-width: 180px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-card);
+  font-size: 14px;
+  color: var(--primary);
+  outline: none;
 }
 
 .request-list {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 16px;
 }
 
 .request-card {
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 20px;
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  background: var(--bg-card);
+  border-radius: 4px;
+  box-shadow: var(--shadow);
+  border-top: 4px solid var(--accent);
+  transition: transform 0.2s;
 }
 
 .request-card:hover {
-  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
 
 .card-body {
+  padding: 20px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 24px;
-}
-
-.user-info {
-  flex: 1;
+  flex-direction: column;
+  gap: 16px;
+  height: 100%;
 }
 
 .name-row {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 6px;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.name-row h4 {
+  margin: 0;
+  font-size: 16px;
+  color: var(--primary);
+}
+
+.user-info p {
+  margin: 4px 0;
+  font-size: 13px;
+  color: var(--secondary);
 }
 
 .badge {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   padding: 4px 10px;
-  border-radius: 8px;
+  border-radius: 2px;
   text-transform: uppercase;
 }
 
 .badge.pending {
-  background: #fef3c7;
-  color: #92400e;
+  background: #fff4ce;
+  color: #845701;
 }
-
 .badge.approved {
-  background: #dcfce7;
-  color: #166534;
+  background: #dff6dd;
+  color: #107c10;
 }
-
 .badge.rejected {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.email,
-.address,
-.utility,
-.plan {
-  font-size: 14px;
-  color: #64748b;
-  margin: 2px 0;
+  background: #fde7e9;
+  color: #a4262c;
 }
 
 .actions {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 10px;
-}
-
-.actions button {
-  font-size: 12px;
-  font-weight: 600;
-  padding: 6px 14px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  margin-top: auto;
 }
 
 .btn-approve {
-  background: #ecfdf5;
-  color: #047857;
-  border: 1px solid #6ee7b7;
-}
-
-.btn-approve:hover {
-  background: #047857;
+  background: var(--accent);
   color: white;
-  border-color: #047857;
-  box-shadow: 0 6px 14px rgba(16, 185, 129, 0.25);
+  border: none;
+  padding: 10px;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .btn-reject {
-  background: #fff;
-  color: #dc2626;
-  border: 1px solid #fecaca;
+  background: white;
+  color: var(--danger);
+  border: 1px solid var(--danger);
+  padding: 10px;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
+.btn-approve:hover {
+  background: #005a9e;
+}
 .btn-reject:hover {
-  background: #dc2626;
+  background: var(--danger);
   color: white;
-  border-color: #dc2626;
-  box-shadow: 0 6px 14px rgba(220, 38, 38, 0.25);
-}
-
-.actions button:active {
-  transform: scale(0.96);
 }
 
 .rejection-note {
-  font-size: 13px;
-  color: #991b1b;
-  margin-top: 8px;
+  font-size: 12px;
+  padding: 10px;
+  background: #faf9f8;
+  border-left: 3px solid var(--danger);
+  color: var(--primary);
 }
 
+/* Modal Styling */
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.45);
+  background: rgba(0, 32, 80, 0.4);
+  backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 2000;
 }
 
 .modal {
-  background: white;
-  padding: 24px;
-  width: 420px;
-  border-radius: 16px;
-  box-shadow: 0 30px 60px rgba(15, 23, 42, 0.25);
+  background: var(--bg-card);
+  width: 90%;
+  max-width: 450px;
+  padding: 32px;
+  border-radius: 8px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal h3 {
+  margin-top: 0;
+  color: var(--primary);
 }
 
 .modal textarea {
   width: 100%;
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid #e2e8f0;
-  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  margin: 16px 0;
+  font-family: inherit;
+  resize: vertical;
+  box-sizing: border-box;
 }
 
 .modal-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  margin-top: 18px;
+  gap: 12px;
 }
 
 .btn-cancel {
-  background: #f8fafc;
-  color: #334155;
-  border: 1px solid #e2e8f0;
-  padding: 6px 14px;
-  border-radius: 8px;
-  font-weight: 600;
+  background: #f3f2f1;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
   cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-cancel:hover {
-  background: #e2e8f0;
 }
 
 .btn-reject-confirm {
-  background: #dc2626;
+  background: var(--danger);
   color: white;
   border: none;
-  padding: 6px 14px;
-  border-radius: 8px;
-  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 4px;
   cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-reject-confirm:hover {
-  background: #b91c1c;
-  box-shadow: 0 6px 14px rgba(220, 38, 38, 0.3);
-}
-
-.btn-reject-confirm:active {
-  transform: scale(0.96);
 }
 
 @media (max-width: 768px) {
-  .content {
-    padding: 20px;
-  }
-
   .section-header-row {
     flex-direction: column;
     align-items: flex-start;
+    gap: 16px;
   }
-
-  .card-body {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .actions {
-    width: 100%;
-  }
-
-  .actions button {
-    flex: 1;
-  }
-
-  .filter-bar {
-    width: 100%;
-  }
-
-  .filter-bar select {
-    min-width: 100%;
+  .request-list {
+    grid-template-columns: 1fr;
   }
 }

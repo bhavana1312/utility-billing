@@ -2,12 +2,11 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { ToastrService } from 'ngx-toastr';
-import { AdminSidebar } from '../admin-sidebar/admin-sidebar';
 import { ConfirmDialog } from '../../../shared/confirm-dialog/confirm-dialog';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, AdminSidebar, ConfirmDialog],
+  imports: [CommonModule, ConfirmDialog],
   templateUrl: './manage-consumers.html',
   styleUrl: './manage-consumers.css',
 })

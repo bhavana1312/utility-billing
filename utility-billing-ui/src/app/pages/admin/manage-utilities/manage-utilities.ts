@@ -10,11 +10,10 @@ import {
 } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { ToastrService } from 'ngx-toastr';
-import { AdminSidebar } from '../admin-sidebar/admin-sidebar';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, AdminSidebar],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './manage-utilities.html',
   styleUrl: './manage-utilities.css',
 })
@@ -42,6 +41,7 @@ export class ManageUtilities {
       effectiveFrom: [this.today, Validators.required],
       slabs: this.fb.array([]),
       overduePenaltySlabs: this.fb.array([]),
+      billingCycle: ['MONTHLY'],
     });
   }
 

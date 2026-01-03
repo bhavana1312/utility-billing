@@ -7,7 +7,6 @@ import { Router } from '@angular/router';
 export class AuthService {
   private readonly api = 'http://localhost:9090/auth';
   private readonly TOKEN_KEY = 'token';
-  private readonly ROLE_KEY = 'role';
 
   constructor(private readonly http: HttpClient, private readonly router: Router) {}
 
@@ -15,26 +14,36 @@ export class AuthService {
     return this.http.post<any>(`${this.api}/login`, data).pipe(
       tap((res) => {
         localStorage.setItem(this.TOKEN_KEY, res.token);
-        localStorage.setItem(this.ROLE_KEY, this.getRole(res.token));
       })
     );
   }
 
-  getRole(token: string): string {
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.roles?.[0] ?? '';
-    } catch {
-      return '';
-    }
+  getToken(): string | null {
+    return localStorage.getItem(this.TOKEN_KEY);
   }
 
-  getUserRole(): string | null {
-    return localStorage.getItem(this.ROLE_KEY);
+  private getPayload(): any {
+    const token = this.getToken();
+    if (!token) return null;
+    return JSON.parse(atob(token.split('.')[1]));
+  }
+
+  getUserRole(): string {
+    return this.getPayload()?.roles?.[0] ?? '';
+  }
+
+  getConsumerId(): string | null {
+    return this.getPayload()?.sub ?? null;
   }
 
   isLoggedIn(): boolean {
     return !!this.getToken() && !this.isTokenExpired();
+  }
+
+  isTokenExpired(): boolean {
+    const payload = this.getPayload();
+    if (!payload) return true;
+    return Date.now() > payload.exp * 1000;
   }
 
   logout() {
@@ -42,26 +51,7 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
 
-  getToken(): string | null {
-    return localStorage.getItem(this.TOKEN_KEY);
-  }
-
-  isTokenExpired(): boolean {
-    try {
-      const token = this.getToken();
-      if (!token) return true;
-
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const expiry = payload.exp * 1000;
-      return Date.now() > expiry;
-    } catch {
-      return true;
-    }
-  }
-
   checkTokenExpiry() {
-    if (this.isTokenExpired()) {
-      this.logout();
-    }
+    if (this.isTokenExpired()) this.logout();
   }
 }

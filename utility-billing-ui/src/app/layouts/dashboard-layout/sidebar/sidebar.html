@@ -1,0 +1,55 @@
+<div class="mobile-overlay" *ngIf="!collapsed" (click)="toggleSidebar()"></div>
+
+<aside class="sidebar" [class.collapsed]="collapsed">
+  <div class="sidebar-header">
+    <div class="brand" *ngIf="!collapsed">
+      <div class="brand-icon">{{config.brandIcon}}</div>
+      <span class="brand-name">
+        {{config.brandText}}<span>{{config.brandAccent}}</span>
+      </span>
+    </div>
+
+    <button class="toggle-btn" (click)="toggleSidebar()" [class.is-collapsed]="collapsed">
+      ‹
+    </button>
+  </div>
+
+  <nav class="nav-container">
+    <a *ngFor="let item of config.menu" [routerLink]="item.route" routerLinkActive="active"
+      [routerLinkActiveOptions]="{exact:item.exact||false}" class="nav-item">
+      <div class="icon-wrapper">{{item.icon}}</div>
+      <span class="label" *ngIf="!collapsed">{{item.label}}</span>
+      <span class="badge-dot" *ngIf="item.badge && !collapsed"></span>
+      <div class="tooltip" *ngIf="collapsed">{{item.label}}</div>
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-card" [class.is-collapsed]="collapsed">
+
+      <ng-container *ngIf="isConsumer;else otherRoles">
+        <div class="avatar">{{initials}}</div>
+
+        <div class="user-details" *ngIf="!collapsed">
+          <p class="name">{{consumer?.fullName}}</p>
+          <button class="logout-link" (click)="openLogoutConfirm()">Logout →</button>
+        </div>
+      </ng-container>
+
+      <ng-template #otherRoles>
+        <div class="avatar">{{config.brandAccent[0]}}</div>
+
+        <div class="user-details" *ngIf="!collapsed">
+          <p class="name">{{config.userLabel}}</p>
+          <button class="logout-link" (click)="openLogoutConfirm()">Logout →</button>
+        </div>
+      </ng-template>
+
+    </div>
+  </div>
+
+
+  <app-confirm-dialog [visible]="showLogoutConfirm" title="Logout" message="Are you sure you want to logout?"
+    confirmText="Logout" cancelText="Cancel" (confirm)="confirmLogout()" (cancel)="cancelLogout()">
+  </app-confirm-dialog>
+</aside>

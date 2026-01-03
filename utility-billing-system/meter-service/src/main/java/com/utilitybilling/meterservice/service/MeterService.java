@@ -1,5 +1,7 @@
 package com.utilitybilling.meterservice.service;
 
+import com.utilitybilling.meterservice.client.ConsumerClient;
+import com.utilitybilling.meterservice.client.ConsumerResponse;
 import com.utilitybilling.meterservice.client.NotificationClient;
 import com.utilitybilling.meterservice.client.NotificationRequest;
 import com.utilitybilling.meterservice.dto.*;
@@ -19,11 +21,12 @@ public class MeterService {
 	private final MeterRepository meterRepo;
 	private final MeterReadingRepository readingRepo;
 	private final NotificationClient notificationClient;
+	private final ConsumerClient consumerClient;
 
 	public void requestConnection(CreateConnectionRequest request) {
 
-		boolean exists = connectionRepo.existsByConsumerIdAndStatusIn(request.getConsumerId(),
-				List.of("PENDING", "APPROVED"));
+		boolean exists = connectionRepo.existsByConsumerIdAndStatusInAndUtilityType(request.getConsumerId(),
+				List.of(ConnectionStatus.PENDING,ConnectionStatus.APPROVED), request.getUtilityType());
 
 		if (exists)
 			throw new IllegalStateException("Consumer request already exists");
@@ -32,7 +35,6 @@ public class MeterService {
 		cr.setEmail(request.getEmail());
 		cr.setUtilityType(request.getUtilityType());
 		cr.setTariffPlan(request.getTariffPlan());
-		cr.setAddress(request.getAddress());
 		connectionRepo.save(cr);
 	}
 
@@ -145,6 +147,11 @@ public class MeterService {
 
 	public List<Meter> getAllMeters() {
 		return meterRepo.findAll();
+	}
+
+	public List<Meter> getMyMeters(String username) {
+		ConsumerResponse c = consumerClient.getByUsername(username);
+		return meterRepo.findByConsumerId(c.getId());
 	}
 
 }

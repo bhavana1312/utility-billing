@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { BillingSidebar } from './billing-sidebar';
+import { ForgotPassword } from './forgot-password';
 
-describe('BillingSidebar', () => {
-  let component: BillingSidebar;
-  let fixture: ComponentFixture<BillingSidebar>;
+describe('ForgotPassword', () => {
+  let component: ForgotPassword;
+  let fixture: ComponentFixture<ForgotPassword>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [BillingSidebar]
+      imports: [ForgotPassword]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(BillingSidebar);
+    fixture = TestBed.createComponent(ForgotPassword);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

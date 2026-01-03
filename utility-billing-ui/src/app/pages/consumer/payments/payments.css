@@ -1,0 +1,159 @@
+:host {
+  --primary: #2563eb;
+  --bg: #f8fafc;
+  --border: #e2e8f0;
+  --text: #020617;
+  --muted: #64748b;
+}
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg);
+  font-family: 'Inter', sans-serif;
+}
+
+.content {
+  flex: 1;
+  padding: 32px;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.date-display {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* TABLE (DESKTOP) */
+
+.payments-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.payments-table th {
+  text-align: left;
+  padding: 14px;
+  font-size: 13px;
+  color: var(--muted);
+  background: #f1f5f9;
+}
+
+.payments-table td {
+  padding: 14px;
+  font-size: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.invoice-btn {
+  padding: 8px 12px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* BADGES */
+
+.badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 8px;
+}
+
+.badge.success {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.badge.failed {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.badge.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+/* CARDS (MOBILE) */
+
+.payments-grid {
+  display: none;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.payment-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px;
+}
+
+.payment-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.info-row span {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.info-row strong {
+  font-size: 14px;
+  color: var(--text);
+}
+
+.payment-card button {
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: var(--primary);
+  color: white;
+  font-weight: 600;
+}
+
+/* RESPONSIVE SWITCH */
+
+@media (max-width: 768px) {
+  .payments-table {
+    display: none;
+  }
+
+  .payments-grid {
+    display: grid;
+  }
+
+  .content {
+    padding: 20px;
+  }
+
+  .dashboard-header {
+    display: none;
+  }
+}
