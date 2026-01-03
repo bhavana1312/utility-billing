@@ -1,5 +1,7 @@
 package com.utilitybilling.billingservice.service;
 
+import com.utilitybilling.billingservice.feign.ConsumerClient;
+import com.utilitybilling.billingservice.feign.ConsumerResponse;
 import com.utilitybilling.billingservice.feign.NotificationClient;
 import com.utilitybilling.billingservice.feign.NotificationRequest;
 import com.utilitybilling.billingservice.feign.TariffClient;
@@ -22,6 +24,7 @@ public class OverdueBillScheduler {
 	private final BillRepository billRepo;
 	private final TariffClient tariffClient;
 	private final NotificationClient notificationClient;
+	private final ConsumerClient consumerClient;
 
 	@Scheduled(cron = "0 30 09 * * *")
 	public void markOverdueBills() {
@@ -39,13 +42,15 @@ public class OverdueBillScheduler {
 
 			BigDecimal penalty = PenaltyCalculator.calculatePenalty(bill.getTotalAmount(), overdueDays,
 					tariff.getOverduePenaltySlabs());
+			
+			ConsumerResponse consumer = consumerClient.get(bill.getConsumerId());
 
 			bill.setPenaltyAmount(penalty);
 			bill.setTotalAmount(bill.getTotalAmount().add(penalty));
 			bill.setStatus(BillStatus.OVERDUE);
 			bill.setLastUpdatedAt(Instant.now());
 
-			notificationClient.send(NotificationRequest.builder().email(bill.getEmail()).type("BILL_OVERDUE")
+			notificationClient.send(NotificationRequest.builder().email(consumer.getEmail()).type("BILL_OVERDUE")
 					.subject("Your utility bill is overdue")
 					.message("Your " + bill.getUtilityType() + " bill is overdue.\n\n" + "Bill ID: " + bill.getId()
 							+ "\n" + "Amount Due: ₹" + bill.getTotalAmount() + "\n" + "Penalty Amount: ₹"

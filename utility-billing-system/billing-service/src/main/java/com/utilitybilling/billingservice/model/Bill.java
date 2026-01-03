@@ -16,7 +16,6 @@ public class Bill {
 	private String id;
 
 	private String consumerId;
-	private String email;
 	private String meterNumber;
 	private String utilityType;
 	private String tariffPlan;

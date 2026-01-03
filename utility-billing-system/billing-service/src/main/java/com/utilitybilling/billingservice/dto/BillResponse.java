@@ -10,7 +10,7 @@ import java.util.Date;
 public class BillResponse {
 
 	private String billId;
-	private String email;
+	private String consumerId;
 	private String meterNumber;
 	private String utilityType;
 	private String tariffPlan;

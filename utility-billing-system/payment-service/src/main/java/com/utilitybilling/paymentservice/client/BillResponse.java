@@ -10,7 +10,6 @@ public class BillResponse {
 
 	@Id
 	private String id;
-	private String email;
 	private String consumerId;
 	private String meterNumber;
 	private String utilityType;

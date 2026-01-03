@@ -12,7 +12,6 @@ public class InvoicePdfData {
 
 	private String invoiceId;
 	private String consumerId;
-	private String email;
 	private String meterNumber;
 	private String utilityType;
 

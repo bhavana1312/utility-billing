@@ -10,18 +10,34 @@ import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
+import com.utilitybilling.paymentservice.client.BillingClient;
+import com.utilitybilling.paymentservice.client.ConsumerClient;
+import com.utilitybilling.paymentservice.client.ConsumerResponse;
+import com.utilitybilling.paymentservice.client.NotificationClient;
 import com.utilitybilling.paymentservice.dto.InvoicePdfData;
+import com.utilitybilling.paymentservice.repository.InvoiceRepository;
+import com.utilitybilling.paymentservice.repository.PaymentRepository;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 
 @Service
+@RequiredArgsConstructor
 public class InvoicePdfService {
+	
+	private final ConsumerClient consumerClient;
+
 
 	public byte[] generate(InvoicePdfData d) {
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		Document doc = new Document(PageSize.A4, 40, 40, 40, 40);
+		
+		ConsumerResponse consumer = consumerClient.get(d.getConsumerId());
+
 
 		try {
 			PdfWriter.getInstance(doc, out);
@@ -42,7 +58,7 @@ public class InvoicePdfService {
 			add(info, "Utility Type", d.getUtilityType(), header, body);
 			add(info, "Consumer ID", d.getConsumerId(), header, body);
 			add(info, "Meter Number", d.getMeterNumber(), header, body);
-			add(info, "Email", d.getEmail(), header, body);
+			add(info, "Email", consumer.getEmail(), header, body);
 			doc.add(info);
 
 			doc.add(space());

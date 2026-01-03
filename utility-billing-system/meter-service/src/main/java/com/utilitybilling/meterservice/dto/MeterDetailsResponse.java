@@ -7,7 +7,6 @@ import lombok.Data;
 @Data
 public class MeterDetailsResponse {
 	private String meterNumber;
-	private String email;
 	private String consumerId;
 	private UtilityType utilityType;
 	private TariffPlan tariffPlan;

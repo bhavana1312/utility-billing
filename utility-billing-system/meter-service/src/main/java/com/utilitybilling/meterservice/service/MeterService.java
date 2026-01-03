@@ -53,7 +53,6 @@ public class MeterService {
 
 		Meter m = new Meter();
 		m.setConsumerId(cr.getConsumerId());
-		m.setEmail(cr.getEmail());
 		m.setUtilityType(cr.getUtilityType());
 		m.setTariffPlan(cr.getTariffPlan());
 		m.setInstallationDate(Instant.now());
@@ -93,7 +92,6 @@ public class MeterService {
 
 		MeterDetailsResponse r = new MeterDetailsResponse();
 		r.setMeterNumber(m.getMeterNumber());
-		r.setEmail(m.getEmail());
 		r.setConsumerId(m.getConsumerId());
 		r.setUtilityType(m.getUtilityType());
 		r.setTariffPlan(m.getTariffPlan());

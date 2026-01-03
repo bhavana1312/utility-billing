@@ -30,9 +30,9 @@ public class BillingService {
 		if (!meter.isActive())
 			throw new IllegalStateException("Meter is inactive");
 
-		ConsumerExistsResponse exists = consumerClient.exists(meter.getConsumerId());
+		ConsumerResponse consumer = consumerClient.get(meter.getConsumerId());
 
-		if (!exists.isExists())
+		if (consumer == null)
 			throw new IllegalArgumentException("Consumer does not exist");
 
 		double currentReading = meterClient.getLastReading(request.getMeterNumber());
@@ -57,7 +57,6 @@ public class BillingService {
 
 		Bill bill = new Bill();
 		bill.setConsumerId(meter.getConsumerId());
-		bill.setEmail(meter.getEmail());
 		bill.setMeterNumber(request.getMeterNumber());
 		bill.setUtilityType(meter.getUtilityType());
 		bill.setTariffPlan(meter.getTariffPlan());
@@ -77,7 +76,7 @@ public class BillingService {
 
 		Bill savedBill = billRepo.save(bill);
 
-		notificationClient.send(NotificationRequest.builder().email(bill.getEmail()).type("BILL_GENERATED")
+		notificationClient.send(NotificationRequest.builder().email(consumer.getEmail()).type("BILL_GENERATED")
 				.subject("Your utility bill is ready")
 				.message("Your " + bill.getUtilityType() + " bill has been generated.\n\n" + "Bill ID: "
 						+ savedBill.getId() + "\n" + "Amount Due: ₹" + bill.getTotalAmount() + "\n" + "Due Date: "
@@ -111,7 +110,7 @@ public class BillingService {
 	private BillResponse map(Bill bill) {
 		BillResponse r = new BillResponse();
 		r.setBillId(bill.getId());
-		r.setEmail(bill.getEmail());
+		r.setConsumerId(bill.getConsumerId());
 		r.setMeterNumber(bill.getMeterNumber());
 		r.setUtilityType(bill.getUtilityType());
 		r.setTariffPlan(bill.getTariffPlan());

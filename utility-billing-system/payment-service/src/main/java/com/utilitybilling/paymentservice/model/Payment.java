@@ -13,7 +13,6 @@ public class Payment {
 
 	@Id
 	private String id;
-	private String email;
 
 	private String billId;
 	private String consumerId;

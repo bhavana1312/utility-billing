@@ -29,7 +29,7 @@ public class BillingQueryService {
 	private BillResponse map(Bill bill) {
 		BillResponse r = new BillResponse();
 		r.setBillId(bill.getId());
-		r.setEmail(bill.getEmail());
+		r.setConsumerId(bill.getConsumerId());
 		r.setMeterNumber(bill.getMeterNumber());
 		r.setUtilityType(bill.getUtilityType());
 		r.setTariffPlan(bill.getTariffPlan());

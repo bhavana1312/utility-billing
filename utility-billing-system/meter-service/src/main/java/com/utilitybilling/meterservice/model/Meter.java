@@ -15,8 +15,6 @@ public class Meter {
 
 	private String consumerId;
 
-	private String email;
-
 	private UtilityType utilityType;
 	
 	private TariffPlan tariffPlan;

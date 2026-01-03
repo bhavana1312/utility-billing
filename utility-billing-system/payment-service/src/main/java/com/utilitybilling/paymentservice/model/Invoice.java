@@ -18,7 +18,6 @@ public class Invoice {
 	private String billId;
 
 	private String consumerId;
-	private String email;
 	private String meterNumber;
 	private String utilityType;
 

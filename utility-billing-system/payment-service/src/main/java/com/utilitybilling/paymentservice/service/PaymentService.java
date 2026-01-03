@@ -4,6 +4,8 @@ import java.util.Optional;
 import com.utilitybilling.paymentservice.client.BillResponse;
 import com.utilitybilling.paymentservice.client.BillStatus;
 import com.utilitybilling.paymentservice.client.BillingClient;
+import com.utilitybilling.paymentservice.client.ConsumerClient;
+import com.utilitybilling.paymentservice.client.ConsumerResponse;
 import com.utilitybilling.paymentservice.client.NotificationClient;
 import com.utilitybilling.paymentservice.client.NotificationRequest;
 import com.utilitybilling.paymentservice.dto.*;
@@ -30,6 +32,7 @@ public class PaymentService {
 	private final PaymentRepository paymentRepo;
 	private final InvoiceRepository invoiceRepo;
 	private final BillingClient billingClient;
+	private final ConsumerClient consumerClient;
 	private final NotificationClient notificationClient;
 	private final InvoicePdfService invoicePdfService;
 
@@ -43,7 +46,6 @@ public class PaymentService {
 
 		Payment p = new Payment();
 		p.setBillId(bill.getId());
-		p.setEmail(bill.getEmail());
 		p.setUtilityType(bill.getUtilityType());
 		p.setConsumerId(bill.getConsumerId());
 		p.setAmount(bill.getTotalAmount());
@@ -54,8 +56,10 @@ public class PaymentService {
 		p.setProcessedBy("SYSTEM");
 
 		paymentRepo.save(p);
+		
+		ConsumerResponse consumer = consumerClient.get(bill.getConsumerId());
 
-		notificationClient.send(NotificationRequest.builder().email(bill.getEmail()).type("PAYMENT_OTP")
+		notificationClient.send(NotificationRequest.builder().email(consumer.getEmail()).type("PAYMENT_OTP")
 				.subject("OTP for " + p.getUtilityType() + " bill payment")
 				.message("Payment initiated with id: " + p.getId() + "\n" + "Your OTP for " + p.getUtilityType()
 						+ " paying bill with id " + bill.getId() + " is: " + otp + "\n\n"
@@ -75,9 +79,11 @@ public class PaymentService {
 		if (!p.getOtp().equals(request.getOtp()) || Instant.now().isAfter(p.getOtpExpiresAt())) {
 			p.setStatus(PaymentStatus.FAILED);
 			paymentRepo.save(p);
+			
+			ConsumerResponse consumer = consumerClient.get(p.getConsumerId());
 
 			notificationClient
-					.send(NotificationRequest.builder().email(p.getEmail()).type("PAYMENT_FAILED")
+					.send(NotificationRequest.builder().email(consumer.getEmail()).type("PAYMENT_FAILED")
 							.subject("Payment failed").message("Your payment for " + p.getUtilityType()
 									+ " bill with id: " + p.getBillId() + " failed due to invalid or expired OTP.")
 							.build());
@@ -98,7 +104,6 @@ public class PaymentService {
 		inv.setPaymentId(p.getId());
 		inv.setBillId(bill.getId());
 		inv.setConsumerId(bill.getConsumerId());
-		inv.setEmail(bill.getEmail());
 		inv.setMeterNumber(bill.getMeterNumber());
 		inv.setUtilityType(bill.getUtilityType());
 
@@ -119,12 +124,14 @@ public class PaymentService {
 		inv.setBillGeneratedAt(bill.getGeneratedAt());
 
 		invoiceRepo.save(inv);
+		ConsumerResponse consumer = consumerClient.get(bill.getConsumerId());
+
 
 		InvoicePdfData pdfData = toPdfData(inv);
 		byte[] pdf = invoicePdfService.generate(pdfData);
 		String base64 = Base64.getEncoder().encodeToString(pdf);
 
-		notificationClient.send(NotificationRequest.builder().email(inv.getEmail()).type("INVOICE_PDF")
+		notificationClient.send(NotificationRequest.builder().email(consumer.getEmail()).type("INVOICE_PDF")
 				.subject("Invoice for " + inv.getUtilityType() + " Bill")
 				.message("Please find attached your invoice for payment ID: " + inv.getPaymentId())
 				.attachmentBase64(base64).attachmentName("invoice-" + inv.getId() + ".pdf").build());
@@ -148,6 +155,7 @@ public class PaymentService {
 		p.setCompletedAt(Instant.now());
 
 		paymentRepo.save(p);
+		ConsumerResponse consumer = consumerClient.get(bill.getConsumerId());
 		billingClient.markPaid(bill.getId());
 
 		Invoice inv = new Invoice();
@@ -155,7 +163,6 @@ public class PaymentService {
 		inv.setPaymentId(p.getId());
 		inv.setBillId(bill.getId());
 		inv.setConsumerId(bill.getConsumerId());
-		inv.setEmail(bill.getEmail());
 		inv.setMeterNumber(bill.getMeterNumber());
 		inv.setUtilityType(bill.getUtilityType());
 
@@ -181,7 +188,7 @@ public class PaymentService {
 		byte[] pdf = invoicePdfService.generate(pdfData);
 		String base64 = Base64.getEncoder().encodeToString(pdf);
 
-		notificationClient.send(NotificationRequest.builder().email(inv.getEmail()).type("INVOICE_PDF")
+		notificationClient.send(NotificationRequest.builder().email(consumer.getEmail()).type("INVOICE_PDF")
 				.subject("Invoice for " + inv.getUtilityType() + " Bill")
 				.message("Please find attached your invoice for payment ID: " + inv.getPaymentId())
 				.attachmentBase64(base64).attachmentName("invoice-" + inv.getId() + ".pdf").build());
@@ -201,7 +208,7 @@ public class PaymentService {
 	}
 
 	private InvoicePdfData toPdfData(Invoice inv) {
-		return InvoicePdfData.builder().invoiceId(inv.getId()).consumerId(inv.getConsumerId()).email(inv.getEmail())
+		return InvoicePdfData.builder().invoiceId(inv.getId()).consumerId(inv.getConsumerId())
 				.meterNumber(inv.getMeterNumber()).utilityType(inv.getUtilityType())
 				.previousReading(inv.getPreviousReading()).currentReading(inv.getCurrentReading())
 				.unitsConsumed(inv.getUnitsConsumed()).energyCharge(inv.getEnergyCharge())

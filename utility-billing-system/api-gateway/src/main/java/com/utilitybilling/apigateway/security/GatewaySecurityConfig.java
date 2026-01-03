@@ -44,7 +44,7 @@ public class GatewaySecurityConfig {
 				.requestMatchers(HttpMethod.PUT, "/consumers/**").hasRole("ADMIN")
 				.requestMatchers(HttpMethod.DELETE, "/consumers/**").hasRole("ADMIN")
 
-				.requestMatchers(HttpMethod.GET, "/consumers/**").hasAnyRole("USER", "ADMIN", "BILLING_OFFICER")
+				.requestMatchers(HttpMethod.GET, "/consumers/**").hasAnyRole("USER", "ADMIN", "BILLING_OFFICER", "ACCOUNTS_OFFICER")
 
 				.requestMatchers(HttpMethod.GET, "/consumer-requests/**").hasRole("ADMIN")
 				.requestMatchers(HttpMethod.PUT, "/consumer-requests/**").hasRole("ADMIN")
