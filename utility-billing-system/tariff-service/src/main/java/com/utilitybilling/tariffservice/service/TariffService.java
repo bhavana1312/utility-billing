@@ -14,6 +14,7 @@ import java.util.ArrayList;
 public class TariffService {
 
 	private final TariffRepository repo;
+	private static final String TARIFF_NOT_FOUND = "Tariff not found";
 
 	public void createPlan(CreateTariffPlanRequest r) {
 
@@ -34,7 +35,7 @@ public class TariffService {
 
 	public TariffResponse getActivePlan(UtilityType type, TariffPlan plan) {
 
-		Tariff tariff = repo.findByUtilityType(type).orElseThrow(() -> new NotFoundException("Tariff not found"));
+		Tariff tariff = repo.findByUtilityType(type).orElseThrow(() -> new NotFoundException(TARIFF_NOT_FOUND));
 
 		TariffPlanConfig p = tariff.getPlans().stream().filter(tp -> tp.getPlan() == plan && tp.isActive()).findFirst()
 				.orElseThrow(() -> new NotFoundException("Active plan not found"));
@@ -44,7 +45,7 @@ public class TariffService {
 
 	public void deactivatePlan(UtilityType type, TariffPlan plan) {
 
-		Tariff tariff = repo.findByUtilityType(type).orElseThrow(() -> new NotFoundException("Tariff not found"));
+		Tariff tariff = repo.findByUtilityType(type).orElseThrow(() -> new NotFoundException(TARIFF_NOT_FOUND));
 
 		TariffPlanConfig p = tariff.getPlans().stream().filter(tp -> tp.getPlan() == plan && tp.isActive()).findFirst()
 				.orElseThrow(() -> new NotFoundException("Active plan not found"));
@@ -55,7 +56,7 @@ public class TariffService {
 
 	public void updatePlan(UtilityType type, TariffPlan plan, UpdateTariffPlanRequest r) {
 
-		Tariff tariff = repo.findByUtilityType(type).orElseThrow(() -> new NotFoundException("Tariff not found"));
+		Tariff tariff = repo.findByUtilityType(type).orElseThrow(() -> new NotFoundException(TARIFF_NOT_FOUND));
 
 		TariffPlanConfig existing = tariff.getPlans().stream().filter(tp -> tp.getPlan() == plan && tp.isActive())
 				.findFirst().orElseThrow(() -> new BusinessException("No active plan"));

@@ -88,99 +88,89 @@ button:disabled {
   margin-top: 4px;
   font-family: 'Lato', sans-serif;
 }
-
 .toast-container {
-  padding: 12px;
+  padding: 16px;
   pointer-events: none;
 }
 
 .toast {
   pointer-events: auto;
   position: relative;
-  border-radius: 12px !important;
-  padding: 10px 14px 10px 44px !important;
-  box-shadow: 0 10px 24px rgba(2, 6, 23, 0.12) !important;
-  font-family: 'Poppins', sans-serif;
-  font-size: 13px;
-  line-height: 1.35;
-  border: none !important;
-  background-clip: padding-box;
-  animation: toastFadeUp 0.35s ease both;
-  max-width: 320px;
-  width: auto;
+  border-radius: 4px !important;
+  padding: 12px 16px 12px 48px !important;
+  box-shadow: 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.132) !important;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+  border: 1px solid #edebe9 !important;
+  background: #ffffff !important;
+  animation: toastSlideIn 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) both;
+  max-width: 350px;
 }
 
 @media (max-width: 640px) {
   .toast {
-    max-width: 100%;
-    padding: 10px 12px 10px 40px !important;
-    font-size: 12.5px;
+    max-width: calc(100vw - 32px);
+    margin: 0 auto 10px;
   }
 }
 
 .toast-title {
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 2px;
-  color: #020617;
+  color: #ffffff; /* Primary Navy */
 }
 
 .toast-message {
-  color: #475569;
-}
-
-.toast-close-button {
-  display: none !important;
+  color: #ffffff; /* Secondary Grey */
 }
 
 .toast-progress {
   height: 3px !important;
-  border-radius: 0 0 12px 12px;
-  opacity: 0.6;
+  background-color: #0078d4 !important; /* Accent Blue */
+  opacity: 0.4;
 }
 
+/* --- Theme Variants --- */
+
 .toast-success {
-  background: linear-gradient(135deg, #ecfdf5, #ffffff) !important;
-  border-left: 4px solid #10b981 !important;
+  border-left: 4px solid #107c10 !important; /* Success Green */
 }
 
 .toast-error {
-  background: linear-gradient(135deg, #fef2f2, #ffffff) !important;
-  border-left: 4px solid #ef4444 !important;
+  border-left: 4px solid #a4262c !important; /* Error Red */
 }
 
 .toast-info {
-  background: linear-gradient(135deg, #eef4ff, #ffffff) !important;
-  border-left: 4px solid #2563eb !important;
+  border-left: 4px solid #0078d4 !important; /* Accent Blue */
 }
 
 .toast-warning {
-  background: linear-gradient(135deg, #fff7ed, #ffffff) !important;
-  border-left: 4px solid #f97316 !important;
+  border-left: 4px solid #ffb900 !important; /* Warning Yellow */
 }
 
+/* --- Icon Container --- */
 .toast::before {
   position: absolute;
-  left: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 22px;
-  height: 22px;
-  border-radius: 8px;
-  background: rgba(2, 6, 23, 0.06);
+  left: 12px;
+  top: 14px;
+  width: 24px;
+  height: 24px;
+  border-radius: 2px;
+  background: #f3f2f1; /* App BG Grey */
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-size: 12px;
+  content: '';
 }
 
-@keyframes toastFadeUp {
+@keyframes toastSlideIn {
   from {
     opacity: 0;
-    transform: translateY(10px) scale(0.98);
+    transform: translateX(30px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateX(0);
   }
 }

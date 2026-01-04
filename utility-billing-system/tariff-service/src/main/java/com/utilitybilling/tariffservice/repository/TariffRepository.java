@@ -1,11 +1,11 @@
 package com.utilitybilling.tariffservice.repository;
 
-import com.utilitybilling.tariffservice.model.Tariff;
-import com.utilitybilling.tariffservice.model.UtilityType;
+import java.util.Optional;
+
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-import java.util.List;
-import java.util.Optional;
+import com.utilitybilling.tariffservice.model.Tariff;
+import com.utilitybilling.tariffservice.model.UtilityType;
 
 public interface TariffRepository extends MongoRepository<Tariff, String> {
 

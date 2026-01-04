@@ -11,6 +11,14 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 public class GatewaySecurityConfig {
 
+	private static final String ROLE_ADMIN = "ADMIN";
+	private static final String ROLE_BILLING_OFFICER = "BILLING_OFFICER";
+	private static final String ROLE_ACCOUNTS_OFFICER = "ACCOUNTS_OFFICER";
+	private static final String ROLE_USER = "USER";
+
+	private static final String UTILITIES_TARIFFS = "/utilities/tariffs/**";
+	private static final String CONSUMERS_ALL = "/consumers/**";
+
 	private final JwtAuthenticationFilter jwtFilter;
 
 	public GatewaySecurityConfig(JwtAuthenticationFilter jwtFilter) {
@@ -33,37 +41,39 @@ public class GatewaySecurityConfig {
 
 				.requestMatchers("/auth/**").permitAll().requestMatchers("/internal/**").permitAll()
 
-				.requestMatchers(HttpMethod.GET, "/utilities/tariffs/**").permitAll()
+				.requestMatchers(HttpMethod.GET, UTILITIES_TARIFFS).permitAll()
 				.requestMatchers(HttpMethod.POST, "/consumer-requests").permitAll()
 
-				.requestMatchers(HttpMethod.POST, "/utilities/tariffs/**").hasRole("ADMIN")
-				.requestMatchers(HttpMethod.PUT, "/utilities/tariffs/**").hasRole("ADMIN")
-				.requestMatchers(HttpMethod.DELETE, "/utilities/tariffs/**").hasRole("ADMIN")
+				.requestMatchers(HttpMethod.POST, UTILITIES_TARIFFS).hasRole(ROLE_ADMIN)
+				.requestMatchers(HttpMethod.PUT, UTILITIES_TARIFFS).hasRole(ROLE_ADMIN)
+				.requestMatchers(HttpMethod.DELETE, UTILITIES_TARIFFS).hasRole(ROLE_ADMIN)
 
-				.requestMatchers(HttpMethod.POST, "/consumers/from-request/**").hasRole("ADMIN")
-				.requestMatchers(HttpMethod.PUT, "/consumers/**").hasRole("ADMIN")
-				.requestMatchers(HttpMethod.DELETE, "/consumers/**").hasRole("ADMIN")
+				.requestMatchers(HttpMethod.POST, "/consumers/from-request/**").hasRole(ROLE_ADMIN)
+				.requestMatchers(HttpMethod.PUT, CONSUMERS_ALL).hasRole(ROLE_ADMIN)
+				.requestMatchers(HttpMethod.DELETE, CONSUMERS_ALL).hasRole(ROLE_ADMIN)
 
-				.requestMatchers(HttpMethod.GET, "/consumers/**").hasAnyRole("USER", "ADMIN", "BILLING_OFFICER", "ACCOUNTS_OFFICER")
+				.requestMatchers(HttpMethod.GET, CONSUMERS_ALL)
+				.hasAnyRole(ROLE_USER, ROLE_ADMIN, ROLE_BILLING_OFFICER, ROLE_ACCOUNTS_OFFICER)
 
-				.requestMatchers(HttpMethod.GET, "/consumer-requests/**").hasRole("ADMIN")
-				.requestMatchers(HttpMethod.PUT, "/consumer-requests/**").hasRole("ADMIN")
+				.requestMatchers(HttpMethod.GET, "/consumer-requests/**").hasRole(ROLE_ADMIN)
+				.requestMatchers(HttpMethod.PUT, "/consumer-requests/**").hasRole(ROLE_ADMIN)
 
 				.requestMatchers(HttpMethod.POST, "/meters/connection-requests").permitAll()
-				.requestMatchers(HttpMethod.POST, "/meters/connection-requests/**").hasRole("ADMIN")
-				.requestMatchers(HttpMethod.GET, "meters/consumer/**").hasAnyRole("USER", "ADMIN", "BILLING_OFFICER", "ACCOUNTS_OFFICER")
+				.requestMatchers(HttpMethod.POST, "/meters/connection-requests/**").hasRole(ROLE_ADMIN)
+				.requestMatchers(HttpMethod.GET, "meters/consumer/**")
+				.hasAnyRole(ROLE_USER, ROLE_ADMIN, ROLE_BILLING_OFFICER, ROLE_ACCOUNTS_OFFICER)
 
-				.requestMatchers(HttpMethod.POST, "/meters/readings").hasRole("BILLING_OFFICER")
+				.requestMatchers(HttpMethod.POST, "/meters/readings").hasRole(ROLE_BILLING_OFFICER)
 
-				.requestMatchers(HttpMethod.POST, "/billing/generate").hasRole("BILLING_OFFICER")
+				.requestMatchers(HttpMethod.POST, "/billing/generate").hasRole(ROLE_BILLING_OFFICER)
 				.requestMatchers(HttpMethod.GET, "/billing/**")
-				.hasAnyRole("USER", "ADMIN", "BILLING_OFFICER", "ACCOUNTS_OFFICER")
+				.hasAnyRole(ROLE_USER, ROLE_ADMIN, ROLE_BILLING_OFFICER, ROLE_ACCOUNTS_OFFICER)
 
-				.requestMatchers(HttpMethod.POST, "/payments/initiate").hasRole("USER")
-				.requestMatchers(HttpMethod.POST, "/payments/confirm").hasRole("USER")
-				.requestMatchers(HttpMethod.POST, "/payments/offline").hasRole("ACCOUNTS_OFFICER")
+				.requestMatchers(HttpMethod.POST, "/payments/initiate").hasRole(ROLE_USER)
+				.requestMatchers(HttpMethod.POST, "/payments/confirm").hasRole(ROLE_USER)
+				.requestMatchers(HttpMethod.POST, "/payments/offline").hasRole(ROLE_ACCOUNTS_OFFICER)
 				.requestMatchers(HttpMethod.GET, "/payments/**")
-				.hasAnyRole("USER", "ADMIN", "BILLING_OFFICER", "ACCOUNTS_OFFICER")
+				.hasAnyRole(ROLE_USER, ROLE_ADMIN, ROLE_BILLING_OFFICER, ROLE_ACCOUNTS_OFFICER)
 
 				.requestMatchers(HttpMethod.GET, "/meters/**").authenticated()
 
