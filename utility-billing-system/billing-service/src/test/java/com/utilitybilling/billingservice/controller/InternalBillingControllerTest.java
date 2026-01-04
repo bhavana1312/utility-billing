@@ -1,19 +1,22 @@
 package com.utilitybilling.billingservice.controller;
 
-import com.utilitybilling.billingservice.dto.OutstandingBalanceResponse;
-import com.utilitybilling.billingservice.model.Bill;
-import com.utilitybilling.billingservice.service.BillingService;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.math.BigDecimal;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.math.BigDecimal;
-
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import com.utilitybilling.billingservice.dto.OutstandingBalanceResponse;
+import com.utilitybilling.billingservice.model.Bill;
+import com.utilitybilling.billingservice.service.BillingService;
 
 class InternalBillingControllerTest {
 

@@ -65,7 +65,6 @@ public class NotificationService {
 			repository.save(Notification.builder().recipient(dto.getEmail()).type(dto.getType())
 					.channel(NotificationChannel.EMAIL).status(NotificationStatus.FAILED).subject(dto.getSubject())
 					.body(dto.getMessage()).createdAt(Instant.now()).build());
-			System.out.print(ex);
 
 			throw new NotificationException("Email delivery failed");
 		}

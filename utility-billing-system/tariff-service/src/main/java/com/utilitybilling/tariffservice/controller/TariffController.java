@@ -24,7 +24,6 @@ public class TariffController {
 	@GetMapping("/{utilityType}/plans/{plan}")
 	public ResponseEntity<TariffResponse> getActivePlan(@PathVariable("utilityType") UtilityType utilityType,
 			@PathVariable("plan") TariffPlan plan) {
-//		throw new RuntimeException("Tariff service failure");
 		return ResponseEntity.ok(service.getActivePlan(utilityType, plan));
 	}
 
@@ -38,7 +37,6 @@ public class TariffController {
 	@PutMapping("/{utilityType}/plans/{plan}")
 	public ResponseEntity<Void> updatePlan(@PathVariable("utilityType") UtilityType utilityType,
 			@PathVariable("plan") TariffPlan plan, @Valid @RequestBody UpdateTariffPlanRequest r) {
-		System.out.println("Hello");
 		service.updatePlan(utilityType, plan, r);
 		return ResponseEntity.noContent().build();
 	}

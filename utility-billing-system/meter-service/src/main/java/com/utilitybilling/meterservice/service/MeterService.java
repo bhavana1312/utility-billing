@@ -22,6 +22,7 @@ public class MeterService {
 	private final MeterReadingRepository readingRepo;
 	private final NotificationClient notificationClient;
 	private final ConsumerClient consumerClient;
+	private static final String METER_NOT_FOUND = "Meter not found";
 
 	public void requestConnection(CreateConnectionRequest request) {
 
@@ -74,6 +75,7 @@ public class MeterService {
 							+ cr.getTariffPlan() + "\n" + "Meter Number: " + m.getMeterNumber())
 					.build());
 		} catch (Exception e) {
+			// Notification failure should not affect connection approval flow
 		}
 	}
 
@@ -97,11 +99,12 @@ public class MeterService {
 							+ " connection request was rejected.\n\n" + "Reason: " + reason)
 					.build());
 		} catch (Exception e) {
+			// Notification failure should not affect rejection flow
 		}
 	}
 
 	public MeterDetailsResponse getMeter(String meterNumber) {
-		Meter m = meterRepo.findById(meterNumber).orElseThrow(() -> new IllegalArgumentException("Meter not found"));
+		Meter m = meterRepo.findById(meterNumber).orElseThrow(() -> new IllegalArgumentException(METER_NOT_FOUND));
 
 		MeterDetailsResponse r = new MeterDetailsResponse();
 		r.setMeterNumber(m.getMeterNumber());
@@ -118,14 +121,14 @@ public class MeterService {
 	}
 
 	public void deactivateMeter(String meterNumber) {
-		Meter m = meterRepo.findById(meterNumber).orElseThrow(() -> new IllegalArgumentException("Meter not found"));
+		Meter m = meterRepo.findById(meterNumber).orElseThrow(() -> new IllegalArgumentException(METER_NOT_FOUND));
 		m.setActive(false);
 		meterRepo.save(m);
 	}
 
 	public MeterReadingResponse addReading(CreateMeterReadingRequest request) {
 		Meter meter = meterRepo.findById(request.getMeterNumber())
-				.orElseThrow(() -> new IllegalArgumentException("Meter not found"));
+				.orElseThrow(() -> new IllegalArgumentException(METER_NOT_FOUND));
 
 		if (!meter.isActive())
 			throw new IllegalStateException("Meter is inactive");
@@ -152,7 +155,7 @@ public class MeterService {
 	}
 
 	public double getLastReading(String meterNumber) {
-		return meterRepo.findById(meterNumber).orElseThrow(() -> new IllegalArgumentException("Meter not found"))
+		return meterRepo.findById(meterNumber).orElseThrow(() -> new IllegalArgumentException(METER_NOT_FOUND))
 				.getLastReading();
 	}
 

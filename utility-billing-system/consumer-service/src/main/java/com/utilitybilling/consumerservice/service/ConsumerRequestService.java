@@ -24,16 +24,18 @@ public class ConsumerRequestService {
 	private final ConsumerRequestRepository repository;
 	private final NotificationClient notificationClient;
 
+	private static final String STATUS_PENDING = "PENDING";
+
 	public ConsumerRequestResponse submit(CreateConsumerRequest r) {
 
-		boolean exists = repository.existsByEmailAndStatusIn(r.getEmail(), List.of("PENDING", "APPROVED"));
+		boolean exists = repository.existsByEmailAndStatusIn(r.getEmail(), List.of(STATUS_PENDING, "APPROVED"));
 
 		if (exists)
 			throw new IllegalStateException("Consumer request already exists for this email");
 
 		ConsumerRequest cr = ConsumerRequest.builder().fullName(r.getFullName()).email(r.getEmail()).phone(r.getPhone())
 				.addressLine1(r.getAddressLine1()).city(r.getCity()).state(r.getState()).postalCode(r.getPostalCode())
-				.status("PENDING").createdAt(Instant.now()).updatedAt(Instant.now()).build();
+				.status(STATUS_PENDING).createdAt(Instant.now()).updatedAt(Instant.now()).build();
 
 		cr = repository.save(cr);
 
@@ -52,7 +54,7 @@ public class ConsumerRequestService {
 	public void reject(String id, String reason) {
 		ConsumerRequest r = getById(id);
 
-		if (!"PENDING".equals(r.getStatus()))
+		if (!STATUS_PENDING.equals(r.getStatus()))
 			throw new IllegalStateException("Request already processed");
 
 		r.setStatus("REJECTED");

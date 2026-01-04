@@ -29,11 +29,11 @@ public class BillingOfficerDataInitializer {
 					throw new IllegalStateException("ADMIN_INITIAL_PASSWORD environment variable is not set");
 				}
 
-				User billing_officer = User.builder().username("billing_officer").email("22071a66d9@vnrvjiet.in")
+				User billingOfficer = User.builder().username("billing_officer").email("22071a66d9@vnrvjiet.in")
 						.password(encoder.encode(rawPassword)).roles(List.of("ROLE_BILLING_OFFICER")).enabled(true)
 						.createdAt(Instant.now()).passwordUpdatedAt(Instant.now()).build();
 
-				userRepository.save(billing_officer);
+				userRepository.save(billingOfficer);
 			}
 		};
 	}

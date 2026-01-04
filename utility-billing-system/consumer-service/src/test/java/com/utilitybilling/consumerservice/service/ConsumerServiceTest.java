@@ -124,7 +124,9 @@ class ConsumerServiceTest {
 
 		when(consumerRepo.findById("C1")).thenReturn(Optional.of(c));
 
-		assertThrows(IllegalStateException.class, () -> service.update("C1", new UpdateConsumerRequest()));
+		UpdateConsumerRequest r = new UpdateConsumerRequest();
+
+		assertThrows(IllegalStateException.class, () -> service.update("C1", r));
 	}
 
 	@Test

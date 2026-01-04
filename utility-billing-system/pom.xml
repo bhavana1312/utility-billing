@@ -20,6 +20,28 @@
         <spring.cloud.version>2023.0.1</spring.cloud.version>
         <lombok.version>1.18.30</lombok.version>
         <jacoco.version>0.8.11</jacoco.version>
+        <sonar.organization>bhavana1312</sonar.organization>
+        <sonar.coverage.exclusions>
+        **/model/**,
+        **/entity/**,
+        **/dto/**,
+        **/config/**,
+        **/feign/**,
+        **/client/**,
+        **/exception/**,
+        **/constants/**,
+        **/repository/**,
+        **/repo/**,
+        **/client/**,
+        **/security/**,
+        **/filter/**,
+        **/util/**,
+        **/utils/**,
+        **/mapper/**,
+        **/listener/**,
+        **/event/**,
+        **/*Application.java
+    </sonar.coverage.exclusions>
     </properties>
 
     <!-- 🌐 Modules (we will add services one by one) -->

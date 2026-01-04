@@ -4,6 +4,10 @@ import java.security.SecureRandom;
 
 public class PasswordGenerator {
 
+	private PasswordGenerator() {
+		throw new AssertionError("Utility class");
+	}
+
 	private static final String CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#";
 
 	public static String generate() {

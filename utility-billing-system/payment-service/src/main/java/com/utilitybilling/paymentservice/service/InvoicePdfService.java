@@ -1,5 +1,9 @@
 package com.utilitybilling.paymentservice.service;
 
+import java.io.ByteArrayOutputStream;
+
+import org.springframework.stereotype.Service;
+
 import com.lowagie.text.Document;
 import com.lowagie.text.Element;
 import com.lowagie.text.Font;
@@ -11,33 +15,24 @@ import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import com.utilitybilling.paymentservice.dto.InvoicePdfData;
-import com.utilitybilling.paymentservice.feign.BillingClient;
+import com.utilitybilling.paymentservice.exception.InvoicePdfGenerationException;
 import com.utilitybilling.paymentservice.feign.ConsumerClient;
 import com.utilitybilling.paymentservice.feign.ConsumerResponse;
-import com.utilitybilling.paymentservice.feign.NotificationClient;
-import com.utilitybilling.paymentservice.repository.InvoiceRepository;
-import com.utilitybilling.paymentservice.repository.PaymentRepository;
 
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.stereotype.Service;
-
-import java.io.ByteArrayOutputStream;
 
 @Service
 @RequiredArgsConstructor
 public class InvoicePdfService {
-	
-	private final ConsumerClient consumerClient;
 
+	private final ConsumerClient consumerClient;
 
 	public byte[] generate(InvoicePdfData d) {
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		Document doc = new Document(PageSize.A4, 40, 40, 40, 40);
-		
-		ConsumerResponse consumer = consumerClient.get(d.getConsumerId());
 
+		ConsumerResponse consumer = consumerClient.get(d.getConsumerId());
 
 		try {
 			PdfWriter.getInstance(doc, out);
@@ -106,7 +101,7 @@ public class InvoicePdfService {
 			doc.close();
 
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw new InvoicePdfGenerationException("PDF rendering error", e);
 		}
 
 		return out.toByteArray();

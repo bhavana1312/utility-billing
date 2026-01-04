@@ -49,8 +49,9 @@ class ConsumerRequestServiceTest {
 	@Test
 	void submit_duplicate_email() {
 		when(repo.existsByEmailAndStatusIn(any(), any())).thenReturn(true);
+		CreateConsumerRequest r = new CreateConsumerRequest();
 
-		assertThrows(IllegalStateException.class, () -> service.submit(new CreateConsumerRequest()));
+		assertThrows(IllegalStateException.class, () -> service.submit(r));
 	}
 
 	@Test

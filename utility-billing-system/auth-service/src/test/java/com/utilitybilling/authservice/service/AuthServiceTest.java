@@ -150,7 +150,8 @@ class AuthServiceTest {
 	@Test
 	void changePassword_user_not_found() {
 		when(repo.findByUsername("u")).thenReturn(Optional.empty());
-		assertThrows(UserNotFoundException.class, () -> service.changePassword("u", new ChangePasswordRequest()));
+		ChangePasswordRequest cpr = new ChangePasswordRequest();
+		assertThrows(UserNotFoundException.class, () -> service.changePassword("u", cpr));
 	}
 
 	@Test
@@ -159,8 +160,9 @@ class AuthServiceTest {
 
 		when(repo.findByUsername("u")).thenReturn(Optional.of(u));
 		when(encoder.matches(any(), any())).thenReturn(false);
+		ChangePasswordRequest cpr = new ChangePasswordRequest();
 
-		assertThrows(InvalidCredentialsException.class, () -> service.changePassword("u", new ChangePasswordRequest()));
+		assertThrows(InvalidCredentialsException.class, () -> service.changePassword("u", cpr));
 	}
 
 	@Test
@@ -170,7 +172,9 @@ class AuthServiceTest {
 		when(repo.findByUsername("u")).thenReturn(Optional.of(u));
 		when(encoder.matches(any(), any())).thenReturn(true);
 
-		assertThrows(InvalidCredentialsException.class, () -> service.changePassword("u", new ChangePasswordRequest()));
+		ChangePasswordRequest cpr = new ChangePasswordRequest();
+
+		assertThrows(InvalidCredentialsException.class, () -> service.changePassword("u", cpr));
 	}
 
 	@Test

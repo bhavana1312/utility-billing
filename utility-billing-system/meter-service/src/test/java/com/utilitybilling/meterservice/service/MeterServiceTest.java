@@ -49,7 +49,9 @@ class MeterServiceTest {
 	void requestConnection_duplicate() {
 		when(connectionRepo.existsByConsumerIdAndStatusInAndUtilityType(any(), any(), any())).thenReturn(true);
 
-		assertThrows(IllegalStateException.class, () -> service.requestConnection(new CreateConnectionRequest()));
+		CreateConnectionRequest r = new CreateConnectionRequest();
+
+		assertThrows(IllegalStateException.class, () -> service.requestConnection(r));
 	}
 
 	@Test

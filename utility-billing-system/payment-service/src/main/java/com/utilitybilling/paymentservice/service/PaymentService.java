@@ -1,18 +1,9 @@
 package com.utilitybilling.paymentservice.service;
 
-import java.util.Optional;
-
-import com.utilitybilling.paymentservice.dto.*;
-import com.utilitybilling.paymentservice.feign.BillResponse;
-import com.utilitybilling.paymentservice.feign.BillStatus;
-import com.utilitybilling.paymentservice.feign.BillingClient;
-import com.utilitybilling.paymentservice.feign.ConsumerClient;
-import com.utilitybilling.paymentservice.feign.ConsumerResponse;
-import com.utilitybilling.paymentservice.feign.NotificationClient;
-import com.utilitybilling.paymentservice.feign.NotificationRequest;
-import com.utilitybilling.paymentservice.model.*;
-import com.utilitybilling.paymentservice.repository.*;
-import lombok.RequiredArgsConstructor;
+import java.time.Instant;
+import java.util.Base64;
+import java.util.List;
+import java.util.Random;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,10 +12,25 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.Instant;
-import java.util.Base64;
-import java.util.List;
-import java.util.Random;
+import com.utilitybilling.paymentservice.dto.ConfirmPaymentRequest;
+import com.utilitybilling.paymentservice.dto.InitiatePaymentRequest;
+import com.utilitybilling.paymentservice.dto.InvoicePdfData;
+import com.utilitybilling.paymentservice.dto.OfflinePaymentRequest;
+import com.utilitybilling.paymentservice.feign.BillResponse;
+import com.utilitybilling.paymentservice.feign.BillStatus;
+import com.utilitybilling.paymentservice.feign.BillingClient;
+import com.utilitybilling.paymentservice.feign.ConsumerClient;
+import com.utilitybilling.paymentservice.feign.ConsumerResponse;
+import com.utilitybilling.paymentservice.feign.NotificationClient;
+import com.utilitybilling.paymentservice.feign.NotificationRequest;
+import com.utilitybilling.paymentservice.model.Invoice;
+import com.utilitybilling.paymentservice.model.Payment;
+import com.utilitybilling.paymentservice.model.PaymentMode;
+import com.utilitybilling.paymentservice.model.PaymentStatus;
+import com.utilitybilling.paymentservice.repository.InvoiceRepository;
+import com.utilitybilling.paymentservice.repository.PaymentRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -37,13 +43,15 @@ public class PaymentService {
 	private final NotificationClient notificationClient;
 	private final InvoicePdfService invoicePdfService;
 
+	private static final Random RANDOM = new Random();
+
 	public Object initiate(InitiatePaymentRequest request) {
 		BillResponse bill = billingClient.getBill(request.getBillId());
 
 		if (!bill.getStatus().equals(BillStatus.DUE) && !bill.getStatus().equals(BillStatus.OVERDUE))
 			throw new IllegalStateException("Bill is not payable");
 
-		String otp = String.valueOf(100000 + new Random().nextInt(900000));
+		String otp = String.valueOf(100000 + RANDOM.nextInt(900000));
 
 		Payment p = new Payment();
 		p.setBillId(bill.getId());
@@ -57,7 +65,7 @@ public class PaymentService {
 		p.setProcessedBy("SYSTEM");
 
 		paymentRepo.save(p);
-		
+
 		ConsumerResponse consumer = consumerClient.get(bill.getConsumerId());
 
 		notificationClient.send(NotificationRequest.builder().email(consumer.getEmail()).type("PAYMENT_OTP")
@@ -80,7 +88,7 @@ public class PaymentService {
 		if (!p.getOtp().equals(request.getOtp()) || Instant.now().isAfter(p.getOtpExpiresAt())) {
 			p.setStatus(PaymentStatus.FAILED);
 			paymentRepo.save(p);
-			
+
 			ConsumerResponse consumer = consumerClient.get(p.getConsumerId());
 
 			notificationClient
@@ -126,7 +134,6 @@ public class PaymentService {
 
 		invoiceRepo.save(inv);
 		ConsumerResponse consumer = consumerClient.get(bill.getConsumerId());
-
 
 		InvoicePdfData pdfData = toPdfData(inv);
 		byte[] pdf = invoicePdfService.generate(pdfData);
@@ -196,34 +203,15 @@ public class PaymentService {
 
 	}
 
-	public Page<Payment> history(
-			String consumerId,
-			int page,
-			int size,
-			String utilityType
-	){
-		PageRequest pageable=PageRequest.of(
-				page,
-				size,
-				Sort.by(Sort.Direction.DESC,"completedAt")
-		);
+	public Page<Payment> history(String consumerId, int page, int size, String utilityType) {
+		PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "completedAt"));
 
-		if(utilityType==null||utilityType.isBlank()){
-			return paymentRepo.findByConsumerId(
-					consumerId,
-					pageable
-			);
+		if (utilityType == null || utilityType.isBlank()) {
+			return paymentRepo.findByConsumerId(consumerId, pageable);
 		}
 
-		return paymentRepo.findByConsumerIdAndUtilityType(
-				consumerId,
-				utilityType,
-				pageable
-		);
+		return paymentRepo.findByConsumerIdAndUtilityType(consumerId, utilityType, pageable);
 	}
-
-
-
 
 	public List<Invoice> invoices(String consumerId) {
 		return invoiceRepo.findByConsumerId(consumerId);
@@ -254,22 +242,13 @@ public class PaymentService {
 		return invoicePdfService.generate(toPdfData(inv));
 	}
 
-	public Page<Payment> getPayments(
-	        int page,
-	        int size,
-	        String search,
-	        String mode
-	) {
+	public Page<Payment> getPayments(int page, int size, String search, String mode) {
 
-	    PageRequest pageable = PageRequest.of(
-	            page,
-	            size,
-	            Sort.by(Sort.Direction.DESC, "completedAt")
-	    );
+		PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "completedAt"));
 
-	    String s = search == null ? "" : search;
-	    String m = mode == null || mode.isBlank() ? "" : mode;
+		String s = search == null ? "" : search;
+		String m = mode == null || mode.isBlank() ? "" : mode;
 
-	    return paymentRepo.search(s, m, pageable);
+		return paymentRepo.search(s, m, pageable);
 	}
 }

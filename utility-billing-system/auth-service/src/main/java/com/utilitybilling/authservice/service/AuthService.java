@@ -42,7 +42,7 @@ public class AuthService {
 
 	public LoginResponse login(LoginRequest r) {
 		User u = repo.findByUsername(r.getUsername()).orElseThrow(UserNotFoundException::new);
-		
+
 		if (!encoder.matches(r.getPassword(), u.getPassword()))
 			throw new InvalidCredentialsException("Invalid credentials");
 
@@ -100,8 +100,8 @@ public class AuthService {
 
 		notificationClient.send(NotificationRequest.builder().email(u.getEmail()).type("PASSWORD_CHANGED")
 				.subject("Your password was reset successfully")
-				.message("Your password has been reset successfully.\n\n"
-						+ "If you did not perform this action, please contact support immediately.")
+				.message(
+						"Your password has been reset successfully.\n\n If you did not perform this action, please contact support immediately.")
 				.build());
 	}
 }
