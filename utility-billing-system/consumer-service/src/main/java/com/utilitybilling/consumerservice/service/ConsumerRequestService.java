@@ -8,6 +8,10 @@ import com.utilitybilling.consumerservice.feign.NotificationRequest;
 import com.utilitybilling.consumerservice.model.ConsumerRequest;
 import com.utilitybilling.consumerservice.repository.ConsumerRequestRepository;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -36,8 +40,9 @@ public class ConsumerRequestService {
 		return ConsumerRequestResponse.builder().requestId(cr.getId()).status(cr.getStatus()).build();
 	}
 
-	public List<ConsumerRequest> getAll(String status) {
-		return status == null ? repository.findAll() : repository.findByStatus(status);
+	public Page<ConsumerRequest> getAll(String status, int page, int size) {
+		PageRequest pr = PageRequest.of(page, size, Sort.by("createdAt").descending());
+		return status == null ? repository.findAll(pr) : repository.findByStatus(status, pr);
 	}
 
 	public ConsumerRequest getById(String id) {

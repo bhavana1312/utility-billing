@@ -56,18 +56,29 @@ export class ManageRequests {
 
   loadingMap: Record<string, boolean> = {};
 
+  page = 0;
+  size = 10;
+  totalPages = 0;
+
   constructor(private http: HttpClient, private toast: ToastrService) {
     this.loadConsumerRequests();
     this.loadConnectionRequests();
   }
 
   loadConsumerRequests() {
-    const status = this.selectedStatus === 'ALL' ? '' : `?status=${this.selectedStatus}`;
+    const statusParam = this.selectedStatus === 'ALL' ? '' : `&status=${this.selectedStatus}`;
 
-    this.http.get<ConsumerRequest[]>(`http://localhost:9090/consumer-requests${status}`).subscribe({
-      next: (res) => (this.consumerRequests = this.sortRequests(res)),
-      error: () => this.toast.error('Failed to load consumer requests'),
-    });
+    this.http
+      .get<any>(
+        `http://localhost:9090/consumer-requests?page=${this.page}&size=${this.size}${statusParam}`
+      )
+      .subscribe({
+        next: (res) => {
+          this.consumerRequests = this.sortRequests(res.content);
+          this.totalPages = res.totalPages;
+        },
+        error: () => this.toast.error('Failed to load consumer requests'),
+      });
   }
 
   loadConnectionRequests() {
@@ -100,6 +111,7 @@ export class ManageRequests {
   }
 
   onStatusChange() {
+    this.page = 0;
     this.loadConsumerRequests();
     this.applyConnectionFilters();
   }
@@ -125,6 +137,27 @@ export class ManageRequests {
       if (s !== 0) return s;
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
+  }
+
+  nextPage() {
+    if (this.page < this.totalPages - 1) {
+      this.page++;
+      this.loadConsumerRequests();
+    }
+  }
+
+  prevPage() {
+    if (this.page > 0) {
+      this.page--;
+      this.loadConsumerRequests();
+    }
+  }
+
+  goToPage(p: number) {
+    if (p >= 0 && p < this.totalPages) {
+      this.page = p;
+      this.loadConsumerRequests();
+    }
   }
 
   approveConsumer(id: string) {

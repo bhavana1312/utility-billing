@@ -8,6 +8,9 @@ Chart.register(...registerables);
 
 interface PageResponse<T> {
   content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
 }
 
 @Component({
@@ -21,13 +24,12 @@ export class AdminDashboard implements AfterViewInit {
   consumerMap: Record<string, any> = {};
   bills: any[] = [];
   charts: Chart[] = [];
+  today = new Date();
 
   totalConsumers = 0;
   activeConnections = 0;
   monthlyRevenue = 0;
   overdueCount = 0;
-
-  today = new Date();
 
   constructor(private http: HttpClient) {
     this.loadData();
@@ -38,22 +40,67 @@ export class AdminDashboard implements AfterViewInit {
   }
 
   loadData() {
-    this.http.get<any[]>('http://localhost:9090/consumers').subscribe((c) => {
-      this.consumers = c;
-      c.forEach((x) => (this.consumerMap[x.id] = x));
-      this.totalConsumers = c.length;
-      this.activeConnections = c.filter((x) => x.active).length;
-      this.renderCharts();
-    });
+    this.loadAllConsumers();
+    this.loadAllBills();
+    this.loadActiveConnections();
+  }
 
-    this.http
-      .get<PageResponse<any>>('http://localhost:9090/billing?page=0&size=1000')
-      .subscribe((b) => {
-        this.bills = b.content;
-        this.loadMissingConsumers();
-        this.calculateStats();
-        this.renderCharts();
-      });
+  loadAllConsumers() {
+    this.consumers = [];
+    this.consumerMap = {};
+
+    const size = 100;
+    let page = 0;
+
+    const fetch = () => {
+      this.http
+        .get<PageResponse<any>>(`http://localhost:9090/consumers?page=${page}&size=${size}`)
+        .subscribe((res) => {
+          this.consumers.push(...res.content);
+          res.content.forEach((c) => (this.consumerMap[c.id] = c));
+
+          if (page + 1 < res.totalPages) {
+            page++;
+            fetch();
+          } else {
+            this.totalConsumers = res.totalElements;
+            this.renderCharts();
+          }
+        });
+    };
+
+    fetch();
+  }
+
+  loadAllBills() {
+    this.bills = [];
+    const size = 200;
+    let page = 0;
+
+    const fetch = () => {
+      this.http
+        .get<PageResponse<any>>(`http://localhost:9090/billing?page=${page}&size=${size}`)
+        .subscribe((res) => {
+          this.bills.push(...res.content);
+
+          if (page + 1 < res.totalPages) {
+            page++;
+            fetch();
+          } else {
+            this.loadMissingConsumers();
+            this.calculateStats();
+            this.renderCharts();
+          }
+        });
+    };
+
+    fetch();
+  }
+
+  loadActiveConnections() {
+    this.http.get<any[]>('http://localhost:9090/meters/all').subscribe((res) => {
+      this.activeConnections = res.filter((m) => m.active).length;
+    });
   }
 
   loadMissingConsumers() {
@@ -98,12 +145,9 @@ export class AdminDashboard implements AfterViewInit {
 
   renderConsumerGrowth() {
     const grouped: Record<string, number> = {};
-    console.log(this.consumers);
-    this.consumers.forEach((c) => {
-      const dateValue = c.createdAt || c.createdDate || c.registeredAt;
-      if (!dateValue) return;
 
-      const d = new Date(dateValue);
+    this.consumers.forEach((c) => {
+      const d = new Date(c.createdAt);
       if (isNaN(d.getTime())) return;
 
       const key =
@@ -116,42 +160,20 @@ export class AdminDashboard implements AfterViewInit {
       grouped[key] = (grouped[key] || 0) + 1;
     });
 
-    if (!Object.keys(grouped).length) {
-      const now = new Date();
-      const today =
-        now.getFullYear() +
-        '-' +
-        String(now.getMonth() + 1).padStart(2, '0') +
-        '-' +
-        String(now.getDate()).padStart(2, '0');
-
-      grouped[today] = this.consumers.length;
-    }
-
     const labels = Object.keys(grouped).sort();
     const values = labels.map((l) => grouped[l]);
 
     const ctx = document.getElementById('consumerGrowthChart') as HTMLCanvasElement;
-    if (!ctx) return;
+    if (!ctx || !labels.length) return;
 
     this.charts.push(
       new Chart(ctx, {
         type: 'line',
         data: {
           labels,
-          datasets: [
-            {
-              data: values,
-              fill: true,
-              tension: 0.3,
-            },
-          ],
+          datasets: [{ data: values, fill: true, tension: 0.3 }],
         },
-        options: {
-          plugins: {
-            legend: { display: false },
-          },
-        },
+        options: { plugins: { legend: { display: false } } },
       })
     );
   }
@@ -185,15 +207,15 @@ export class AdminDashboard implements AfterViewInit {
     });
 
     const top = Object.entries(totals)
-      .map(([consumerId, amount]) => ({
-        name: this.consumerMap[consumerId]?.fullName || consumerId,
+      .map(([id, amount]) => ({
+        name: this.consumerMap[id]?.fullName || id,
         amount,
       }))
       .sort((a, b) => b.amount - a.amount)
       .slice(0, 5);
 
     const ctx = document.getElementById('topConsumersChart') as HTMLCanvasElement;
-    if (!ctx) return;
+    if (!ctx || !top.length) return;
 
     this.charts.push(
       new Chart(ctx, {
@@ -215,7 +237,6 @@ export class AdminDashboard implements AfterViewInit {
     const counts: Record<string, number> = {};
 
     this.bills.forEach((b) => {
-      if (!b.generatedAt) return;
       const d = new Date(b.generatedAt);
       if (isNaN(d.getTime())) return;
 

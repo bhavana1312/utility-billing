@@ -12,9 +12,16 @@ import { ConfirmDialog } from '../../../shared/confirm-dialog/confirm-dialog';
 })
 export class ManageConsumers {
   consumers: any[] = [];
+
+  page = 0;
+  size = 10;
+  totalPages = 0;
+  totalElements = 0;
+
   expandedConsumerId: string | null = null;
   connectionsMap: { [key: string]: any[] } = {};
   utilitiesMap: { [key: string]: string[] } = {};
+
   showConfirm = false;
   selectedMeterNumber = '';
   selectedConsumerId = '';
@@ -24,10 +31,37 @@ export class ManageConsumers {
   }
 
   loadConsumers() {
-    this.http.get<any[]>('http://localhost:9090/consumers').subscribe({
-      next: (res) => (this.consumers = res),
-      error: () => this.toast.error('Failed to load consumers'),
-    });
+    this.http
+      .get<any>(`http://localhost:9090/consumers?page=${this.page}&size=${this.size}`)
+      .subscribe({
+        next: (res) => {
+          this.consumers = res.content;
+          this.totalPages = res.totalPages;
+          this.totalElements = res.totalElements;
+        },
+        error: () => this.toast.error('Failed to load consumers'),
+      });
+  }
+
+  nextPage() {
+    if (this.page < this.totalPages - 1) {
+      this.page++;
+      this.loadConsumers();
+    }
+  }
+
+  prevPage() {
+    if (this.page > 0) {
+      this.page--;
+      this.loadConsumers();
+    }
+  }
+
+  goToPage(p: number) {
+    if (p >= 0 && p < this.totalPages) {
+      this.page = p;
+      this.loadConsumers();
+    }
   }
 
   toggleConnections(consumerId: string) {

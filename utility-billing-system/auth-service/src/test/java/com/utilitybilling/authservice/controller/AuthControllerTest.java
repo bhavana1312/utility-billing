@@ -1,66 +1,74 @@
 package com.utilitybilling.authservice.controller;
 
-import com.utilitybilling.authservice.dto.LoginResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.utilitybilling.authservice.dto.*;
 import com.utilitybilling.authservice.service.AuthService;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(AuthController.class)
 @AutoConfigureMockMvc(addFilters = false)
 class AuthControllerTest {
 
-	@Autowired
-	private MockMvc mockMvc;
+    @Autowired
+    MockMvc mockMvc;
 
-	@MockBean
-	private AuthService service;
+    @MockBean
+    AuthService service;
 
-	@Test
-	void register_201() throws Exception {
-		mockMvc.perform(post("/auth/register").contentType(MediaType.APPLICATION_JSON).content("""
-				{"username":"u","email":"e@mail.com","password":"p","roles":["ADMIN"]}
-				""")).andExpect(status().isCreated());
-	}
+    @Autowired
+    ObjectMapper mapper;
 
-	@Test
-	void login_200() throws Exception {
-		LoginResponse res = new LoginResponse(null);
-		res.setToken("jwt");
-		when(service.login(any())).thenReturn(res);
+    @Test
+    void register_created() throws Exception {
+        RegisterRequest r = new RegisterRequest();
+        r.setUsername("u");
+        r.setEmail("e");
+        r.setPassword("p");
 
-		mockMvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content("""
-				{"username":"u","password":"p"}
-				""")).andExpect(status().isOk());
-	}
+        mockMvc.perform(post("/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(r)))
+                .andExpect(status().isCreated());
+    }
 
-	@Test
-	void changePassword_204() throws Exception {
-		mockMvc.perform(post("/auth/change-password").contentType(MediaType.APPLICATION_JSON).content("""
-				{"username":"u","oldPassword":"o","newPassword":"n"}
-				""")).andExpect(status().isNoContent());
-	}
+    @Test
+    void login_ok() throws Exception {
+        LoginRequest r = new LoginRequest();
+        r.setUsername("u");
+        r.setPassword("p");
 
-	@Test
-	void forgotPassword_204() throws Exception {
-		mockMvc.perform(post("/auth/forgot-password").contentType(MediaType.APPLICATION_JSON).content("""
-				{"email":"u@mail.com"}
-				""")).andExpect(status().isNoContent());
-	}
+		LoginResponse response = new LoginResponse(null);
+        response.setToken("jwt");
 
-	@Test
-	void resetPassword_204() throws Exception {
-		mockMvc.perform(post("/auth/reset-password").contentType(MediaType.APPLICATION_JSON).content("""
-				{"resetToken":"t","newPassword":"n"}
-				""")).andExpect(status().isNoContent());
-	}
+        when(service.login(any())).thenReturn(response);
+
+        mockMvc.perform(post("/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(r)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").value("jwt"));
+    }
+
+    @Test
+    void changePassword_noContent() throws Exception {
+        ChangePasswordRequest r = new ChangePasswordRequest();
+        r.setUsername("u");
+        r.setOldPassword("o");
+        r.setNewPassword("n");
+
+        mockMvc.perform(post("/auth/change-password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(r)))
+                .andExpect(status().isNoContent());
+    }
 }

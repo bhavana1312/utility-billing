@@ -12,6 +12,10 @@ import com.utilitybilling.consumerservice.repository.ConsumerRequestRepository;
 import com.utilitybilling.consumerservice.util.PasswordGenerator;
 
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -63,8 +67,8 @@ public class ConsumerService {
 		return map(find(id));
 	}
 
-	public List<ConsumerResponse> getAll() {
-		return consumerRepo.findAll().stream().map(this::map).toList();
+	public Page<ConsumerResponse> getAll(int page, int size) {
+		return consumerRepo.findAll(PageRequest.of(page, size, Sort.by("createdAt").descending())).map(this::map);
 	}
 
 	public ConsumerResponse update(String id, UpdateConsumerRequest r) {

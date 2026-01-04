@@ -5,26 +5,24 @@ import org.junit.jupiter.api.*;
 import org.springframework.test.web.servlet.*;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-class BillingControllerTest {
+class InternalBillingControllerTest {
 
     private MockMvc mockMvc;
 
     @BeforeEach
     void setup() {
         BillingService service=mock(BillingService.class);
-        BillingController controller=new BillingController(service);
+        InternalBillingController controller=new InternalBillingController(service);
         mockMvc=MockMvcBuilders.standaloneSetup(controller).build();
     }
 
     @Test
-    void generate_ok() throws Exception {
-        mockMvc.perform(post("/billing/generate")
-                .contentType("application/json")
-                .content("{\"meterNumber\":\"M1\"}"))
-                .andExpect(status().isCreated());
+    void markPaid_ok() throws Exception {
+        mockMvc.perform(put("/billing/internal/B1/mark-paid"))
+                .andExpect(status().isNoContent());
     }
 }

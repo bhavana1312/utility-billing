@@ -5,6 +5,8 @@ import com.utilitybilling.consumerservice.model.ConsumerRequest;
 import com.utilitybilling.consumerservice.service.ConsumerRequestService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,8 +25,11 @@ public class ConsumerRequestController{
     }
 
     @GetMapping
-    public ResponseEntity<List<ConsumerRequest>> getAll(String status){
-        return ResponseEntity.ok(service.getAll(status));
+    public ResponseEntity<Page<ConsumerRequest>> getAll(
+    		@RequestParam(required=false) String status,
+    		@RequestParam(defaultValue="0") int page,
+    		@RequestParam(defaultValue="10") int size){
+    	return ResponseEntity.ok(service.getAll(status,page,size));
     }
 
     @GetMapping("/{id}")
