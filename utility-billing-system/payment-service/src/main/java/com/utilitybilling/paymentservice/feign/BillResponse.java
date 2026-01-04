@@ -1,4 +1,4 @@
-package com.utilitybilling.paymentservice.client;
+package com.utilitybilling.paymentservice.feign;
 
 import java.math.BigDecimal;
 import java.time.Instant;

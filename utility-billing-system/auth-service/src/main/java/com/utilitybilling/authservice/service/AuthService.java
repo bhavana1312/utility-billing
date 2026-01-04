@@ -1,9 +1,9 @@
 package com.utilitybilling.authservice.service;
 
-import com.utilitybilling.authservice.client.NotificationClient;
-import com.utilitybilling.authservice.client.NotificationRequest;
 import com.utilitybilling.authservice.dto.*;
 import com.utilitybilling.authservice.exception.*;
+import com.utilitybilling.authservice.feign.NotificationClient;
+import com.utilitybilling.authservice.feign.NotificationRequest;
 import com.utilitybilling.authservice.model.User;
 import com.utilitybilling.authservice.repository.UserRepository;
 import com.utilitybilling.authservice.security.JwtUtil;

@@ -12,9 +12,16 @@ import java.util.Optional;
 
 public interface PaymentRepository extends MongoRepository<Payment, String> {
 
-	List<Payment> findByConsumerId(String consumerId);
+	Page<Payment> findByConsumerId(
+			String consumerId,
+			Pageable pageable
+	);
 
-	Optional<Payment> findByBillIdAndStatus(String billId, PaymentStatus status);
+	Page<Payment> findByConsumerIdAndUtilityType(
+			String consumerId,
+			String utilityType,
+			Pageable pageable
+	);
 
 	@Query("""
 		    {

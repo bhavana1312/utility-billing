@@ -1,4 +1,4 @@
-package com.utilitybilling.authservice.client;
+package com.utilitybilling.authservice.feign;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;

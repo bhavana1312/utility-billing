@@ -1,10 +1,10 @@
 package com.utilitybilling.consumerservice.service;
 
 import com.utilitybilling.consumerservice.dto.CreateConsumerRequest;
-import com.utilitybilling.consumerservice.client.NotificationClient;
-import com.utilitybilling.consumerservice.client.NotificationRequest;
 import com.utilitybilling.consumerservice.dto.ConsumerRequestResponse;
 import com.utilitybilling.consumerservice.exception.NotFoundException;
+import com.utilitybilling.consumerservice.feign.NotificationClient;
+import com.utilitybilling.consumerservice.feign.NotificationRequest;
 import com.utilitybilling.consumerservice.model.ConsumerRequest;
 import com.utilitybilling.consumerservice.repository.ConsumerRequestRepository;
 import lombok.RequiredArgsConstructor;

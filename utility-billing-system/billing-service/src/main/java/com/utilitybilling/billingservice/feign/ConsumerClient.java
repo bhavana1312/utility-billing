@@ -16,7 +16,6 @@ public interface ConsumerClient {
 	ConsumerResponse get(@PathVariable("id") String id);
 
 	default boolean fallback(String id, Throwable t) {
-		t.printStackTrace();
 		throw new IllegalStateException("Consumer service unavailable");
 	}
 }

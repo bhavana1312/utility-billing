@@ -1,14 +1,15 @@
 package com.utilitybilling.paymentservice.service;
 
 import java.util.Optional;
-import com.utilitybilling.paymentservice.client.BillResponse;
-import com.utilitybilling.paymentservice.client.BillStatus;
-import com.utilitybilling.paymentservice.client.BillingClient;
-import com.utilitybilling.paymentservice.client.ConsumerClient;
-import com.utilitybilling.paymentservice.client.ConsumerResponse;
-import com.utilitybilling.paymentservice.client.NotificationClient;
-import com.utilitybilling.paymentservice.client.NotificationRequest;
+
 import com.utilitybilling.paymentservice.dto.*;
+import com.utilitybilling.paymentservice.feign.BillResponse;
+import com.utilitybilling.paymentservice.feign.BillStatus;
+import com.utilitybilling.paymentservice.feign.BillingClient;
+import com.utilitybilling.paymentservice.feign.ConsumerClient;
+import com.utilitybilling.paymentservice.feign.ConsumerResponse;
+import com.utilitybilling.paymentservice.feign.NotificationClient;
+import com.utilitybilling.paymentservice.feign.NotificationRequest;
 import com.utilitybilling.paymentservice.model.*;
 import com.utilitybilling.paymentservice.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -195,9 +196,34 @@ public class PaymentService {
 
 	}
 
-	public List<Payment> history(String consumerId) {
-		return paymentRepo.findByConsumerId(consumerId);
+	public Page<Payment> history(
+			String consumerId,
+			int page,
+			int size,
+			String utilityType
+	){
+		PageRequest pageable=PageRequest.of(
+				page,
+				size,
+				Sort.by(Sort.Direction.DESC,"completedAt")
+		);
+
+		if(utilityType==null||utilityType.isBlank()){
+			return paymentRepo.findByConsumerId(
+					consumerId,
+					pageable
+			);
+		}
+
+		return paymentRepo.findByConsumerIdAndUtilityType(
+				consumerId,
+				utilityType,
+				pageable
+		);
 	}
+
+
+
 
 	public List<Invoice> invoices(String consumerId) {
 		return invoiceRepo.findByConsumerId(consumerId);

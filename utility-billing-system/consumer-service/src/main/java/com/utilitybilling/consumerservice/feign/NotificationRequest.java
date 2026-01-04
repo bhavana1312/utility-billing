@@ -1,4 +1,4 @@
-package com.utilitybilling.consumerservice.client;
+package com.utilitybilling.consumerservice.feign;
 
 import lombok.*;
 

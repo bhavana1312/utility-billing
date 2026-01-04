@@ -10,11 +10,11 @@ import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
-import com.utilitybilling.paymentservice.client.BillingClient;
-import com.utilitybilling.paymentservice.client.ConsumerClient;
-import com.utilitybilling.paymentservice.client.ConsumerResponse;
-import com.utilitybilling.paymentservice.client.NotificationClient;
 import com.utilitybilling.paymentservice.dto.InvoicePdfData;
+import com.utilitybilling.paymentservice.feign.BillingClient;
+import com.utilitybilling.paymentservice.feign.ConsumerClient;
+import com.utilitybilling.paymentservice.feign.ConsumerResponse;
+import com.utilitybilling.paymentservice.feign.NotificationClient;
 import com.utilitybilling.paymentservice.repository.InvoiceRepository;
 import com.utilitybilling.paymentservice.repository.PaymentRepository;
 

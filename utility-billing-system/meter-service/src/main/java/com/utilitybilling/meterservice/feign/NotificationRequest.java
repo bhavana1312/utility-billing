@@ -1,4 +1,4 @@
-package com.utilitybilling.meterservice.client;
+package com.utilitybilling.meterservice.feign;
 
 import lombok.*;
 

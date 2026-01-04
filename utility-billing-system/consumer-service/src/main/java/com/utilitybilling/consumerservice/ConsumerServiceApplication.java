@@ -7,7 +7,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-@EnableFeignClients(basePackages = "com.utilitybilling.consumerservice.client")
+@EnableFeignClients
 public class ConsumerServiceApplication {
 
 	public static void main(String[] args) {

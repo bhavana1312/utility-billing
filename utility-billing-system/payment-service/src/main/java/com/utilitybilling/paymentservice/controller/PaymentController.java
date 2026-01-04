@@ -34,9 +34,15 @@ public class PaymentController {
 	}
 
 	@GetMapping("/history/{consumerId}")
-	public Object history(@PathVariable("consumerId") String consumerId) {
-		return service.history(consumerId);
+	public Page<Payment> history(
+			@PathVariable String consumerId,
+			@RequestParam(defaultValue="0") int page,
+			@RequestParam(defaultValue="10") int size,
+			@RequestParam(required=false) String utilityType
+	){
+		return service.history(consumerId,page,size,utilityType);
 	}
+
 
 	@GetMapping("/invoices/{consumerId}")
 	public Object invoices(@PathVariable("consumerId") String consumerId) {

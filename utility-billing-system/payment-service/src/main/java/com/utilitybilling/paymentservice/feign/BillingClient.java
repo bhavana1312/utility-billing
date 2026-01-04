@@ -1,4 +1,4 @@
-package com.utilitybilling.paymentservice.client;
+package com.utilitybilling.paymentservice.feign;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.cloud.openfeign.FeignClient;

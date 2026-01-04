@@ -1,15 +1,15 @@
 package com.utilitybilling.consumerservice.service;
 
-import com.utilitybilling.consumerservice.client.AuthClient;
-import com.utilitybilling.consumerservice.client.NotificationClient;
 import com.utilitybilling.consumerservice.dto.*;
 import com.utilitybilling.consumerservice.exception.NotFoundException;
+import com.utilitybilling.consumerservice.feign.AuthClient;
+import com.utilitybilling.consumerservice.feign.NotificationClient;
+import com.utilitybilling.consumerservice.feign.NotificationRequest;
 import com.utilitybilling.consumerservice.model.Consumer;
 import com.utilitybilling.consumerservice.model.ConsumerRequest;
 import com.utilitybilling.consumerservice.repository.ConsumerRepository;
 import com.utilitybilling.consumerservice.repository.ConsumerRequestRepository;
 import com.utilitybilling.consumerservice.util.PasswordGenerator;
-import com.utilitybilling.consumerservice.client.NotificationRequest;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

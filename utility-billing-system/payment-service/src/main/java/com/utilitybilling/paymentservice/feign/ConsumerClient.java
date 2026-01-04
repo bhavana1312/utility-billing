@@ -1,4 +1,4 @@
-package com.utilitybilling.paymentservice.client;
+package com.utilitybilling.paymentservice.feign;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -49,7 +49,11 @@ export class AddReading {
             this.applyFilters();
           },
           error: () => {
-            this.meters = activeMeters.map((m) => ({ ...m, consumerName: 'Unknown', email: '-' }));
+            this.meters = activeMeters.map((m) => ({
+              ...m,
+              consumerName: 'Unknown',
+              email: '-',
+            }));
             this.applyFilters();
           },
         });
@@ -85,37 +89,37 @@ export class AddReading {
     this.loading = true;
 
     this.http
+      .post('http://localhost:9090/billing/generate', {
+        meterNumber: this.selectedMeter.meterNumber,
+        readingValue: this.readingValue,
+      })
+      .subscribe({
+        next: () => {
+          this.saveReading();
+        },
+        error: () => {
+          this.loading = false;
+          this.toast.error('Bill generation failed. Reading not saved.');
+        },
+      });
+  }
+
+  private saveReading() {
+    this.http
       .post('http://localhost:9090/meters/readings', {
         meterNumber: this.selectedMeter.meterNumber,
         readingValue: this.readingValue,
       })
       .subscribe({
         next: () => {
-          this.toast.success('Reading added successfully');
-          this.generateBill();
-        },
-        error: () => {
-          this.loading = false;
-          this.toast.error('Failed to add reading');
-        },
-      });
-  }
-
-  generateBill() {
-    this.http
-      .post('http://localhost:9090/billing/generate', {
-        meterNumber: this.selectedMeter.meterNumber,
-      })
-      .subscribe({
-        next: () => {
-          this.toast.success('Bill generated');
+          this.toast.success('Bill generated & reading saved');
           this.loading = false;
           this.loadMeters();
           this.closePanel();
         },
         error: () => {
           this.loading = false;
-          this.toast.error('Bill generation failed');
+          this.toast.error('Bill generated but failed to save reading');
         },
       });
   }

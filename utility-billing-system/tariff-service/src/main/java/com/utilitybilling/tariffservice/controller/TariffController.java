@@ -24,6 +24,7 @@ public class TariffController {
 	@GetMapping("/{utilityType}/plans/{plan}")
 	public ResponseEntity<TariffResponse> getActivePlan(@PathVariable UtilityType utilityType,
 			@PathVariable TariffPlan plan) {
+//		throw new RuntimeException("Tariff service failure");
 		return ResponseEntity.ok(service.getActivePlan(utilityType, plan));
 	}
 

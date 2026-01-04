@@ -1,10 +1,10 @@
 package com.utilitybilling.meterservice.service;
 
-import com.utilitybilling.meterservice.client.ConsumerClient;
-import com.utilitybilling.meterservice.client.ConsumerResponse;
-import com.utilitybilling.meterservice.client.NotificationClient;
-import com.utilitybilling.meterservice.client.NotificationRequest;
 import com.utilitybilling.meterservice.dto.*;
+import com.utilitybilling.meterservice.feign.ConsumerClient;
+import com.utilitybilling.meterservice.feign.ConsumerResponse;
+import com.utilitybilling.meterservice.feign.NotificationClient;
+import com.utilitybilling.meterservice.feign.NotificationRequest;
 import com.utilitybilling.meterservice.model.*;
 import com.utilitybilling.meterservice.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -26,13 +26,12 @@ public class MeterService {
 	public void requestConnection(CreateConnectionRequest request) {
 
 		boolean exists = connectionRepo.existsByConsumerIdAndStatusInAndUtilityType(request.getConsumerId(),
-				List.of(ConnectionStatus.PENDING,ConnectionStatus.APPROVED), request.getUtilityType());
+				List.of(ConnectionStatus.PENDING, ConnectionStatus.APPROVED), request.getUtilityType());
 
 		if (exists)
 			throw new IllegalStateException("Consumer request already exists");
 		ConnectionRequest cr = new ConnectionRequest();
 		cr.setConsumerId(request.getConsumerId());
-		cr.setEmail(request.getEmail());
 		cr.setUtilityType(request.getUtilityType());
 		cr.setTariffPlan(request.getTariffPlan());
 		connectionRepo.save(cr);
@@ -43,6 +42,7 @@ public class MeterService {
 	}
 
 	public void approve(String id) {
+
 		ConnectionRequest cr = connectionRepo.findById(id)
 				.orElseThrow(() -> new IllegalArgumentException("Connection request not found"));
 
@@ -65,14 +65,20 @@ public class MeterService {
 		cr.setStatus(ConnectionStatus.APPROVED);
 		connectionRepo.save(cr);
 
-		notificationClient.send(NotificationRequest.builder().email(cr.getEmail()).type("CONNECTION_APPROVED")
-				.subject("Utility connection approved")
-				.message("Your " + cr.getUtilityType() + " connection has been approved.\n" + "Plan: "
-						+ cr.getTariffPlan() + "\nMeter Number: " + m.getMeterNumber())
-				.build());
+		ConsumerResponse consumer = consumerClient.get(cr.getConsumerId());
+
+		try {
+			notificationClient.send(NotificationRequest.builder().email(consumer.getEmail()).type("CONNECTION_APPROVED")
+					.subject("Utility connection approved")
+					.message("Your " + cr.getUtilityType() + " connection has been approved.\n" + "Plan: "
+							+ cr.getTariffPlan() + "\n" + "Meter Number: " + m.getMeterNumber())
+					.build());
+		} catch (Exception e) {
+		}
 	}
 
 	public void reject(String id, String reason) {
+
 		ConnectionRequest cr = connectionRepo.findById(id)
 				.orElseThrow(() -> new IllegalArgumentException("Connection request not found"));
 
@@ -83,10 +89,15 @@ public class MeterService {
 		cr.setRejectionReason(reason);
 		connectionRepo.save(cr);
 
-		notificationClient.send(NotificationRequest.builder().email(cr.getEmail()).type("CONNECTION_REJECTED")
-				.subject("Utility connection request rejected")
-				.message("Your " + cr.getUtilityType() + " connection request was rejected.\n\n" + "Reason: " + reason)
-				.build());
+		ConsumerResponse consumer = consumerClient.get(cr.getConsumerId());
+
+		try {
+			notificationClient.send(NotificationRequest.builder().email(consumer.getEmail()).type("CONNECTION_REJECTED")
+					.subject("Utility connection request rejected").message("Your " + cr.getUtilityType()
+							+ " connection request was rejected.\n\n" + "Reason: " + reason)
+					.build());
+		} catch (Exception e) {
+		}
 	}
 
 	public MeterDetailsResponse getMeter(String meterNumber) {

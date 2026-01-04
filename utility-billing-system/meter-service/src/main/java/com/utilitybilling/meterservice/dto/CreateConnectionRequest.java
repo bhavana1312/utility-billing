@@ -11,9 +11,6 @@ public class CreateConnectionRequest{
 
     @NotBlank(message="Consumer ID is required")
     private String consumerId;
-    
-    @NotBlank(message="Email is required")
-    private String email;
 
     @NotNull(message="Utility type is required")
     private UtilityType utilityType;

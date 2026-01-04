@@ -6,8 +6,8 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.utilitybilling.authservice.client.ConsumerClient;
-import com.utilitybilling.authservice.client.ConsumerResponse;
+import com.utilitybilling.authservice.feign.ConsumerClient;
+import com.utilitybilling.authservice.feign.ConsumerResponse;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
