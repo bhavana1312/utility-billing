@@ -1,139 +1,165 @@
-//package com.utilitybilling.consumerservice.service;
-//
-//import com.utilitybilling.consumerservice.client.AuthClient;
-//import com.utilitybilling.consumerservice.dto.UpdateConsumerRequest;
-//import com.utilitybilling.consumerservice.exception.NotFoundException;
-//import com.utilitybilling.consumerservice.model.Consumer;
-//import com.utilitybilling.consumerservice.model.ConsumerRequest;
-//import com.utilitybilling.consumerservice.repository.ConsumerRepository;
-//import com.utilitybilling.consumerservice.repository.ConsumerRequestRepository;
-//import org.junit.jupiter.api.Test;
-//import org.junit.jupiter.api.extension.ExtendWith;
-//import org.mockito.InjectMocks;
-//import org.mockito.Mock;
-//import org.mockito.junit.jupiter.MockitoExtension;
-//
-//import java.util.List;
-//import java.util.Optional;
-//
-//import static org.junit.jupiter.api.Assertions.*;
-//import static org.mockito.Mockito.*;
-//
-//@ExtendWith(MockitoExtension.class)
-//class ConsumerServiceTest {
-//
-//    @Mock
-//    ConsumerRepository consumerRepo;
-//
-//    @Mock
-//    ConsumerRequestRepository requestRepo;
-//
-//    @Mock
-//    AuthClient authClient;
-//
-//    @InjectMocks
-//    ConsumerService service;
-//
-//    @Test
-//    void createFromRequest_shouldApprove() {
-//        ConsumerRequest request = ConsumerRequest.builder()
-//                .id("req1")
-//                .status("PENDING")
-//                .email("test@test.com")
-//                .fullName("John")
-//                .build();
-//
-//        when(requestRepo.findById("req1")).thenReturn(Optional.of(request));
-//        when(consumerRepo.save(any())).thenAnswer(i -> i.getArgument(0));
-//
-//        assertNotNull(service.createFromRequest("req1"));
-//
-//        verify(authClient).createUser(any());
-//        verify(requestRepo).save(request);
-//    }
-//
-//    @Test
-//    void createFromRequest_shouldFailIfNotPending() {
-//        ConsumerRequest request = ConsumerRequest.builder()
-//                .status("APPROVED")
-//                .build();
-//
-//        when(requestRepo.findById("1")).thenReturn(Optional.of(request));
-//
-//        assertThrows(IllegalStateException.class,
-//                () -> service.createFromRequest("1"));
-//    }
-//
-//    @Test
-//    void createFromRequest_shouldFailIfNotFound() {
-//        when(requestRepo.findById("x")).thenReturn(Optional.empty());
-//
-//        assertThrows(NotFoundException.class,
-//                () -> service.createFromRequest("x"));
-//    }
-//
-//    @Test
-//    void getById_shouldReturnConsumer() {
-//        Consumer c = Consumer.builder().id("1").active(true).build();
-//        when(consumerRepo.findById("1")).thenReturn(Optional.of(c));
-//
-//        assertEquals("1", service.getById("1").getId());
-//    }
-//
-//    @Test
-//    void getById_shouldFailIfNotFound() {
-//        when(consumerRepo.findById("1")).thenReturn(Optional.empty());
-//
-//        assertThrows(NotFoundException.class,
-//                () -> service.getById("1"));
-//    }
-//
-//    @Test
-//    void getAll_shouldReturnList() {
-//        when(consumerRepo.findAll())
-//                .thenReturn(List.of(new Consumer(), new Consumer()));
-//
-//        assertEquals(2, service.getAll().size());
-//    }
-//
-//    @Test
-//    void update_shouldUpdateActiveConsumer() {
-//        Consumer c = Consumer.builder().id("1").active(true).build();
-//
-//        when(consumerRepo.findById("1")).thenReturn(Optional.of(c));
-//        when(consumerRepo.save(any())).thenAnswer(i -> i.getArgument(0));
-//
-//        UpdateConsumerRequest r = new UpdateConsumerRequest();
-//        r.setFullName("New");
-//
-//        assertEquals("New", service.update("1", r).getFullName());
-//    }
-//
-//    @Test
-//    void update_shouldFailIfInactive() {
-//        Consumer c = Consumer.builder().active(false).build();
-//
-//        when(consumerRepo.findById("1")).thenReturn(Optional.of(c));
-//
-//        assertThrows(IllegalStateException.class,
-//                () -> service.update("1", new UpdateConsumerRequest()));
-//    }
-//
-//    @Test
-//    void deactivate_shouldSetInactive() {
-//        Consumer c = Consumer.builder().id("1").active(true).build();
-//
-//        when(consumerRepo.findById("1")).thenReturn(Optional.of(c));
-//
-//        service.deactivate("1");
-//
-//        assertFalse(c.isActive());
-//        verify(consumerRepo).save(c);
-//    }
-//
-//    @Test
-//    void exists_shouldReturnTrue() {
-//        when(consumerRepo.existsById("1")).thenReturn(true);
-//        assertTrue(service.exists("1"));
-//    }
-//}
+package com.utilitybilling.consumerservice.service;
+
+import com.utilitybilling.consumerservice.dto.*;
+import com.utilitybilling.consumerservice.exception.NotFoundException;
+import com.utilitybilling.consumerservice.feign.*;
+import com.utilitybilling.consumerservice.model.*;
+import com.utilitybilling.consumerservice.repository.*;
+import org.junit.jupiter.api.*;
+import org.mockito.*;
+import org.springframework.data.domain.*;
+
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+class ConsumerServiceTest {
+
+	@Mock
+	ConsumerRepository consumerRepo;
+	@Mock
+	ConsumerRequestRepository requestRepo;
+	@Mock
+	AuthClient authClient;
+	@Mock
+	NotificationClient notificationClient;
+
+	private ConsumerService service;
+
+	@BeforeEach
+	void setup() {
+		MockitoAnnotations.openMocks(this);
+		service = new ConsumerService(consumerRepo, requestRepo, authClient, notificationClient);
+	}
+
+	@Test
+	void approve_success() {
+		ConsumerRequest r = new ConsumerRequest();
+		r.setId("1");
+		r.setStatus("PENDING");
+		r.setFullName("A");
+		r.setEmail("e");
+
+		when(requestRepo.findById("1")).thenReturn(Optional.of(r));
+		when(consumerRepo.save(any())).thenAnswer(i -> {
+			Consumer c = i.getArgument(0);
+			c.setId("C1");
+			return c;
+		});
+
+		ConsumerResponse res = service.approve("1");
+
+		assertEquals("C1", res.getId());
+		verify(authClient).createUser(any());
+		verify(notificationClient).send(any());
+	}
+
+	@Test
+	void approve_already_processed() {
+		ConsumerRequest r = new ConsumerRequest();
+		r.setStatus("APPROVED");
+
+		when(requestRepo.findById("1")).thenReturn(Optional.of(r));
+
+		assertThrows(IllegalStateException.class, () -> service.approve("1"));
+	}
+
+	@Test
+	void approve_not_found_lambda() {
+		when(requestRepo.findById("1")).thenReturn(Optional.empty());
+
+		assertThrows(NotFoundException.class, () -> service.approve("1"));
+	}
+
+	@Test
+	void getById_success() {
+		Consumer c = new Consumer();
+		c.setId("C1");
+
+		when(consumerRepo.findById("C1")).thenReturn(Optional.of(c));
+
+		assertEquals("C1", service.getById("C1").getId());
+	}
+
+	@Test
+	void getById_not_found_lambda() {
+		when(consumerRepo.findById("C1")).thenReturn(Optional.empty());
+
+		assertThrows(NotFoundException.class, () -> service.getById("C1"));
+	}
+
+	@Test
+	void getAll_success() {
+		Consumer c = new Consumer();
+		c.setId("C1");
+
+		Page<Consumer> page = new PageImpl<>(List.of(c));
+
+		when(consumerRepo.findAll(any(PageRequest.class))).thenReturn(page);
+
+		assertEquals(1, service.getAll(0, 10).getContent().size());
+	}
+
+	@Test
+	void update_success() {
+		Consumer c = new Consumer();
+		c.setId("C1");
+		c.setActive(true);
+
+		when(consumerRepo.findById("C1")).thenReturn(Optional.of(c));
+		when(consumerRepo.save(any())).thenReturn(c);
+
+		UpdateConsumerRequest r = new UpdateConsumerRequest();
+		r.setFullName("X");
+
+		assertEquals("C1", service.update("C1", r).getId());
+	}
+
+	@Test
+	void update_inactive_consumer() {
+		Consumer c = new Consumer();
+		c.setActive(false);
+
+		when(consumerRepo.findById("C1")).thenReturn(Optional.of(c));
+
+		assertThrows(IllegalStateException.class, () -> service.update("C1", new UpdateConsumerRequest()));
+	}
+
+	@Test
+	void deactivate_success() {
+		Consumer c = new Consumer();
+		c.setActive(true);
+
+		when(consumerRepo.findById("C1")).thenReturn(Optional.of(c));
+
+		service.deactivate("C1");
+
+		assertFalse(c.isActive());
+		verify(consumerRepo).save(c);
+	}
+
+	@Test
+	void exists_true() {
+		when(consumerRepo.existsById("1")).thenReturn(true);
+		assertTrue(service.exists("1"));
+	}
+
+	@Test
+	void getByUsername_success() {
+		Consumer c = new Consumer();
+		c.setId("C1");
+
+		when(consumerRepo.findByFullName("u")).thenReturn(Optional.of(c));
+
+		assertEquals("C1", service.getByUsername("u").getId());
+	}
+
+	@Test
+	void getByUsername_not_found_lambda() {
+		when(consumerRepo.findByFullName("u")).thenReturn(Optional.empty());
+
+		assertThrows(IllegalArgumentException.class, () -> service.getByUsername("u"));
+	}
+}

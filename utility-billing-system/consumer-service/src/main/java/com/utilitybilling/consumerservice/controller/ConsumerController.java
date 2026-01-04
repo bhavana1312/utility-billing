@@ -30,9 +30,9 @@ public class ConsumerController {
 
 	@GetMapping
 	public ResponseEntity<Page<ConsumerResponse>> getAll(
-			@RequestParam(defaultValue="0") int page,
-			@RequestParam(defaultValue="10") int size){
-		return ResponseEntity.ok(service.getAll(page,size));
+			@RequestParam(name = "page", defaultValue = "0") int page,
+			@RequestParam(name = "size", defaultValue = "10") int size) {
+		return ResponseEntity.ok(service.getAll(page, size));
 	}
 
 	@PutMapping("/{id}")
@@ -51,9 +51,9 @@ public class ConsumerController {
 	public ResponseEntity<ExistsResponse> exists(@PathVariable("id") String id) {
 		return ResponseEntity.ok(new ExistsResponse(service.exists(id)));
 	}
-	
+
 	@GetMapping("/username/{username}")
-	public ResponseEntity<ConsumerResponse> getByUsername(@PathVariable("username") String username){
+	public ResponseEntity<ConsumerResponse> getByUsername(@PathVariable("username") String username) {
 		return ResponseEntity.ok(service.getByUsername(username));
 	}
 

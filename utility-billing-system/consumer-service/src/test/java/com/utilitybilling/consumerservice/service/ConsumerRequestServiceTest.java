@@ -1,14 +1,13 @@
 package com.utilitybilling.consumerservice.service;
 
-import com.utilitybilling.consumerservice.dto.CreateConsumerRequest;
+import com.utilitybilling.consumerservice.dto.*;
 import com.utilitybilling.consumerservice.exception.NotFoundException;
+import com.utilitybilling.consumerservice.feign.NotificationClient;
 import com.utilitybilling.consumerservice.model.ConsumerRequest;
 import com.utilitybilling.consumerservice.repository.ConsumerRequestRepository;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.jupiter.api.*;
+import org.mockito.*;
+import org.springframework.data.domain.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,105 +15,100 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class ConsumerRequestServiceTest {
 
-    @Mock
-    ConsumerRequestRepository repository;
+	@Mock
+	ConsumerRequestRepository repo;
+	@Mock
+	NotificationClient notificationClient;
 
-    @InjectMocks
-    ConsumerRequestService service;
+	private ConsumerRequestService service;
 
-    @Test
-    void submit_shouldFailIfExists() {
-        CreateConsumerRequest r = new CreateConsumerRequest();
-        r.setEmail("a@test.com");
+	@BeforeEach
+	void setup() {
+		MockitoAnnotations.openMocks(this);
+		service = new ConsumerRequestService(repo, notificationClient);
+	}
 
-        when(repository.existsByEmailAndStatusIn(any(), any()))
-                .thenReturn(true);
+	@Test
+	void submit_success() {
+		when(repo.existsByEmailAndStatusIn(any(), any())).thenReturn(false);
+		when(repo.save(any())).thenAnswer(i -> {
+			ConsumerRequest r = i.getArgument(0);
+			r.setId("1");
+			return r;
+		});
 
-        assertThrows(IllegalStateException.class,
-                () -> service.submit(r));
-    }
+		CreateConsumerRequest r = new CreateConsumerRequest();
+		r.setFullName("A");
+		r.setEmail("e");
 
-    @Test
-    void submit_shouldCreateRequest() {
-        CreateConsumerRequest r = new CreateConsumerRequest();
-        r.setFullName("John");
-        r.setEmail("a@test.com");
-        r.setPhone("123");
-        r.setAddressLine1("A");
-        r.setCity("C");
-        r.setState("S");
-        r.setPostalCode("1");
+		assertEquals("1", service.submit(r).getRequestId());
+	}
 
-        when(repository.existsByEmailAndStatusIn(any(), any()))
-                .thenReturn(false);
-        when(repository.save(any()))
-                .thenAnswer(i -> i.getArgument(0));
+	@Test
+	void submit_duplicate_email() {
+		when(repo.existsByEmailAndStatusIn(any(), any())).thenReturn(true);
 
-        assertEquals("PENDING", service.submit(r).getStatus());
-    }
+		assertThrows(IllegalStateException.class, () -> service.submit(new CreateConsumerRequest()));
+	}
 
-    @Test
-    void getAll_shouldReturnAll() {
-        when(repository.findAll())
-                .thenReturn(List.of(new ConsumerRequest()));
+	@Test
+	void getAll_without_status() {
+		Page<ConsumerRequest> page = new PageImpl<>(List.of(new ConsumerRequest()));
 
-        assertEquals(1, service.getAll(null).size());
-    }
+		when(repo.findAll(any(PageRequest.class))).thenReturn(page);
 
-    @Test
-    void getAll_shouldReturnByStatus() {
-        when(repository.findByStatus("PENDING"))
-                .thenReturn(List.of(new ConsumerRequest()));
+		assertEquals(1, service.getAll(null, 0, 10).getContent().size());
+	}
 
-        assertEquals(1, service.getAll("PENDING").size());
-    }
+	@Test
+	void getAll_with_status() {
+		Page<ConsumerRequest> page = new PageImpl<>(List.of(new ConsumerRequest()));
 
-    @Test
-    void getById_shouldReturn() {
-        when(repository.findById("1"))
-                .thenReturn(Optional.of(new ConsumerRequest()));
+		when(repo.findByStatus(eq("PENDING"), any(PageRequest.class))).thenReturn(page);
 
-        assertNotNull(service.getById("1"));
-    }
+		assertEquals(1, service.getAll("PENDING", 0, 10).getContent().size());
+	}
 
-    @Test
-    void getById_shouldFailIfNotFound() {
-        when(repository.findById("1"))
-                .thenReturn(Optional.empty());
+	@Test
+	void getById_success() {
+		ConsumerRequest r = new ConsumerRequest();
+		r.setId("1");
 
-        assertThrows(NotFoundException.class,
-                () -> service.getById("1"));
-    }
+		when(repo.findById("1")).thenReturn(Optional.of(r));
 
-    @Test
-    void reject_shouldRejectPending() {
-        ConsumerRequest r = ConsumerRequest.builder()
-                .id("1")
-                .status("PENDING")
-                .build();
+		assertEquals("1", service.getById("1").getId());
+	}
 
-        when(repository.findById("1"))
-                .thenReturn(Optional.of(r));
+	@Test
+	void getById_not_found_lambda() {
+		when(repo.findById("1")).thenReturn(Optional.empty());
 
-        service.reject("1", "reason");
+		assertThrows(NotFoundException.class, () -> service.getById("1"));
+	}
 
-        assertEquals("REJECTED", r.getStatus());
-        verify(repository).save(r);
-    }
+	@Test
+	void reject_success() {
+		ConsumerRequest r = new ConsumerRequest();
+		r.setStatus("PENDING");
+		r.setEmail("e");
 
-    @Test
-    void reject_shouldFailIfAlreadyProcessed() {
-        ConsumerRequest r = ConsumerRequest.builder()
-                .status("APPROVED")
-                .build();
+		when(repo.findById("1")).thenReturn(Optional.of(r));
 
-        when(repository.findById("1"))
-                .thenReturn(Optional.of(r));
+		service.reject("1", "reason");
 
-        assertThrows(IllegalStateException.class,
-                () -> service.reject("1", "reason"));
-    }
+		assertEquals("REJECTED", r.getStatus());
+		verify(notificationClient).send(any());
+	}
+
+	@Test
+	void reject_already_processed() {
+		ConsumerRequest r = new ConsumerRequest();
+		r.setStatus("APPROVED");
+
+		when(repo.findById("1")).thenReturn(Optional.of(r));
+
+		assertThrows(IllegalStateException.class, () -> service.reject("1", "x"));
+	}
 }

@@ -34,15 +34,12 @@ public class PaymentController {
 	}
 
 	@GetMapping("/history/{consumerId}")
-	public Page<Payment> history(
-			@PathVariable String consumerId,
-			@RequestParam(defaultValue="0") int page,
-			@RequestParam(defaultValue="10") int size,
-			@RequestParam(required=false) String utilityType
-	){
-		return service.history(consumerId,page,size,utilityType);
+	public Page<Payment> history(@PathVariable("consumerId") String consumerId,
+			@RequestParam(name = "page", defaultValue = "0") int page,
+			@RequestParam(name = "size", defaultValue = "10") int size,
+			@RequestParam(name = "utilityType", required = false) String utilityType) {
+		return service.history(consumerId, page, size, utilityType);
 	}
-
 
 	@GetMapping("/invoices/{consumerId}")
 	public Object invoices(@PathVariable("consumerId") String consumerId) {
@@ -55,15 +52,12 @@ public class PaymentController {
 	}
 
 	@GetMapping
-	public Page<Payment> getPayments(
-	        @RequestParam(defaultValue = "0") int page,
-	        @RequestParam(defaultValue = "10") int size,
-	        @RequestParam(required = false) String search,
-	        @RequestParam(required = false) String mode
-	) {
-	    return service.getPayments(page, size, search, mode);
+	public Page<Payment> getPayments(@RequestParam(name = "page", defaultValue = "0") int page,
+			@RequestParam(name = "size", defaultValue = "10") int size,
+			@RequestParam(name = "search", required = false) String search,
+			@RequestParam(name = "mode", required = false) String mode) {
+		return service.getPayments(page, size, search, mode);
 	}
-
 
 	@GetMapping("/{paymentId}/invoice")
 	public ResponseEntity<byte[]> downloadInvoice(@PathVariable("paymentId") String paymentId) {

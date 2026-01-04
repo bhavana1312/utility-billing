@@ -14,28 +14,24 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class BillingController {
 
-    private final BillingService billingService;
+	private final BillingService billingService;
 
-    @PostMapping("/generate")
-    public ResponseEntity<BillResponse> generate(
-            @Valid @RequestBody GenerateBillRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(billingService.generate(request));
-    }
+	@PostMapping("/generate")
+	public ResponseEntity<BillResponse> generate(@Valid @RequestBody GenerateBillRequest request) {
+		return ResponseEntity.status(HttpStatus.CREATED).body(billingService.generate(request));
+	}
 
-    @GetMapping("/{consumerId}")
-    public Page<BillResponse> consumerBills(
-            @PathVariable String consumerId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        return billingService.consumerBills(consumerId, page, size);
-    }
+	@GetMapping("/{consumerId}")
+	public Page<BillResponse> consumerBills(@PathVariable("consumerId") String consumerId,
+			@RequestParam(name = "page", defaultValue = "0") int page,
+			@RequestParam(name = "size", defaultValue = "10") int size) {
+		return billingService.consumerBills(consumerId, page, size);
+	}
 
-    @GetMapping
-    public Page<BillResponse> all(
-            @RequestParam(required = false) BillStatus status,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        return billingService.all(status, page, size);
-    }
+	@GetMapping
+	public Page<BillResponse> all(@RequestParam(name="status",required = false) BillStatus status,
+			@RequestParam(name = "page", defaultValue = "0") int page,
+			@RequestParam(name = "size", defaultValue = "10") int size) {
+		return billingService.all(status, page, size);
+	}
 }

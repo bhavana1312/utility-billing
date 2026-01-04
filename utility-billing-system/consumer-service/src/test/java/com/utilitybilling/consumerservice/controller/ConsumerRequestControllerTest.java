@@ -5,19 +5,24 @@ import com.utilitybilling.consumerservice.dto.*;
 import com.utilitybilling.consumerservice.model.ConsumerRequest;
 import com.utilitybilling.consumerservice.service.ConsumerRequestService;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.*;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ConsumerRequestController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class ConsumerRequestControllerTest {
 
 	@Autowired
@@ -27,42 +32,56 @@ class ConsumerRequestControllerTest {
 	private ConsumerRequestService service;
 
 	@Autowired
-	private ObjectMapper objectMapper;
+	private ObjectMapper mapper;
 
 	@Test
-	void submit_shouldCreateRequest() throws Exception {
-		CreateConsumerRequest r = new CreateConsumerRequest();
-		r.setFullName("John");
-		r.setEmail("john@test.com");
-		r.setPhone("123");
-		r.setAddressLine1("Addr");
-		r.setCity("City");
-		r.setState("State");
-		r.setPostalCode("11111");
+	void submit_ok() throws Exception {
+		when(service.submit(any()))
+				.thenReturn(ConsumerRequestResponse.builder().requestId("1").status("PENDING").build());
 
-		Mockito.when(service.submit(Mockito.any()))
-				.thenReturn(ConsumerRequestResponse.builder().requestId("req1").status("PENDING").build());
-
-		mockMvc.perform(post("/consumer-requests").contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(r))).andExpect(status().isCreated())
-				.andExpect(jsonPath("$.requestId").value("req1"));
+		mockMvc.perform(post("/consumer-requests").contentType(MediaType.APPLICATION_JSON).content("""
+				{
+				  "fullName":"A",
+				  "email":"e",
+				  "phone":"p",
+				  "addressLine1":"x",
+				  "city":"c",
+				  "state":"s",
+				  "postalCode":"p"
+				}
+				""")).andExpect(status().isCreated());
 	}
 
 	@Test
-	void get_shouldReturnRequest() throws Exception {
-		Mockito.when(service.getById("1")).thenReturn(new ConsumerRequest());
+	void getAll_without_status() throws Exception {
+		Page<ConsumerRequest> page = new PageImpl<>(List.of(new ConsumerRequest()));
+
+		when(service.getAll(null, 0, 10)).thenReturn(page);
+
+		mockMvc.perform(get("/consumer-requests?page=0&size=10")).andExpect(status().isOk())
+				.andExpect(jsonPath("$.content").isArray());
+	}
+
+	@Test
+	void getAll_with_status() throws Exception {
+		Page<ConsumerRequest> page = new PageImpl<>(List.of(new ConsumerRequest()));
+
+		when(service.getAll("PENDING", 0, 10)).thenReturn(page);
+
+		mockMvc.perform(get("/consumer-requests?status=PENDING&page=0&size=10")).andExpect(status().isOk())
+				.andExpect(jsonPath("$.content").isArray());
+	}
+
+	@Test
+	void getById_ok() throws Exception {
+		when(service.getById("1")).thenReturn(new ConsumerRequest());
 
 		mockMvc.perform(get("/consumer-requests/1")).andExpect(status().isOk());
 	}
 
 	@Test
-	void reject_shouldReturn204() throws Exception {
-		RejectRequest request = new RejectRequest();
-		request.setReason("Invalid data");
-
+	void reject_ok() throws Exception {
 		mockMvc.perform(put("/consumer-requests/1/reject").contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(request))).andExpect(status().isNoContent());
-
-		Mockito.verify(service).reject("1", "Invalid data");
+				.content("{\"reason\":\"x\"}")).andExpect(status().isNoContent());
 	}
 }

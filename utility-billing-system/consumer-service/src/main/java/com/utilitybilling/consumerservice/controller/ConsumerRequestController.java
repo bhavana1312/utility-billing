@@ -26,9 +26,9 @@ public class ConsumerRequestController{
 
     @GetMapping
     public ResponseEntity<Page<ConsumerRequest>> getAll(
-    		@RequestParam(required=false) String status,
-    		@RequestParam(defaultValue="0") int page,
-    		@RequestParam(defaultValue="10") int size){
+    		@RequestParam(name="status",required=false) String status,
+    		@RequestParam(name="page",defaultValue="0") int page,
+    		@RequestParam(name="size",defaultValue="10") int size){
     	return ResponseEntity.ok(service.getAll(status,page,size));
     }
 

@@ -3,158 +3,237 @@ package com.utilitybilling.authservice.service;
 import com.utilitybilling.authservice.dto.*;
 import com.utilitybilling.authservice.exception.*;
 import com.utilitybilling.authservice.feign.NotificationClient;
-import com.utilitybilling.authservice.feign.NotificationRequest;
 import com.utilitybilling.authservice.model.User;
 import com.utilitybilling.authservice.repository.UserRepository;
 import com.utilitybilling.authservice.security.JwtUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(org.mockito.junit.jupiter.MockitoExtension.class)
+@ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
 
-    @Mock
-    UserRepository repo;
+	@InjectMocks
+	private AuthService service;
 
-    @Mock
-    BCryptPasswordEncoder encoder;
+	@Mock
+	private UserRepository repo;
+	@Mock
+	private BCryptPasswordEncoder encoder;
+	@Mock
+	private JwtUtil jwtUtil;
+	@Mock
+	private NotificationClient notificationClient;
 
-    @Mock
-    JwtUtil jwtUtil;
+	@Test
+	void register_success_default_role() {
+		RegisterRequest r = new RegisterRequest();
+		r.setUsername("u");
+		r.setEmail("e");
+		r.setPassword("p");
 
-    @Mock
-    NotificationClient notificationClient;
+		when(repo.existsByUsername("u")).thenReturn(false);
+		when(repo.existsByEmail("e")).thenReturn(false);
+		when(encoder.encode("p")).thenReturn("enc");
 
-    @InjectMocks
-    AuthService authService;
+		service.register(r);
 
-    @Test
-    void register_success() {
-        RegisterRequest r = new RegisterRequest();
-        r.setUsername("user");
-        r.setEmail("user@mail.com");
-        r.setPassword("password");
+		verify(repo).save(any(User.class));
+	}
 
-        when(repo.existsByUsername("user")).thenReturn(false);
-        when(repo.existsByEmail("user@mail.com")).thenReturn(false);
-        when(encoder.encode("password")).thenReturn("hashed");
+	@Test
+	void register_username_exists() {
+		RegisterRequest r = new RegisterRequest();
+		r.setUsername("u");
 
-        authService.register(r);
+		when(repo.existsByUsername("u")).thenReturn(true);
 
-        verify(repo).save(any(User.class));
-    }
+		assertThrows(UserAlreadyExistsException.class, () -> service.register(r));
+	}
 
-    @Test
-    void register_usernameExists() {
-        RegisterRequest r = new RegisterRequest();
-        r.setUsername("user");
+	@Test
+	void register_email_exists() {
+		RegisterRequest r = new RegisterRequest();
+		r.setUsername("u");
+		r.setEmail("e");
 
-        when(repo.existsByUsername("user")).thenReturn(true);
+		when(repo.existsByUsername("u")).thenReturn(false);
+		when(repo.existsByEmail("e")).thenReturn(true);
 
-        assertThrows(UserAlreadyExistsException.class, () -> authService.register(r));
-    }
+		assertThrows(UserAlreadyExistsException.class, () -> service.register(r));
+	}
 
-    @Test
-    void login_success() {
-        User u = new User();
-        u.setUsername("user");
-        u.setPassword("hashed");
-        u.setRoles(List.of("ROLE_USER"));
+	@Test
+	void register_with_roles_provided() {
+		RegisterRequest r = new RegisterRequest();
+		r.setUsername("u");
+		r.setEmail("e");
+		r.setPassword("p");
+		r.setRoles(List.of("ROLE_ADMIN"));
 
-        LoginRequest r = new LoginRequest();
-        r.setUsername("user");
-        r.setPassword("password");
+		when(repo.existsByUsername("u")).thenReturn(false);
+		when(repo.existsByEmail("e")).thenReturn(false);
+		when(encoder.encode("p")).thenReturn("enc");
 
-        when(repo.findByUsername("user")).thenReturn(Optional.of(u));
-        when(encoder.matches("password", "hashed")).thenReturn(true);
-        when(jwtUtil.generateToken("user", u.getRoles())).thenReturn("jwt");
+		service.register(r);
 
-        LoginResponse response = authService.login(r);
+		verify(repo).save(any(User.class));
+	}
 
-        assertEquals("jwt", response.getToken());
-    }
+	@Test
+	void login_success() {
+		User u = User.builder().username("u").password("enc").roles(List.of("ROLE_USER")).build();
 
-    @Test
-    void login_invalidPassword() {
-        User u = new User();
-        u.setPassword("hashed");
+		when(repo.findByUsername("u")).thenReturn(Optional.of(u));
+		when(encoder.matches("p", "enc")).thenReturn(true);
+		when(jwtUtil.generateToken("u", u.getRoles())).thenReturn("jwt");
 
-        LoginRequest r = new LoginRequest();
-        r.setUsername("user");
-        r.setPassword("bad");
+		LoginRequest req = new LoginRequest();
+		req.setUsername("u");
+		req.setPassword("p");
 
-        when(repo.findByUsername("user")).thenReturn(Optional.of(u));
-        when(encoder.matches(any(), any())).thenReturn(false);
+		LoginResponse res = service.login(req);
 
-        assertThrows(InvalidCredentialsException.class, () -> authService.login(r));
-    }
+		assertEquals("jwt", res.getToken());
+	}
 
-    @Test
-    void changePassword_success() {
-        User u = new User();
-        u.setUsername("user");
-        u.setEmail("mail@test.com");
-        u.setPassword("old");
+	@Test
+	void login_user_not_found() {
+		when(repo.findByUsername("u")).thenReturn(Optional.empty());
+		LoginRequest req = new LoginRequest();
+		req.setUsername("u");
+		req.setPassword("p");
+		assertThrows(UserNotFoundException.class, () -> service.login(req));
+	}
 
-        ChangePasswordRequest r = new ChangePasswordRequest();
-        r.setUsername("user");
-        r.setOldPassword("oldPass");
-        r.setNewPassword("newPass");
+	@Test
+	void login_invalid_password() {
+		User u = User.builder().username("u").password("enc").build();
 
-        when(repo.findByUsername("user")).thenReturn(Optional.of(u));
-        when(encoder.matches("oldPass", "old")).thenReturn(true);
-        when(encoder.matches("newPass", "old")).thenReturn(false);
-        when(encoder.encode("newPass")).thenReturn("encoded");
+		when(repo.findByUsername("u")).thenReturn(Optional.of(u));
+		when(encoder.matches("p", "enc")).thenReturn(false);
+		LoginRequest req = new LoginRequest();
+		req.setUsername("u");
+		req.setPassword("p");
 
-        authService.changePassword("user", r);
+		assertThrows(InvalidCredentialsException.class, () -> service.login(req));
+	}
 
-        verify(repo).save(u);
-        verify(notificationClient).send(any(NotificationRequest.class));
-    }
+	@Test
+	void changePassword_success() {
+		User u = User.builder().password("oldEnc").email("e").build();
 
-    @Test
-    void forgotPassword_success() {
-        User u = new User();
-        u.setEmail("mail@test.com");
+		when(repo.findByUsername("u")).thenReturn(Optional.of(u));
+		when(encoder.matches("old", "oldEnc")).thenReturn(true);
+		when(encoder.matches("new", "oldEnc")).thenReturn(false);
+		when(encoder.encode("new")).thenReturn("newEnc");
 
-        ForgotPasswordRequest r = new ForgotPasswordRequest();
-        r.setEmail("mail@test.com");
+		ChangePasswordRequest cpr = new ChangePasswordRequest();
+		cpr.setUsername("u");
+		cpr.setOldPassword("old");
+		cpr.setNewPassword("new");
 
-        when(repo.findByEmail("mail@test.com")).thenReturn(Optional.of(u));
+		service.changePassword("u", cpr);
 
-        authService.forgotPassword(r);
+		verify(repo).save(u);
+		verify(notificationClient).send(any());
+	}
 
-        assertNotNull(u.getResetToken());
-        verify(notificationClient).send(any(NotificationRequest.class));
-    }
+	@Test
+	void changePassword_user_not_found() {
+		when(repo.findByUsername("u")).thenReturn(Optional.empty());
+		assertThrows(UserNotFoundException.class, () -> service.changePassword("u", new ChangePasswordRequest()));
+	}
 
-    @Test
-    void resetPassword_success() {
-        User u = new User();
-        u.setEmail("mail@test.com");
-        u.setResetToken("token");
-        u.setResetTokenExpiry(Instant.now().plusSeconds(300));
+	@Test
+	void changePassword_wrong_old_password() {
+		User u = User.builder().password("enc").build();
 
-        ResetPasswordRequest r = new ResetPasswordRequest();
-        r.setResetToken("token");
-        r.setNewPassword("new");
+		when(repo.findByUsername("u")).thenReturn(Optional.of(u));
+		when(encoder.matches(any(), any())).thenReturn(false);
 
-        when(repo.findByResetToken("token")).thenReturn(Optional.of(u));
-        when(encoder.encode("new")).thenReturn("encoded");
+		assertThrows(InvalidCredentialsException.class, () -> service.changePassword("u", new ChangePasswordRequest()));
+	}
 
-        authService.resetPassword(r);
+	@Test
+	void changePassword_same_new_password() {
+		User u = User.builder().password("enc").build();
 
-        assertNull(u.getResetToken());
-        verify(repo).save(u);
-        verify(notificationClient).send(any(NotificationRequest.class));
-    }
+		when(repo.findByUsername("u")).thenReturn(Optional.of(u));
+		when(encoder.matches(any(), any())).thenReturn(true);
+
+		assertThrows(InvalidCredentialsException.class, () -> service.changePassword("u", new ChangePasswordRequest()));
+	}
+
+	@Test
+	void forgotPassword_success() {
+		User u = User.builder().email("e").build();
+
+		when(repo.findByEmail("e")).thenReturn(Optional.of(u));
+
+		ForgotPasswordRequest fpr = new ForgotPasswordRequest();
+		fpr.setEmail("e");
+
+		service.forgotPassword(fpr);
+
+		verify(repo).save(u);
+		verify(notificationClient).send(any());
+	}
+
+	@Test
+	void forgotPassword_user_not_found() {
+		when(repo.findByEmail("e")).thenReturn(Optional.empty());
+
+		ForgotPasswordRequest fpr = new ForgotPasswordRequest();
+		fpr.setEmail("e");
+		assertThrows(UserNotFoundException.class, () -> service.forgotPassword(fpr));
+	}
+
+	@Test
+	void resetPassword_success() {
+		User u = User.builder().resetToken("t").resetTokenExpiry(Instant.now().plusSeconds(60)).email("e").build();
+
+		when(repo.findByResetToken("t")).thenReturn(Optional.of(u));
+		when(encoder.encode("n")).thenReturn("enc");
+
+		ResetPasswordRequest rpr = new ResetPasswordRequest();
+		rpr.setResetToken("t");
+		rpr.setNewPassword("n");
+		service.resetPassword(rpr);
+
+		verify(repo).save(u);
+		verify(notificationClient).send(any());
+	}
+
+	@Test
+	void resetPassword_invalid_token_lambda() {
+		when(repo.findByResetToken("t")).thenReturn(Optional.empty());
+
+		ResetPasswordRequest rpr = new ResetPasswordRequest();
+		rpr.setResetToken("t");
+		rpr.setNewPassword("n");
+
+		assertThrows(InvalidTokenException.class, () -> service.resetPassword(rpr));
+	}
+
+	@Test
+	void resetPassword_expired_token() {
+		User u = User.builder().resetToken("t").resetTokenExpiry(Instant.now().minusSeconds(10)).build();
+
+		when(repo.findByResetToken("t")).thenReturn(Optional.of(u));
+
+		ResetPasswordRequest rpr = new ResetPasswordRequest();
+		rpr.setResetToken("t");
+		rpr.setNewPassword("n");
+
+		assertThrows(InvalidTokenException.class, () -> service.resetPassword(rpr));
+	}
 }
