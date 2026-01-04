@@ -1,87 +1,113 @@
-<div class="layout" [class.sidebar-collapsed]="isSidebarCollapsed">
-  <app-consumer-sidebar #sidebar (sidebarToggle)="onSidebarToggle($event)"></app-consumer-sidebar>
+<div class="layout">
 
   <main class="content">
     <div class="dashboard-header">
       <h2>Payment History</h2>
-      <span class="date-display">{{ today | date:'fullDate' }}</span>
+      <div class="filters">
+        <select [(ngModel)]="utilityType" (change)="onUtilityChange()">
+          <option value="">All Utilities</option>
+          <option *ngFor="let u of utilities" [value]="u">
+            {{ u }}
+          </option>
+        </select>
+      </div>
+
     </div>
 
-    <!-- DESKTOP TABLE -->
-    <table class="payments-table">
-      <thead>
-        <tr>
-          <th>Utility</th>
-          <th>Payment ID</th>
-          <th>Bill ID</th>
-          <th>Amount</th>
-          <th>Mode</th>
-          <th>Date</th>
-          <th>Status</th>
-          <th>Invoice</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let p of payments">
-          <td>{{ p.utilityType }}</td>
-          <td>{{ p.id }}</td>
-          <td>{{ p.billId }}</td>
-          <td>₹{{ p.amount }}</td>
-          <td>{{ p.mode }}</td>
-          <td>{{ p.completedAt | date:'shortDate' }}</td>
-          <td>
+    <ng-container *ngIf="payments.length>0;else noPayments">
+      <table class="payments-table">
+        <thead>
+          <tr>
+            <th>Utility</th>
+            <th>Payment ID</th>
+            <th>Bill ID</th>
+            <th>Amount</th>
+            <th>Mode</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Invoice</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of payments">
+            <td>{{ p.utilityType }}</td>
+            <td>{{ p.id }}</td>
+            <td>{{ p.billId }}</td>
+            <td>₹{{ p.amount }}</td>
+            <td>{{ p.mode }}</td>
+            <td>{{ p.completedAt | date:'mediumDate' }}</td>
+            <td>
+              <span class="badge" [ngClass]="p.status.toLowerCase()">
+                {{ p.status }}
+              </span>
+            </td>
+            <td>
+              <button *ngIf="p.status==='SUCCESS'" class="invoice-btn" (click)="downloadInvoice(p.id)">
+                Download
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="payments-grid">
+        <div class="payment-card" *ngFor="let p of payments">
+          <div class="payment-header">
+            <strong>{{ p.utilityType }}</strong>
             <span class="badge" [ngClass]="p.status.toLowerCase()">
               {{ p.status }}
             </span>
-          </td>
-          <td>
-            <button *ngIf="p.status==='SUCCESS'" class="invoice-btn" (click)="downloadInvoice(p.id)">
-              Download
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+          </div>
 
-    <!-- MOBILE CARDS -->
-    <div class="payments-grid">
-      <div class="payment-card" *ngFor="let p of payments">
-        <div class="payment-header">
-          <strong>{{ p.utilityType }}</strong>
-          <span class="badge" [ngClass]="p.status.toLowerCase()">
-            {{ p.status }}
-          </span>
+          <div class="info-row">
+            <span>Payment ID</span>
+            <strong>{{ p.id }}</strong>
+          </div>
+
+          <div class="info-row">
+            <span>Bill ID</span>
+            <strong>{{ p.billId }}</strong>
+          </div>
+
+          <div class="info-row">
+            <span>Amount</span>
+            <strong>₹{{ p.amount }}</strong>
+          </div>
+
+          <div class="info-row">
+            <span>Mode</span>
+            <strong>{{ p.mode }}</strong>
+          </div>
+
+          <div class="info-row">
+            <span>Date</span>
+            <strong>{{ p.completedAt | date:'mediumDate' }}</strong>
+          </div>
+
+          <button *ngIf="p.status==='SUCCESS'" (click)="downloadInvoice(p.id)">
+            Download Invoice
+          </button>
         </div>
-
-        <div class="info-row">
-          <span>Payment ID</span>
-          <strong>{{ p.id }}</strong>
-        </div>
-
-        <div class="info-row">
-          <span>Bill ID</span>
-          <strong>{{ p.billId }}</strong>
-        </div>
-
-        <div class="info-row">
-          <span>Amount</span>
-          <strong>₹{{ p.amount }}</strong>
-        </div>
-
-        <div class="info-row">
-          <span>Mode</span>
-          <strong>{{ p.mode }}</strong>
-        </div>
-
-        <div class="info-row">
-          <span>Date</span>
-          <strong>{{ p.completedAt | date:'shortDate' }}</strong>
-        </div>
-
-        <button *ngIf="p.status==='SUCCESS'" (click)="downloadInvoice(p.id)">
-          Download Invoice
-        </button>
       </div>
-    </div>
+      <div class="pagination">
+        <button class="nav" (click)="prev()" [disabled]="page===0">‹</button>
+
+        <button *ngFor="let _ of [].constructor(totalPages); let i=index" class="page" [class.active]="i===page"
+          (click)="goToPage(i)">
+          {{ i+1 }}
+        </button>
+
+        <button class="nav" (click)="next()" [disabled]="page+1===totalPages">›</button>
+      </div>
+    </ng-container>
+
+    <ng-template #noPayments>
+      <div class="empty-state">
+        <h3>No payments found</h3>
+        <p>You don’t have any payment history for the selected utility.</p>
+      </div>
+    </ng-template>
+
+
   </main>
 </div>

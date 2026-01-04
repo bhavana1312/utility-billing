@@ -58,6 +58,12 @@ export class OfflinePayment {
 
           this.totalPages = res.totalPages;
 
+          if (dueBills.length === 0) {
+            this.bills = [];
+            this.applyFilters();
+            return;
+          }
+
           const requests = dueBills.map((b) =>
             this.http.get<any>(`http://localhost:9090/consumers/${b.consumerId}`).pipe(
               map(

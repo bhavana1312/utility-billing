@@ -15,7 +15,13 @@
       </div>
     </div>
 
-    <div class="table-wrapper desktop">
+    <div class="empty-state" *ngIf="filteredBills.length === 0">
+      <div class="empty-icon">📄</div>
+      <h3>No bills found</h3>
+      <p>No bills available for the selected utility.</p>
+    </div>
+
+    <div class="table-wrapper desktop" *ngIf="filteredBills.length > 0">
       <table>
         <thead>
           <tr>
@@ -54,7 +60,7 @@
       </table>
     </div>
 
-    <div class="cards mobile">
+    <div class="cards mobile" *ngIf="filteredBills.length > 0">
       <div class="bill-card" *ngFor="let b of filteredBills">
         <div class="top">
           <strong>{{b.consumerName}}</strong>
@@ -76,34 +82,38 @@
       </div>
     </div>
 
+    <div class="payment-panel-overlay" *ngIf="selectedBill" (click)="selectedBill = null"></div>
     <div class="payment-panel" *ngIf="selectedBill">
-      <h3>Confirm Payment</h3>
+      <div class="panel-header">
+        <h3>Confirm Payment</h3>
+        <button class="close-btn" (click)="selectedBill = null">&times;</button>
+      </div>
 
       <div class="summary">
         <div>{{selectedBill.consumerName}}</div>
         <div>₹ {{selectedBill.totalAmount}}</div>
       </div>
 
+      <label>Payment Mode</label>
       <select [(ngModel)]="paymentMode">
         <option value="CASH">Cash</option>
         <option value="CHEQUE">Cheque</option>
       </select>
 
-      <button (click)="completePayment()" [disabled]="loading">
+      <button class="confirm-btn" (click)="completePayment()" [disabled]="loading">
         {{loading?'Processing...':'Confirm Payment'}}
       </button>
     </div>
 
-    <div class="pagination" *ngIf="totalPages > 1">
+    <div class="pagination" *ngIf="totalPages > 1 && filteredBills.length > 0">
       <button (click)="prevPage()" [disabled]="page === 0">‹</button>
-    
+
       <button *ngFor="let p of pages()" (click)="goToPage(p)" [class.active]="p === page">
         {{ p + 1 }}
       </button>
-    
+
       <button (click)="nextPage()" [disabled]="page + 1 >= totalPages">›</button>
     </div>
-
 
   </main>
 </div>

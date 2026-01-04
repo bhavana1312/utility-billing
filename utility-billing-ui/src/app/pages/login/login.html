@@ -1,33 +1,45 @@
-<div class="container">
-  <div class="card auth-card">
-    <h2>Welcome back</h2>
+<div class="layout centered">
+  <div class="auth-card">
+    <div class="auth-header">
+      <h2>Welcome back</h2>
+      <p>Please enter your credentials to access your account</p>
+    </div>
 
     <form [formGroup]="form" (ngSubmit)="submit()">
-
-      <input placeholder="Username" formControlName="username" />
-      <div class="error" *ngIf="form.get('username')?.touched && form.get('username')?.invalid">
-        Username is required
+      <div class="input-group">
+        <label>Username</label>
+        <input type="text" placeholder="Enter username" formControlName="username"
+          [class.invalid]="form.get('username')?.touched && form.get('username')?.invalid" />
+        <div class="error-text" *ngIf="form.get('username')?.touched && form.get('username')?.invalid">
+          Username is required
+        </div>
       </div>
 
-      <div class="password-field">
-        <input [type]="showPassword ? 'text' : 'password'" placeholder="Password" formControlName="password" />
-        <button type="button" class="toggle" (click)="showPassword=!showPassword">
-          {{ showPassword ? 'Hide' : 'Show' }}
-        </button>
-      </div>
-
-      <div class="error" *ngIf="form.get('password')?.touched && form.get('password')?.invalid">
-        Password is required
+      <div class="input-group">
+        <label>Password</label>
+        <div class="password-wrapper">
+          <input [type]="showPassword ? 'text' : 'password'" placeholder="Enter password" formControlName="password"
+            [class.invalid]="form.get('password')?.touched && form.get('password')?.invalid" />
+          <button type="button" class="toggle-btn" (click)="showPassword=!showPassword">
+            {{ showPassword ? 'Hide' : 'Show' }}
+          </button>
+        </div>
+        <div class="error-text" *ngIf="form.get('password')?.touched && form.get('password')?.invalid">
+          Password is required
+        </div>
       </div>
 
       <div class="forgot-row">
-        <a routerLink="/forgot-password">Forgot password?</a>
+        <a routerLink="/forgot-password" class="link">Forgot password?</a>
       </div>
 
-      <button type="submit" [disabled]="form.invalid || loading">
+      <button type="submit" class="confirm-btn full-width" [disabled]="form.invalid || loading">
         {{ loading ? 'Logging in...' : 'Login' }}
       </button>
 
+      <div class="auth-footer">
+        <p>Don't have an account? <a routerLink="/consumer-request" class="link">Sign up</a></p>
+      </div>
     </form>
   </div>
 </div>

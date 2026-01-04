@@ -278,7 +278,7 @@ button.secondary:hover {
 
 .password-wrapper input {
   width: 100%;
-  padding-right: 60px; /* Space for the "Show/Hide" text */
+  padding-right: 60px;
 }
 
 .text-toggle {

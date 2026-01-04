@@ -87,12 +87,8 @@ export class AccountsOfficerDashboard implements AfterViewInit {
     let overdue = 0;
 
     this.bills.forEach((b) => {
-      if (b.status !== 'PAID') {
-        outstanding += b.totalAmount;
-      }
-      if (b.status === 'OVERDUE') {
-        overdue++;
-      }
+      if (b.status !== 'PAID') outstanding += b.totalAmount;
+      if (b.status === 'OVERDUE') overdue++;
     });
 
     this.outstandingAmount = Number(outstanding.toFixed(2));
@@ -115,21 +111,33 @@ export class AccountsOfficerDashboard implements AfterViewInit {
   }
 
   renderCollectionTrend() {
-    const map: Record<string, number> = {};
+    const map: Record<number, number> = {};
 
     this.payments
       .filter((p) => p.status === 'SUCCESS')
       .forEach((p) => {
-        const d = new Date(p.completedAt).toLocaleDateString();
-        map[d] = Number(((map[d] || 0) + p.amount).toFixed(2));
+        const t = new Date(p.completedAt).setHours(0, 0, 0, 0);
+        map[t] = (map[t] || 0) + p.amount;
       });
+
+    const entries = Object.entries(map)
+      .map(([k, v]) => ({ time: +k, amount: Number(v.toFixed(2)) }))
+      .sort((a, b) => a.time - b.time);
 
     this.charts.push(
       new Chart('collectionTrend', {
         type: 'line',
         data: {
-          labels: Object.keys(map),
-          datasets: [{ data: Object.values(map), tension: 0.4, fill: true }],
+          labels: entries.map((e) =>
+            new Date(e.time).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })
+          ),
+          datasets: [
+            {
+              data: entries.map((e) => e.amount),
+              fill: true,
+              tension: 0.4,
+            },
+          ],
         },
         options: { plugins: { legend: { display: false } } },
       })
@@ -140,42 +148,27 @@ export class AccountsOfficerDashboard implements AfterViewInit {
     const m = { ONLINE: 0, OFFLINE: 0 };
 
     this.payments.forEach((p) => {
-      if (p.mode === 'ONLINE') m.ONLINE++;
-      else m.OFFLINE++;
+      p.mode === 'ONLINE' ? m.ONLINE++ : m.OFFLINE++;
     });
 
     this.charts.push(
       new Chart('modeChart', {
         type: 'pie',
-        data: {
-          labels: Object.keys(m),
-          datasets: [{ data: Object.values(m) }],
-        },
+        data: { labels: Object.keys(m), datasets: [{ data: Object.values(m) }] },
       })
     );
   }
 
   renderBillStatus() {
-    const s: Record<BillStatus, number> = {
-      PAID: 0,
-      DUE: 0,
-      OVERDUE: 0,
-    };
+    const s: { [k in BillStatus]: number } = { PAID: 0, DUE: 0, OVERDUE: 0 };
 
-    this.bills.forEach((b) => {
-      s[b.status]++;
-    });
+    this.bills.forEach((b) => s[b.status]++);
 
     this.charts.push(
       new Chart('billStatusChart', {
         type: 'bar',
-        data: {
-          labels: Object.keys(s),
-          datasets: [{ data: Object.values(s) }],
-        },
-        options: {
-          plugins: { legend: { display: false } },
-        },
+        data: { labels: Object.keys(s), datasets: [{ data: Object.values(s) }] },
+        options: { plugins: { legend: { display: false } } },
       })
     );
   }
@@ -186,13 +179,13 @@ export class AccountsOfficerDashboard implements AfterViewInit {
     this.bills
       .filter((b) => b.status === 'OVERDUE')
       .forEach((b) => {
-        map[b.consumerId] = Number(((map[b.consumerId] || 0) + b.totalAmount).toFixed(2));
+        map[b.consumerId] = (map[b.consumerId] || 0) + b.totalAmount;
       });
 
     const entries = Object.entries(map)
       .map(([id, amount]) => ({
         name: this.consumers[id] || 'Loading...',
-        amount,
+        amount: Number(amount.toFixed(2)),
       }))
       .sort((a, b) => b.amount - a.amount)
       .slice(0, 5);

@@ -1,43 +1,67 @@
-<div class="layout" [class.sidebar-collapsed]="isSidebarCollapsed">
-  <app-consumer-sidebar #sidebar (sidebarToggle)="onSidebarToggle($event)"></app-consumer-sidebar>
-
+<div class="layout">
   <main class="content">
-    <div class="dashboard-header">
+    <div class="header">
       <h2>Apply for Connection</h2>
-      <span class="date-display">{{ today | date:'fullDate' }}</span>
     </div>
 
     <div class="form-card">
-      <label>Utility Type</label>
-      <select [(ngModel)]="form.utilityType">
-        <option value="ELECTRICITY">Electricity</option>
-        <option value="WATER">Water</option>
-        <option value="GAS">Gas</option>
-      </select>
+      <div class="form-grid">
+        <div class="input-group">
+          <label>Utility Type</label>
+          <select [(ngModel)]="form.utilityType" [disabled]="loading">
+            <option value="ELECTRICITY">Electricity</option>
+            <option value="WATER">Water</option>
+            <option value="GAS">Gas</option>
+          </select>
+        </div>
 
-      <label>Tariff Plan</label>
-      <select [(ngModel)]="form.tariffPlan">
-        <option value="DOMESTIC">DOMESTIC</option>
-        <option value="COMMERCIAL">COMMERCIAL</option>
-        <option value="INDUSTRIAL">INDUSTRIAL</option>
-      </select>
+        <div class="input-group">
+          <label>Tariff Plan</label>
+          <select [(ngModel)]="form.tariffPlan" [disabled]="loading">
+            <option value="DOMESTIC">Domestic</option>
+            <option value="COMMERCIAL">Commercial</option>
+            <option value="INDUSTRIAL">Industrial</option>
+          </select>
+        </div>
+      </div>
 
-      <button (click)="apply()">Submit Request</button>
+      <button class="confirm-btn" (click)="apply()" [disabled]="loading">
+        {{ loading ? 'Submitting...' : 'Submit Request' }}
+      </button>
     </div>
 
-    <h3 class="section-title">My Applications</h3>
+    <div class="header section-header">
+      <h3 class="section-title">My Applications</h3>
+      <div class="controls">
+        <select [(ngModel)]="utilityFilter" (change)="applyFilter()">
+          <option value="">All Utilities</option>
+          <option value="ELECTRICITY">Electricity</option>
+          <option value="WATER">Water</option>
+          <option value="GAS">Gas</option>
+        </select>
+      </div>
+    </div>
 
-    <div class="applications-grid">
-      <div class="app-card" *ngFor="let a of applications">
-        <div class="app-header">
+    <div class="empty-state" *ngIf="filteredApplications.length === 0">
+      <div class="empty-icon">📝</div>
+      <p>No applications found for the selected criteria.</p>
+    </div>
+
+    <div class="cards">
+      <div class="bill-card" *ngFor="let a of filteredApplications">
+        <div class="top">
           <strong>{{ a.utilityType }}</strong>
           <span class="badge" [ngClass]="a.status.toLowerCase()">
             {{ a.status }}
           </span>
         </div>
-
-        <p>Plan: {{ a.tariffPlan }}</p>
-        <small>Applied on {{ a.createdAt | date:'mediumDate' }}</small>
+        <div class="meta">
+          <span>Plan: {{ a.tariffPlan }}</span>
+          <span>Applied: {{ a.createdAt | date:'mediumDate' }}</span>
+        </div>
+        <div class="details" *ngIf="a.remarks">
+          <p class="small">Note: {{ a.remarks }}</p>
+        </div>
       </div>
     </div>
   </main>

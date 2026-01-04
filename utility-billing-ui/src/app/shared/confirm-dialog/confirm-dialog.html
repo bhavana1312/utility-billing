@@ -1,7 +1,13 @@
-<div class="overlay" *ngIf="visible">
-  <div class="dialog">
-    <h3>{{ title }}</h3>
-    <p>{{ message }}</p>
+<div class="overlay" *ngIf="visible" (click)="onCancel()">
+  <div class="dialog" (click)="$event.stopPropagation()">
+    <div class="dialog-header">
+      <h3>{{ title }}</h3>
+      <button class="close-x" (click)="onCancel()">&times;</button>
+    </div>
+
+    <div class="dialog-body">
+      <p>{{ message }}</p>
+    </div>
 
     <div class="actions">
       <button class="btn cancel" (click)="onCancel()">

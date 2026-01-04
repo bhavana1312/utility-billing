@@ -1,31 +1,22 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { ConsumerSidebar } from '../consumer-sidebar/consumer-sidebar';
 import { AuthService } from '../../../core/auth/auth';
 import { FormsModule } from '@angular/forms';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, ConsumerSidebar, FormsModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './connections.html',
   styleUrl: './connections.css',
 })
 export class Connections {
-  @ViewChild(ConsumerSidebar) sidebar!: ConsumerSidebar;
-
-  isSidebarCollapsed = false;
-  today = new Date();
-
   meters: any[] = [];
   search = '';
+  utilityFilter = '';
 
   constructor(private http: HttpClient, private auth: AuthService) {
     this.loadMeters();
-  }
-
-  onSidebarToggle(val: boolean) {
-    this.isSidebarCollapsed = val;
   }
 
   loadMeters() {
@@ -38,14 +29,16 @@ export class Connections {
   }
 
   get filteredMeters() {
-    if (!this.search) return this.meters;
+    return this.meters.filter((m) => {
+      const searchStr = this.search.toLowerCase();
+      const matchesSearch =
+        !this.search ||
+        m.meterNumber?.toLowerCase().includes(searchStr) ||
+        m.tariffPlan?.toLowerCase().includes(searchStr);
 
-    const s = this.search.toLowerCase();
-    return this.meters.filter(
-      (m) =>
-        m.meterNumber?.toLowerCase().includes(s) ||
-        m.utilityType?.toLowerCase().includes(s) ||
-        m.tariffPlan?.toLowerCase().includes(s)
-    );
+      const matchesUtility = !this.utilityFilter || m.utilityType === this.utilityFilter;
+
+      return matchesSearch && matchesUtility;
+    });
   }
 }

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
+import { forkJoin } from 'rxjs';
 
 @Component({
   standalone: true,
@@ -12,9 +13,13 @@ import { ToastrService } from 'ngx-toastr';
 })
 export class AddReading {
   meters: any[] = [];
+  filteredMeters: any[] = [];
   selectedMeter: any = null;
   readingValue: number | null = null;
   loading = false;
+
+  search = '';
+  utilityFilter = '';
 
   constructor(private http: HttpClient, private toast: ToastrService) {
     this.loadMeters();
@@ -24,23 +29,45 @@ export class AddReading {
     this.http.get<any[]>('http://localhost:9090/meters/all').subscribe({
       next: (res) => {
         const activeMeters = res.filter((m) => m.active);
+        const requests = activeMeters.map((meter) =>
+          this.http.get<any>(`http://localhost:9090/consumers/${meter.consumerId}`)
+        );
 
-        activeMeters.forEach((meter) => {
-          this.getConsumer(meter.consumerId).subscribe({
-            next: (consumer) => {
-              meter.consumerName = consumer.fullName;
-              meter.email = consumer.email;
-            },
-            error: () => {
-              meter.consumerName = 'Unknown';
-              meter.email = '-';
-            },
-          });
+        if (requests.length === 0) {
+          this.meters = [];
+          this.applyFilters();
+          return;
+        }
+
+        forkJoin(requests).subscribe({
+          next: (consumers: any[]) => {
+            this.meters = activeMeters.map((meter, index) => ({
+              ...meter,
+              consumerName: consumers[index].fullName,
+              email: consumers[index].email,
+            }));
+            this.applyFilters();
+          },
+          error: () => {
+            this.meters = activeMeters.map((m) => ({ ...m, consumerName: 'Unknown', email: '-' }));
+            this.applyFilters();
+          },
         });
-
-        this.meters = activeMeters;
       },
       error: () => this.toast.error('Failed to load connections'),
+    });
+  }
+
+  applyFilters() {
+    this.filteredMeters = this.meters.filter((m) => {
+      const matchesName =
+        !this.search ||
+        m.consumerName?.toLowerCase().includes(this.search.toLowerCase()) ||
+        m.meterNumber?.toLowerCase().includes(this.search.toLowerCase());
+
+      const matchesUtility = !this.utilityFilter || m.utilityType === this.utilityFilter;
+
+      return matchesName && matchesUtility;
     });
   }
 
@@ -65,7 +92,6 @@ export class AddReading {
       .subscribe({
         next: () => {
           this.toast.success('Reading added successfully');
-          this.loading = false;
           this.generateBill();
         },
         error: () => {
@@ -73,10 +99,6 @@ export class AddReading {
           this.toast.error('Failed to add reading');
         },
       });
-  }
-
-  getConsumer(id: string) {
-    return this.http.get<any>(`http://localhost:9090/consumers/${id}`);
   }
 
   generateBill() {
@@ -87,13 +109,17 @@ export class AddReading {
       .subscribe({
         next: () => {
           this.toast.success('Bill generated');
+          this.loading = false;
           this.loadMeters();
-          this.selectedMeter = null;
-          this.readingValue = null;
+          this.closePanel();
         },
-        error: () => this.toast.error('Bill generation failed'),
+        error: () => {
+          this.loading = false;
+          this.toast.error('Bill generation failed');
+        },
       });
   }
+
   closePanel() {
     this.selectedMeter = null;
     this.readingValue = null;

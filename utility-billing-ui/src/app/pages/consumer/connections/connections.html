@@ -1,44 +1,62 @@
-<div class="layout" [class.sidebar-collapsed]="isSidebarCollapsed">
-  <app-consumer-sidebar #sidebar (sidebarToggle)="onSidebarToggle($event)"></app-consumer-sidebar>
-
+<div class="layout">
   <main class="content">
-
-    <div class="dashboard-header">
+    <div class="header">
       <h2>My Connections</h2>
-      <span class="date-display">{{ today | date:'fullDate' }}</span>
+
+      <div class="controls">
+        <input type="text" placeholder="Search meter" [(ngModel)]="search" />
+
+        <select [(ngModel)]="utilityFilter">
+          <option value="">All Utilities</option>
+          <option value="ELECTRICITY">Electricity</option>
+          <option value="WATER">Water</option>
+          <option value="GAS">Gas</option>
+        </select>
+      </div>
     </div>
 
-    <div class="filters">
-      <input type="text" placeholder="Search by meter number / utility / plan" [(ngModel)]="search" />
+    <div class="empty-state" *ngIf="filteredMeters.length === 0">
+      <div class="empty-icon">📡</div>
+      <h3>No connections found</h3>
+      <p>We couldn't find any meters matching your current filters.</p>
     </div>
 
-    <div class="connections-grid">
+    <div class="connections-grid" *ngIf="filteredMeters.length > 0">
       <div class="connection-card" *ngFor="let m of filteredMeters">
         <div class="card-header">
-          <h4>{{ m.utilityType }}</h4>
-          <span class="status" [class.active]="m.active" [class.inactive]="!m.active">
+          <div class="utility-info">
+            <span class="utility-icon" [ngSwitch]="m.utilityType">
+              <span *ngSwitchCase="'ELECTRICITY'">⚡</span>
+              <span *ngSwitchCase="'WATER'">💧</span>
+              <span *ngSwitchCase="'GAS'">🔥</span>
+            </span>
+            <h4>{{ m.utilityType }}</h4>
+          </div>
+          <span class="status-badge" [class.active]="m.active">
             {{ m.active ? 'Active' : 'Inactive' }}
           </span>
         </div>
 
-        <div class="info-row">
-          <span>Meter Number</span>
-          <strong>{{ m.meterNumber }}</strong>
-        </div>
+        <div class="card-body">
+          <div class="info-row">
+            <span>Meter Number</span>
+            <strong>{{ m.meterNumber }}</strong>
+          </div>
 
-        <div class="info-row">
-          <span>Tariff Plan</span>
-          <strong>{{ m.tariffPlan }}</strong>
-        </div>
+          <div class="info-row">
+            <span>Tariff Plan</span>
+            <strong>{{ m.tariffPlan }}</strong>
+          </div>
 
-        <div class="info-row">
-          <span>Last Reading</span>
-          <strong>{{ m.lastReading }}</strong>
-        </div>
+          <div class="info-row">
+            <span>Last Reading</span>
+            <strong class="highlight">{{ m.lastReading }}</strong>
+          </div>
 
-        <div class="info-row">
-          <span>Installed On</span>
-          <strong>{{ m.installationDate | date:'mediumDate' }}</strong>
+          <div class="info-row">
+            <span>Installed On</span>
+            <strong>{{ m.installationDate | date:'mediumDate' }}</strong>
+          </div>
         </div>
       </div>
     </div>

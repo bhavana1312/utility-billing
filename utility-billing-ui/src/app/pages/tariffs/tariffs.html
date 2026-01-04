@@ -1,6 +1,7 @@
-<div [class]="'page theme-' + selectedUtility">
-  <div class="container">
-    <div class="header">
+<div [class]="'layout theme-' + selectedUtility.toLowerCase()">
+  <main class="content">
+
+    <div class="header text-center">
       <h2>Tariff Plans</h2>
       <p class="subtitle">
         Explore our transparent pricing structure for all utilities. Select a utility and consumer type to view detailed
@@ -12,24 +13,35 @@
       <button *ngFor="let u of utilities" (click)="selectedUtility = u" [class.active]="selectedUtility === u"
         class="tab-btn">
         <span class="icon" [innerHTML]="getUtilityIcon(u)"></span>
-        {{ u }}
+        {{ u | titlecase }}
       </button>
     </div>
 
     <div class="selection-area">
-      <h3>Select Consumer Type</h3>
+      <div class="section-title-row">
+        <h3>Select Consumer Type</h3>
+        <div class="accent-line"></div>
+      </div>
 
-      <div class="grid">
+      <div class="plan-grid">
         <div *ngFor="let plan of plans" class="consumer-card" (click)="explore(selectedUtility, plan)">
 
-          <div class="icon-wrapper">
-            <span [innerHTML]="getPlanIcon(plan)"></span>
+          <div class="card-content">
+            <div class="icon-wrapper">
+              <span [innerHTML]="getPlanIcon(plan)"></span>
+            </div>
+
+            <h4>{{ plan }}</h4>
+            <p>{{ getPlanDescription(plan) }}</p>
           </div>
 
-          <h4>{{ plan }}</h4>
-          <p>{{ getPlanDescription(plan) }}</p>
+          <div class="card-footer">
+            <span>View Slabs</span>
+            <span class="arrow">→</span>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+
+  </main>
 </div>

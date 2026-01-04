@@ -1,7 +1,6 @@
-import { Component, AfterViewInit, ViewChild } from '@angular/core';
+import { Component, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { ConsumerSidebar } from '../consumer-sidebar/consumer-sidebar';
 import { Chart, registerables } from 'chart.js';
 import { AuthService } from '../../../core/auth/auth';
 
@@ -9,22 +8,16 @@ Chart.register(...registerables);
 
 @Component({
   standalone: true,
-  imports: [CommonModule, ConsumerSidebar],
+  imports: [CommonModule],
   templateUrl: './consumer-dashboard.html',
   styleUrl: './consumer-dashboard.css',
 })
 export class ConsumerDashboard implements AfterViewInit {
-  @ViewChild(ConsumerSidebar) sidebar!: ConsumerSidebar;
-
-  isSidebarCollapsed = false;
   today = new Date();
 
   bills: any[] = [];
   payments: any[] = [];
   charts: any[] = [];
-
-  private billsLoaded = false;
-  private paymentsLoaded = false;
 
   constructor(private http: HttpClient, private auth: AuthService) {
     this.loadBills();
@@ -33,123 +26,148 @@ export class ConsumerDashboard implements AfterViewInit {
 
   ngAfterViewInit() {}
 
-  onSidebarToggle(val: boolean) {
-    this.isSidebarCollapsed = val;
-    setTimeout(() => this.charts.forEach((c) => c.resize()), 300);
-  }
-
   loadBills() {
-    const consumerId = this.auth.getConsumerId();
-    if (!consumerId) return;
+    const id = this.auth.getConsumerId();
+    if (!id) return;
 
-    this.http.get<any[]>(`http://localhost:9090/billing/${consumerId}`).subscribe((res) => {
-      this.bills = res;
-      this.billsLoaded = true;
-      this.tryRenderCharts();
+    this.http.get<any>(`http://localhost:9090/billing/${id}?page=0&size=50`).subscribe((r) => {
+      this.bills = r.content;
+      this.renderCharts();
     });
   }
 
   loadPayments() {
-    const consumerId = this.auth.getConsumerId();
-    if (!consumerId) return;
+    const id = this.auth.getConsumerId();
+    if (!id) return;
 
     this.http
-      .get<any[]>(`http://localhost:9090/payments/history/${consumerId}`)
-      .subscribe((res) => {
-        this.payments = res;
-        this.paymentsLoaded = true;
-        this.tryRenderCharts();
+      .get<any>(`http://localhost:9090/payments/history/${id}?page=0&size=50`)
+      .subscribe((r) => {
+        this.payments = r.content;
+        this.renderCharts();
       });
-  }
-
-  tryRenderCharts() {
-    if (this.billsLoaded && this.paymentsLoaded) {
-      setTimeout(() => this.renderCharts(), 0);
-    }
   }
 
   renderCharts() {
     this.charts.forEach((c) => c.destroy());
     this.charts = [];
 
-    const due = this.bills.filter((b) => b.status === 'DUE' || b.status === 'OVERDUE').length;
-    const paid = this.bills.filter((b) => b.status === 'PAID').length;
+    const sorted = [...this.bills].sort(
+      (a, b) => new Date(a.generatedAt).getTime() - new Date(b.generatedAt).getTime()
+    );
 
-    const statusCtx = document.getElementById('billStatusChart') as HTMLCanvasElement;
-    if (statusCtx) {
-      this.charts.push(
-        new Chart(statusCtx, {
-          type: 'doughnut',
-          data: {
-            labels: ['Paid', 'Due / Overdue'],
-            datasets: [
-              {
-                data: [paid, due],
-                backgroundColor: ['#22c55e', '#facc15'],
-              },
-            ],
-          },
-          options: { responsive: true, maintainAspectRatio: false },
-        })
-      );
-    }
-
-    const paymentCtx = document.getElementById('paymentChart') as HTMLCanvasElement;
-    if (paymentCtx) {
-      this.charts.push(
-        new Chart(paymentCtx, {
-          type: 'bar',
-          data: {
-            labels: ['Payments', 'Pending Bills'],
-            datasets: [
-              {
-                data: [this.payments.length, due],
-                backgroundColor: ['#2563eb', '#f97316'],
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-          },
-        })
-      );
-    }
-
-    const consumptionCtx = document.getElementById('consumptionChart') as HTMLCanvasElement;
-    if (consumptionCtx) {
-      this.charts.push(
-        new Chart(consumptionCtx, {
-          type: 'line',
-          data: {
-            labels: this.bills.map((b) =>
-              new Date(b.generatedAt).toLocaleString('default', { month: 'short' })
-            ),
-            datasets: [
-              {
-                data: this.bills.map((b) => b.unitsConsumed),
-                borderColor: '#2563eb',
-                backgroundColor: 'rgba(37,99,235,0.1)',
-                fill: true,
-                tension: 0.4,
-              },
-            ],
-          },
-          options: { responsive: true, maintainAspectRatio: false },
-        })
-      );
-    }
+    this.billAmountTrend(sorted);
+    this.utilitySplit(sorted);
+    this.billBreakdown(sorted);
+    this.monthlyConsumption(sorted);
   }
 
-  pay(billId: string) {
-    this.http.post('http://localhost:9090/payments/initiate', { billId }).subscribe(() => {
-      this.loadBills();
-      this.loadPayments();
-    });
+  billAmountTrend(bills: any[]) {
+    const ctx = document.getElementById('amountTrend') as HTMLCanvasElement;
+    if (!ctx) return;
+
+    this.charts.push(
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: bills.map((b) =>
+            new Date(b.generatedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })
+          ),
+          datasets: [
+            {
+              data: bills.map((b) => b.totalAmount),
+              fill: true,
+              tension: 0.4,
+            },
+          ],
+        },
+        options: { plugins: { legend: { display: false } } },
+      })
+    );
   }
 
-  get pendingBills() {
-    return this.bills.filter((b) => b.status === 'DUE' || b.status === 'OVERDUE').length;
+  utilitySplit(bills: any[]) {
+    const ctx = document.getElementById('utilitySplit') as HTMLCanvasElement;
+    if (!ctx) return;
+
+    const utilities = ['ELECTRICITY', 'WATER', 'GAS'];
+    const data = utilities.map((u) =>
+      bills.filter((b) => b.utilityType === u).reduce((s, b) => s + b.unitsConsumed, 0)
+    );
+
+    this.charts.push(
+      new Chart(ctx, {
+        type: 'pie',
+        data: { labels: utilities, datasets: [{ data }] },
+        options: { responsive: true },
+      })
+    );
+  }
+
+  billBreakdown(bills: any[]) {
+    const ctx = document.getElementById('billBreakdown') as HTMLCanvasElement;
+    if (!ctx) return;
+
+    this.charts.push(
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: bills.map((b) =>
+            new Date(b.generatedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })
+          ),
+          datasets: [
+            { label: 'Fixed', data: bills.map((b) => b.fixedCharge), stack: 'a' },
+            { label: 'Energy', data: bills.map((b) => b.energyCharge), stack: 'a' },
+            { label: 'Tax', data: bills.map((b) => b.taxAmount), stack: 'a' },
+          ],
+        },
+        options: { indexAxis: 'y', scales: { x: { stacked: true }, y: { stacked: true } } },
+      })
+    );
+  }
+
+  monthlyConsumption(bills: any[]) {
+    const ctx = document.getElementById('consumptionTrend') as HTMLCanvasElement;
+    if (!ctx) return;
+
+    this.charts.push(
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: bills.map((b) =>
+            new Date(b.generatedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })
+          ),
+          datasets: [
+            {
+              data: bills.map((b) => b.unitsConsumed),
+            },
+          ],
+        },
+        options: { indexAxis: 'x', plugins: { legend: { display: false } } },
+      })
+    );
+  }
+
+  get totalBills() {
+    return this.bills.length;
+  }
+
+  get dueAmount() {
+    return this.bills
+      .filter((b) => b.status === 'DUE' || b.status === 'OVERDUE')
+      .reduce((s, b) => s + b.totalAmount, 0);
+  }
+
+  get nextDueDays() {
+    const due = this.bills
+      .filter((b) => b.status === 'DUE' || b.status === 'OVERDUE')
+      .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+    if (!due.length) return 0;
+    return Math.ceil((new Date(due[0].dueDate).getTime() - Date.now()) / 86400000);
+  }
+
+  get lastPaymentStatus() {
+    if (!this.payments.length) return '—';
+    return this.payments[0].status;
   }
 }

@@ -1,99 +1,57 @@
-<div class="layout" [class.sidebar-collapsed]="isSidebarCollapsed">
-  <app-consumer-sidebar #sidebar (sidebarToggle)="onSidebarToggle($event)"></app-consumer-sidebar>
-
+<div class="layout">
   <main class="content">
-    <header class="mobile-top-nav">
-      <button class="toggle-btn" (click)="sidebar.toggleSidebar()" [class.is-collapsed]="isSidebarCollapsed">
-        <span class="arrow">‹</span>
-      </button>
-      <div class="mobile-brand">
-        <span class="bolt">⚡</span>
-        <span class="brand-name">Utility<span>Consumer</span></span>
-      </div>
-    </header>
 
     <div class="dashboard-header">
-      <h2>Consumer Dashboard</h2>
+      <div>
+        <h2>Consumer Dashboard</h2>
+        <p class="subtitle">Usage overview & consumption insights</p>
+      </div>
       <span class="date-display">{{ today | date:'fullDate' }}</span>
     </div>
 
-    <div class="stats">
-      <div class="stat-card">
-        <div class="stat-icon-box">📄</div>
-        <div class="stat-content">
-          <span>Total Bills</span>
-          <h3>{{ bills.length }}</h3>
-        </div>
+    <div class="kpis">
+      <div class="kpi-card">
+        <span>Total Bills</span>
+        <h3>{{ totalBills }}</h3>
       </div>
 
-      <div class="stat-card warning">
-        <div class="stat-icon-box">⏳</div>
-        <div class="stat-content">
-          <span>Pending Bills</span>
-          <h3>{{ pendingBills }}</h3>
-        </div>
+      <div class="kpi-card warning">
+        <span>Current Due Amount</span>
+        <h3>₹ {{ dueAmount }}</h3>
       </div>
 
-      <div class="stat-card success">
-        <div class="stat-icon-box">💳</div>
-        <div class="stat-content">
-          <span>Total Payments</span>
-          <h3>{{ payments.length }}</h3>
-        </div>
+      <div class="kpi-card danger">
+        <span>Due In</span>
+        <h3>{{ nextDueDays }} days</h3>
+      </div>
+
+      <div class="kpi-card success">
+        <span>Last Payment Status</span>
+        <h3>{{ lastPaymentStatus }}</h3>
       </div>
     </div>
 
-    <div class="charts">
-      <div class="chart-card">
-        <h4>Bill Status</h4>
-        <div class="canvas-container">
-          <canvas id="billStatusChart"></canvas>
-        </div>
+    <div class="grid">
+      <div class="card wide">
+        <div class="card-header">Bill Amount Trend</div>
+        <canvas id="amountTrend"></canvas>
       </div>
 
-      <div class="chart-card">
-        <h4>Payments Overview</h4>
-        <div class="canvas-container">
-          <canvas id="paymentChart"></canvas>
-        </div>
+      <div class="card">
+        <div class="card-header">Utility Consumption Split</div>
+        <canvas id="utilitySplit"></canvas>
       </div>
 
-      <div class="chart-card full">
-        <h4>Monthly Consumption</h4>
-        <div class="canvas-container trend">
-          <canvas id="consumptionChart"></canvas>
-        </div>
+      <div class="card">
+        <div class="card-header">Bill Breakdown</div>
+        <canvas id="billBreakdown"></canvas>
+      </div>
+
+      <div class="card wide">
+        <div class="card-header">Consumption Trend</div>
+        <canvas id="consumptionTrend"></canvas>
       </div>
     </div>
 
-    <section class="list-section">
-      <div class="section-header">
-        <h3>Recent Bills</h3>
-      </div>
-
-      <div class="card-list">
-        <div class="info-card" *ngFor="let b of bills">
-          <div class="info-row">
-            <strong>Month</strong>
-            <span>{{ b.generatedAt | date:'MMM yyyy' }}</span>
-          </div>
-
-          <div class="info-row">
-            <strong>Amount</strong>
-            <span>₹ {{ b.totalAmount }}</span>
-          </div>
-
-          <div class="info-row">
-            <strong>Status</strong>
-            <span class="badge" [ngClass]="b.status.toLowerCase()">{{ b.status }}</span>
-          </div>
-
-          <button class="pay-btn" *ngIf="b.status==='DUE'||b.status==='OVERDUE'" (click)="pay(b._id)">
-            Pay Now
-          </button>
-
-        </div>
-      </div>
-    </section>
   </main>
 </div>

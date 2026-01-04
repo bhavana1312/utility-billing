@@ -64,7 +64,7 @@ export const SIDEBAR_CONFIG: Record<
       { label: 'My Connections', icon: '🔌', route: '/consumer/connections' },
       { label: 'Apply Connection', icon: '📝', route: '/consumer/apply-connection' },
       { label: 'Bills', icon: '📄', route: '/consumer/bills' },
-      { label: 'Payments', icon: '💳', route: '/consumer/payments' },
+      { label: 'Payment History', icon: '💳', route: '/consumer/payments' },
       { label: 'Profile', icon: '👤', route: '/consumer/profile' },
     ],
   },

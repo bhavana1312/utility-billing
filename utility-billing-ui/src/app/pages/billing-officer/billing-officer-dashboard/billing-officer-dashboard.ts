@@ -48,7 +48,7 @@ export class BillingDashboard implements AfterViewInit {
     const todayStr = new Date().toISOString().split('T')[0];
     this.billsToday = this.bills.filter((b) => b.generatedAt?.startsWith(todayStr)).length;
 
-    const totalUnits = this.bills.reduce((sum, b) => sum + Number(b.unitsConsumed || 0), 0);
+    const totalUnits = this.bills.reduce((s, b) => s + Number(b.unitsConsumed || 0), 0);
     this.avgUnitsPerBill = this.bills.length ? Math.round(totalUnits / this.bills.length) : 0;
   }
 
@@ -63,7 +63,8 @@ export class BillingDashboard implements AfterViewInit {
   }
 
   renderTariffSlabChart() {
-    const slabs: any = {};
+    const slabs: Record<string, number> = {};
+
     this.bills.forEach((b) => {
       slabs[b.tariffPlan] = (slabs[b.tariffPlan] || 0) + 1;
     });
@@ -74,43 +75,52 @@ export class BillingDashboard implements AfterViewInit {
     this.charts.push(
       new Chart(ctx, {
         type: 'pie',
-        data: {
-          labels: Object.keys(slabs),
-          datasets: [{ data: Object.values(slabs) }],
-        },
-        options: { indexAxis: 'y', plugins: { legend: { display: false } } },
+        data: { labels: Object.keys(slabs), datasets: [{ data: Object.values(slabs) }] },
+        options: { plugins: { legend: { display: false } } },
       })
     );
   }
 
   renderConsumptionTrend() {
-    const dailyUnits: any = {};
+    const map: Record<number, number> = {};
+
     this.bills.forEach((b) => {
-      const d = new Date(b.generatedAt).toISOString().split('T')[0];
-      dailyUnits[d] = (dailyUnits[d] || 0) + Number(b.unitsConsumed);
+      const t = new Date(b.generatedAt).setHours(0, 0, 0, 0);
+      map[t] = (map[t] || 0) + Number(b.unitsConsumed);
     });
+
+    const entries = Object.entries(map)
+      .map(([k, v]) => ({ time: +k, units: v }))
+      .sort((a, b) => a.time - b.time);
 
     const ctx = document.getElementById('consumptionChart') as HTMLCanvasElement;
     if (!ctx) return;
 
     this.charts.push(
       new Chart(ctx, {
-        type: 'line',
+        type: 'bar',
         data: {
-          labels: Object.keys(dailyUnits),
-          datasets: [{ data: Object.values(dailyUnits), tension: 0.3 }],
+          labels: entries.map((e) =>
+            new Date(e.time).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })
+          ),
+          datasets: [{ data: entries.map((e) => e.units) }],
         },
-        options: { indexAxis: 'x', plugins: { legend: { display: false } } },
+        options: { plugins: { legend: { display: false } } },
       })
     );
   }
 
   renderBillsPerDay() {
-    const dailyBills: any = {};
+    const map: Record<number, number> = {};
+
     this.bills.forEach((b) => {
-      const d = new Date(b.generatedAt).toISOString().split('T')[0];
-      dailyBills[d] = (dailyBills[d] || 0) + 1;
+      const t = new Date(b.generatedAt).setHours(0, 0, 0, 0);
+      map[t] = (map[t] || 0) + 1;
     });
+
+    const entries = Object.entries(map)
+      .map(([k, v]) => ({ time: +k, count: v }))
+      .sort((a, b) => a.time - b.time);
 
     const ctx = document.getElementById('billsPerDayChart') as HTMLCanvasElement;
     if (!ctx) return;
@@ -119,28 +129,32 @@ export class BillingDashboard implements AfterViewInit {
       new Chart(ctx, {
         type: 'bar',
         data: {
-          labels: Object.keys(dailyBills),
-          datasets: [{ data: Object.values(dailyBills) }],
+          labels: entries.map((e) =>
+            new Date(e.time).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })
+          ),
+          datasets: [{ data: entries.map((e) => e.count) }],
         },
-        options: { indexAxis: 'x', plugins: { legend: { display: false } } },
+        options: { plugins: { legend: { display: false } } },
       })
     );
   }
 
   renderAvgUnitsPerDay() {
-    const totals: any = {};
-    const counts: any = {};
+    const totals: Record<number, number> = {};
+    const counts: Record<number, number> = {};
 
     this.bills.forEach((b) => {
-      const d = new Date(b.generatedAt).toISOString().split('T')[0];
-      totals[d] = (totals[d] || 0) + Number(b.unitsConsumed);
-      counts[d] = (counts[d] || 0) + 1;
+      const t = new Date(b.generatedAt).setHours(0, 0, 0, 0);
+      totals[t] = (totals[t] || 0) + Number(b.unitsConsumed);
+      counts[t] = (counts[t] || 0) + 1;
     });
 
-    const averages = Object.keys(totals).reduce((a: any, d) => {
-      a[d] = Math.round(totals[d] / counts[d]);
-      return a;
-    }, {});
+    const entries = Object.keys(totals)
+      .map((t) => ({
+        time: +t,
+        avg: Math.round(totals[+t] / counts[+t]),
+      }))
+      .sort((a, b) => a.time - b.time);
 
     const ctx = document.getElementById('avgUnitsChart') as HTMLCanvasElement;
     if (!ctx) return;
@@ -149,10 +163,12 @@ export class BillingDashboard implements AfterViewInit {
       new Chart(ctx, {
         type: 'line',
         data: {
-          labels: Object.keys(averages),
-          datasets: [{ data: Object.values(averages), tension: 0.3 }],
+          labels: entries.map((e) =>
+            new Date(e.time).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })
+          ),
+          datasets: [{ data: entries.map((e) => e.avg), tension: 0.4, fill: true }],
         },
-        options: { indexAxis: 'x', plugins: { legend: { display: false } } },
+        options: { plugins: { legend: { display: false } } },
       })
     );
   }

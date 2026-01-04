@@ -1,340 +1,285 @@
-.hero {
+:host {
+  --primary: #002050;
+  --secondary: #605e5c;
+  --accent: #0078d4;
+  --bg-app: #f3f2f1;
+  --bg-card: #ffffff;
+  --border: #edebe9;
+  --shadow: 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.132), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.108);
+  --shadow-hover: 0 32px 64px 0 rgba(0, 0, 0, 0.18), 0 2px 4px 0 rgba(0, 0, 0, 0.16);
+}
+
+.home-shell {
   min-height: 100vh;
-  background: radial-gradient(circle at top, #e0ecff, #f8fafc);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 80px 24px;
+  background: var(--bg-app);
+  width: 100%;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+/* Remove Lamp/Blur logic and just use a standard container */
+.content-container {
+  width: 100%;
+  box-sizing: border-box;
+  opacity: 1;
+}
+
+/* --- Hero Section --- */
+.hero {
+  padding: clamp(80px, 15vh, 140px) 24px 80px;
   text-align: center;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
 .badge {
-  background: #e0ecff;
-  color: #2563eb;
-  border: 1px solid #2563eb;
-  padding: 10px 18px;
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: 500;
+  display: inline-block;
+  background: #eff6fc;
+  color: var(--accent);
+  padding: 6px 18px;
+  border-radius: 100px;
+  font-weight: 600;
+  font-size: 12px;
+  border: 1px solid #c7e0f4;
   margin-bottom: 24px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.hero h1 {
-  font-size: 48px;
+h1 {
+  font-size: clamp(36px, 8vw, 72px);
+  color: var(--primary);
   font-weight: 700;
-  color: #020617;
+  line-height: 1.1;
+  margin: 0 0 24px;
+  letter-spacing: -1.5px;
 }
 
-.hero h1 span {
+h1 span {
   display: block;
-  color: #2563eb;
+  color: var(--accent);
 }
 
-.hero-sub {
-  margin-top: 16px;
-  max-width: 720px;
-  color: #475569;
-  font-size: 16px;
+.hero p {
+  font-size: clamp(16px, 4vw, 21px);
+  color: var(--secondary);
+  line-height: 1.6;
+  max-width: 650px;
+  margin: 0 auto 40px;
 }
 
 .hero-actions {
   display: flex;
-  gap: 16px;
-  margin-top: 32px;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
-.primary {
-  background: #2563eb;
-  color: #ffffff;
-  padding: 16px 28px;
-  border-radius: 14px;
+/* --- Buttons --- */
+.btn-primary {
+  background: var(--accent);
+  color: white;
+  padding: 12px 32px;
+  border-radius: 2px;
+  font-weight: 600;
   text-decoration: none;
-  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.secondary {
-  border: 1px solid #2563eb;
-  color: #2563eb;
-  padding: 16px 28px;
-  border-radius: 14px;
+.btn-primary:hover {
+  background: #005a9e;
+  box-shadow: 0 4px 12px rgba(0, 120, 212, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: white;
+  color: var(--primary);
+  padding: 12px 32px;
+  border-radius: 2px;
+  font-weight: 600;
   text-decoration: none;
-  font-weight: 500;
-  background: transparent;
+  border: 1px solid var(--border);
+  transition: all 0.2s;
 }
 
+.btn-secondary:hover {
+  background: #f3f2f1;
+  border-color: #a19f9d;
+  transform: translateY(-1px);
+}
+
+/* --- Stats Bar --- */
 .stats {
   display: flex;
-  gap: 64px;
-  margin-top: 64px;
+  justify-content: center;
+  gap: clamp(40px, 10vw, 120px);
+  padding: 60px 24px;
+  background: white;
+  border-block: 1px solid var(--border);
+  flex-wrap: wrap;
 }
 
-.stats h3 {
-  font-size: 32px;
-  font-weight: 700;
-  color: #020617;
-}
-
-.stats p {
-  color: #64748b;
-}
-
-.services {
-  padding: 96px 24px;
+.stat {
   text-align: center;
 }
-
-.services h2 {
-  font-size: 32px;
+.stat h3 {
+  font-size: clamp(32px, 5vw, 48px);
+  color: var(--primary);
+  margin: 0;
+  font-weight: 700;
+}
+.stat p {
+  color: var(--secondary);
+  margin: 4px 0 0;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
 }
 
-.section-sub {
-  margin-top: 12px;
-  color: #64748b;
+/* --- Services Grid --- */
+.services {
+  padding: 100px 24px;
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.section-head {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.section-head h2 {
+  font-size: clamp(28px, 5vw, 36px);
+  color: var(--primary);
+  font-weight: 700;
+  margin-bottom: 12px;
 }
 
 .service-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 32px;
-  margin-top: 56px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
 }
 
 .service-card {
-  background: #ffffff;
-  padding: 40px;
-  border-radius: 20px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
-  text-align: left;
-}
-
-.icon {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
+  background: white;
+  padding: 48px 40px;
+  border-radius: 2px;
+  box-shadow: var(--shadow);
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  border-top: 4px solid transparent;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  margin-bottom: 20px;
-  transition: transform 0.3s;
-}
-
-.water-icon {
-  background: #e0f2fe;
-}
-
-.gas-icon {
-  background: #fff1e6;
-}
-
-.electricity-icon {
-  background: #ecfdf5;
-}
-
-.service-card h3 {
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.service-card p {
-  margin: 12px 0 20px;
-  color: #64748b;
-}
-
-.service-card a {
-  color: #2563eb;
-  font-weight: 500;
-  text-decoration: none;
-}
-
-.why {
-  padding: 96px 24px;
-  background: #f8fafc;
-  text-align: center;
-}
-
-.why-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 32px;
-  margin-top: 56px;
-}
-
-.why-grid > div {
-  padding: 24px;
-  border-radius: 18px;
-  transition: transform 0.25s, box-shadow 0.25s, background 0.25s;
-}
-
-.why-icon {
-  width: 52px;
-  height: 52px;
-  background: #e0ecff;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  margin: 0 auto 16px;
-  transition: transform 0.25s, background 0.25s, color 0.25s;
-}
-
-.cta {
-  padding: 96px 24px;
-  text-align: center;
-  background: radial-gradient(circle, #ffffff, #eef4ff);
-}
-
-.cta h2 {
-  font-size: 36px;
-}
-
-.cta h2 span {
-  color: #2563eb;
-}
-
-.cta-sub {
-  margin-top: 16px;
-  color: #64748b;
-}
-
-.cta-actions {
-  margin-top: 32px;
-  display: flex;
-  justify-content: center;
-  gap: 16px;
-}
-
-.hero,
-.services,
-.why,
-.cta {
-  animation: fadeUp 0.8s ease both;
-}
-
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.primary,
-.secondary {
-  transition: transform 0.2s, box-shadow 0.2s, background 0.2s, color 0.2s;
-}
-
-.primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 16px 30px rgba(37, 99, 235, 0.35);
-}
-
-.secondary:hover {
-  background: #eff6ff;
-  transform: translateY(-2px);
-}
-
-.primary:active,
-.secondary:active {
-  transform: scale(0.96);
-}
-
-.service-card {
-  transition: transform 0.3s, box-shadow 0.3s;
+  flex-direction: column;
 }
 
 .service-card:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.12);
+  transform: translateY(-12px);
+  box-shadow: var(--shadow-hover);
 }
 
-.service-card:hover .icon {
-  transform: scale(1.1) rotate(4deg);
+.service-card.water {
+  border-top-color: #00b7c3;
+}
+.service-card.gas {
+  border-top-color: #d83b01;
+}
+.service-card.electricity {
+  border-top-color: #ffb900;
 }
 
-.why-grid > div:hover {
-  background: #ffffff;
-  transform: translateY(-8px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+.icon-box {
+  font-size: 44px;
+  margin-bottom: 24px;
+}
+.service-card h3 {
+  font-size: 24px;
+  color: var(--primary);
+  margin: 0 0 12px;
+  font-weight: 700;
+}
+.service-card p {
+  color: var(--secondary);
+  line-height: 1.6;
+  margin-bottom: 32px;
+  flex-grow: 1;
 }
 
-.why-grid > div:hover .why-icon {
-  background: #2563eb;
-  color: #ffffff;
-  transform: scale(1.1);
+.link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: gap 0.2s;
+}
+.link:hover {
+  gap: 12px;
 }
 
-.stats div {
-  transition: transform 0.25s;
+/* --- CTA Section --- */
+.cta {
+  padding: 0 24px 100px;
+}
+.cta-inner {
+  background: var(--primary);
+  color: white;
+  padding: 80px 40px;
+  border-radius: 4px;
+  text-align: center;
+  max-width: 1152px;
+  margin: 0 auto;
+}
+.cta h2 {
+  font-size: clamp(28px, 5vw, 42px);
+  margin: 0 0 16px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: white;
+}
+.cta h2 span {
+  color: #50e6ff;
+}
+.cta p {
+  font-size: 18px;
+  opacity: 0.85;
+  margin-bottom: 32px;
 }
 
-.stats div:hover {
-  transform: translateY(-6px);
+.btn-secondary.inverse {
+  background: transparent;
+  color: white;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+.btn-secondary.inverse:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: white;
 }
 
-@keyframes pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4);
-  }
-  70% {
-    box-shadow: 0 0 0 14px rgba(37, 99, 235, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);
-  }
+/* --- Reveal Animations --- */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
-@media (max-width: 900px) {
-  .service-grid {
-    grid-template-columns: 1fr;
-  }
-  .why-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-  .stats {
-    flex-direction: column;
-    gap: 24px;
-  }
-}
-
-@media (max-width: 600px) {
-  .hero h1 {
-    font-size: 32px;
-  }
+@media (max-width: 480px) {
   .hero-actions,
   .cta-actions {
     flex-direction: column;
+    align-items: stretch;
   }
-  .why-grid {
-    grid-template-columns: 1fr;
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+    text-align: center;
   }
-}
-
-.service-card {
-  border: 1px solid transparent;
-  transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
-}
-
-.service-card:hover {
-  transform: translateY(-10px);
-}
-
-.service-card.water:hover {
-  border-color: #7dd3fc;
-  box-shadow: 0 20px 40px rgba(14, 165, 233, 0.18);
-}
-
-.service-card.gas:hover {
-  border-color: #fdba74;
-  box-shadow: 0 20px 40px rgba(249, 115, 22, 0.18);
-}
-
-.service-card.electricity:hover {
-  border-color: #6ee7b7;
-  box-shadow: 0 20px 40px rgba(16, 185, 129, 0.18);
+  .stats {
+    gap: 32px;
+  }
 }

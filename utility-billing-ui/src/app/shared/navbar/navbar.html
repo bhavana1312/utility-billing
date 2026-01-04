@@ -2,15 +2,19 @@
   <div class="left">
     <a routerLink="/" class="logo">Utility Billing</a>
 
-    <a routerLink="/tariffs">Tariffs</a>
-    <a *ngIf="!isLoggedIn()" routerLink="/consumer-request">Become Consumer</a>
-    <a *ngIf="isLoggedIn() && getDashboardRoute()" [routerLink]="getDashboardRoute()">
+    <a routerLink="/tariffs" routerLinkActive="active-link">Tariffs</a>
+
+    <a *ngIf="!isLoggedIn()" routerLink="/consumer-request" routerLinkActive="active-link">
+      Become Consumer
+    </a>
+
+    <a *ngIf="isLoggedIn() && getDashboardRoute()" [routerLink]="getDashboardRoute()" routerLinkActive="active-link">
       Dashboard
     </a>
   </div>
 
   <div class="right">
-    <a routerLink="/login" *ngIf="!isLoggedIn()">Login</a>
+    <a routerLink="/login" *ngIf="!isLoggedIn()" routerLinkActive="active-link">Login</a>
     <button *ngIf="isLoggedIn()" (click)="logout()">Logout</button>
   </div>
 </nav>
