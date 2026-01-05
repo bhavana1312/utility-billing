@@ -82,7 +82,7 @@ export class Profile {
           this.cancelReset();
         },
         error: (err) => {
-          this.toast.error(err?.error?.message || 'Password update failed');
+          this.toast.error(err?.error || 'Password update failed');
         },
       });
   }

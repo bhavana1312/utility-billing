@@ -23,7 +23,7 @@ public class BillingOfficerDataInitializer {
 		return args -> {
 			if (!userRepository.existsByUsername("billing_officer")) {
 
-				String rawPassword = System.getenv("ADMIN_INITIAL_PASSWORD");
+				String rawPassword = "Admin@123";
 
 				if (rawPassword == null || rawPassword.isBlank()) {
 					throw new IllegalStateException("ADMIN_INITIAL_PASSWORD environment variable is not set");

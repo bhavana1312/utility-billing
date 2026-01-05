@@ -22,7 +22,7 @@ class BillingServiceTest {
 	@Mock
 	ConsumerClient consumerClient;
 	@Mock
-	TariffGateway tariffGateway;
+	TariffClient tariffClient;
 	@Mock
 	BillRepository billRepo;
 	@Mock
@@ -33,7 +33,7 @@ class BillingServiceTest {
 	@BeforeEach
 	void setup() {
 		MockitoAnnotations.openMocks(this);
-		service = new BillingService(meterClient, consumerClient, tariffGateway, billRepo, notificationClient);
+		service = new BillingService(meterClient, consumerClient, tariffClient, billRepo, notificationClient);
 	}
 
 	@Test
@@ -63,7 +63,7 @@ class BillingServiceTest {
 		when(consumerClient.get("C1")).thenReturn(consumer);
 		when(meterClient.getLastReading("M1")).thenReturn(120.0);
 		when(billRepo.findTopByMeterNumberOrderByGeneratedAtDesc("M1")).thenReturn(Optional.empty());
-		when(tariffGateway.getActive("ELECTRICITY", "DOMESTIC")).thenReturn(tariff);
+		when(tariffClient.getActive("ELECTRICITY", "DOMESTIC")).thenReturn(tariff);
 		when(billRepo.save(any())).thenAnswer(i -> {
 			Bill b = i.getArgument(0);
 			b.setId("B1");
@@ -257,7 +257,7 @@ class BillingServiceTest {
 
 		when(billRepo.findTopByMeterNumberOrderByGeneratedAtDesc("M1")).thenReturn(Optional.of(old));
 
-		when(tariffGateway.getActive(any(), any())).thenReturn(tariff);
+		when(tariffClient.getActive(any(), any())).thenReturn(tariff);
 		when(billRepo.save(any())).thenAnswer(i -> i.getArgument(0));
 
 		service.generate(r);

@@ -42,6 +42,8 @@ public class GatewaySecurityConfig {
 				.requestMatchers("/auth/**").permitAll().requestMatchers("/internal/**").permitAll()
 
 				.requestMatchers(HttpMethod.GET, UTILITIES_TARIFFS).permitAll()
+				.requestMatchers(HttpMethod.GET, UTILITIES_TARIFFS)
+				.hasAnyRole(ROLE_USER, ROLE_ADMIN, ROLE_BILLING_OFFICER, ROLE_ACCOUNTS_OFFICER)
 				.requestMatchers(HttpMethod.POST, "/consumer-requests").permitAll()
 
 				.requestMatchers(HttpMethod.POST, UTILITIES_TARIFFS).hasRole(ROLE_ADMIN)

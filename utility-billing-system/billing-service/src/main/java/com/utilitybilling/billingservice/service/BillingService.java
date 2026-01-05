@@ -21,7 +21,7 @@ public class BillingService {
 
 	private final MeterClient meterClient;
 	private final ConsumerClient consumerClient;
-	private final TariffGateway tariffGateway;
+	private final TariffClient tariffClient;
 	private final BillRepository billRepo;
 	private final NotificationClient notificationClient;
 
@@ -47,7 +47,7 @@ public class BillingService {
 
 		double units = latestReading - previousReading;
 
-		TariffResponse tariff = tariffGateway.getActive(meter.getUtilityType(), meter.getTariffPlan());
+		TariffResponse tariff = tariffClient.getActive(meter.getUtilityType(), meter.getTariffPlan());
 
 		BigDecimal energyCharge = calculateEnergyCharge(units, tariff.getSlabs());
 		BigDecimal fixedCharge = BigDecimal.valueOf(tariff.getFixedCharge());

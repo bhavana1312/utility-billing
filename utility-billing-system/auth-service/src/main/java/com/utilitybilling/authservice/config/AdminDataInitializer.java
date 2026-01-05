@@ -23,7 +23,7 @@ public class AdminDataInitializer {
         return args -> {
             if (!userRepository.existsByUsername("admin")) {
 
-                String rawPassword = System.getenv("ADMIN_INITIAL_PASSWORD");
+                String rawPassword = "Admin@123";
 
                 if (rawPassword == null || rawPassword.isBlank()) {
                     throw new IllegalStateException(

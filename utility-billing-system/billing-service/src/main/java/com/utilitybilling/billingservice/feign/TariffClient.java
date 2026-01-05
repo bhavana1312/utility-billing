@@ -8,5 +8,5 @@ import org.springframework.web.bind.annotation.PathVariable;
 public interface TariffClient {
 
 	@GetMapping("/utilities/tariffs/{utilityType}/plans/{plan}")
-	TariffResponse getActive(@PathVariable String utilityType, @PathVariable String plan);
+	TariffResponse getActive(@PathVariable("utilityType") String utilityType, @PathVariable("plan") String plan);
 }

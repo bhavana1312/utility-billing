@@ -12,6 +12,7 @@
     </parent>
 
     <artifactId>eureka-server</artifactId>
+    <packaging>jar</packaging>
     <name>Eureka Server</name>
 
     <dependencies>
@@ -40,6 +41,13 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                <execution>
+                    <goals>
+                        <goal>repackage</goal>
+                    </goals>
+                </execution>
+            </executions>
                 
             </plugin>
             

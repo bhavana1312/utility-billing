@@ -9,7 +9,7 @@ public interface ConsumerClient {
 
 	@GetMapping("/consumers/username/{username}")
 	ConsumerResponse getByUsername(@PathVariable("username") String username);
-	
+
 	@GetMapping("/consumers/{id}")
-	ConsumerResponse get(@PathVariable String id);
+	ConsumerResponse get(@PathVariable("id") String id);
 }
