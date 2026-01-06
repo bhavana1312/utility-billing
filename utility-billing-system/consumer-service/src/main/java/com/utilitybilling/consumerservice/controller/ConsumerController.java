@@ -28,7 +28,7 @@ public class ConsumerController {
 
 	private final ConsumerService service;
 
-	@PostMapping("/from-request/{id}")
+	@PostMapping("/approve/{id}")
 	public ResponseEntity<ConsumerResponse> approve(@PathVariable("id") String id) {
 		return ResponseEntity.status(HttpStatus.CREATED).body(service.approve(id));
 	}

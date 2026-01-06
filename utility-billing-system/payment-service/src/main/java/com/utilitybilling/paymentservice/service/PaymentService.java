@@ -50,7 +50,7 @@ public class PaymentService {
 
 		if (!bill.getStatus().equals(BillStatus.DUE) && !bill.getStatus().equals(BillStatus.OVERDUE))
 			throw new IllegalStateException("Bill is not payable");
-		
+
 		System.out.println(bill);
 
 		String otp = String.valueOf(100000 + RANDOM.nextInt(900000));
@@ -253,4 +253,25 @@ public class PaymentService {
 
 		return paymentRepo.search(s, m, pageable);
 	}
+
+	public void sendReminder(String billId) {
+
+		BillResponse bill = billingClient.getBill(billId);
+
+		if (bill.getStatus() != BillStatus.DUE && bill.getStatus() != BillStatus.OVERDUE)
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bill is not pending");
+
+		ConsumerResponse consumer = consumerClient.get(bill.getConsumerId());
+
+		String subject = "Payment Reminder: " + bill.getUtilityType() + " Bill Due";
+		String message = "Dear Consumer,\n\n" + "This is a reminder that your " + bill.getUtilityType()
+				+ " bill is still pending.\n\n" + "Bill ID: " + bill.getBillId() + "\n" + "Amount Due: ₹"
+				+ bill.getTotalAmount() + "\n" + "Due Date: " + bill.getDueDate() + "\n\n"
+				+ "Please complete the payment at the earliest to avoid penalties.\n\n" + "Regards,\n"
+				+ "Utility Billing Team";
+
+		notificationClient.send(NotificationRequest.builder().email(consumer.getEmail()).type("PAYMENT_REMINDER")
+				.subject(subject).message(message).build());
+	}
+
 }

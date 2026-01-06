@@ -1,8 +1,14 @@
 package com.utilitybilling.billingservice.controller;
 
+import com.utilitybilling.billingservice.dto.BillResponse;
 import com.utilitybilling.billingservice.dto.OutstandingBalanceResponse;
 import com.utilitybilling.billingservice.service.BillingService;
+import com.utilitybilling.billingservice.service.InternalBillingService;
+
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class InternalBillingController {
 
-    private final BillingService billingService;
+	private final InternalBillingService billingService;
 
     @GetMapping("/{billId}")
     public Object getBill(@PathVariable("billId") String billId) {
@@ -28,4 +34,9 @@ public class InternalBillingController {
     public OutstandingBalanceResponse outstanding(@PathVariable("consumerId") String consumerId) {
         return billingService.outstanding(consumerId);
     }
+    
+    @GetMapping("/all")
+	public List<BillResponse> allBillsInternal(){
+	    return billingService.allBills();
+	}
 }

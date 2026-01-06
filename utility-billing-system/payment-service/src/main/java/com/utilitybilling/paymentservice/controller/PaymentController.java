@@ -69,4 +69,9 @@ public class PaymentController {
 				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=invoice-" + paymentId + ".pdf")
 				.body(pdf);
 	}
+	
+	@PostMapping("/reminder/{billId}")
+	public void sendReminder(@PathVariable("billId") String billId) {
+		service.sendReminder(billId);
+	}
 }

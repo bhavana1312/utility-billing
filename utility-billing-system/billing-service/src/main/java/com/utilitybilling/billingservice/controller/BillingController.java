@@ -37,9 +37,4 @@ public class BillingController {
 			@RequestParam(name = "size", defaultValue = "10") int size) {
 		return billingService.all(status, page, size);
 	}
-	
-	@GetMapping("/all")
-	public List<BillResponse> allBillsInternal(){
-	    return billingService.allBills();
-	}
 }

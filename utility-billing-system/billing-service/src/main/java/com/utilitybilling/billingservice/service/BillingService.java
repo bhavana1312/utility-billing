@@ -13,7 +13,6 @@ import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -28,12 +27,10 @@ public class BillingService {
 	public BillResponse generate(GenerateBillRequest request) {
 
 		MeterResponse meter = meterClient.getMeter(request.getMeterNumber());
-
 		if (!meter.isActive())
 			throw new IllegalStateException("Meter is inactive");
 
 		ConsumerResponse consumer = consumerClient.get(meter.getConsumerId());
-
 		if (consumer == null)
 			throw new IllegalArgumentException("Consumer does not exist");
 
@@ -75,16 +72,14 @@ public class BillingService {
 		bill.setLastUpdatedAt(Instant.now());
 		bill.setStatus(BillStatus.DUE);
 
-		Bill savedBill = billRepo.save(bill);
+		Bill saved = billRepo.save(bill);
 
 		notificationClient.send(NotificationRequest.builder().email(consumer.getEmail()).type("BILL_GENERATED")
-				.subject("Your utility bill is ready")
-				.message("Your " + bill.getUtilityType() + " bill has been generated.\n\n" + "Bill ID: "
-						+ savedBill.getId() + "\n" + "Amount Due: ₹" + bill.getTotalAmount() + "\n" + "Due Date: "
-						+ bill.getDueDate())
+				.subject("Your utility bill is ready").message("Bill ID: " + saved.getId() + "\nAmount Due: ₹"
+						+ saved.getTotalAmount() + "\nDue Date: " + saved.getDueDate())
 				.build());
 
-		return map(savedBill);
+		return map(saved);
 	}
 
 	public Page<BillResponse> consumerBills(String consumerId, int page, int size) {
@@ -95,32 +90,6 @@ public class BillingService {
 	public Page<BillResponse> all(BillStatus status, int page, int size) {
 		Pageable pageable = PageRequest.of(page, size, Sort.by("generatedAt").descending());
 		return (status == null ? billRepo.findAll(pageable) : billRepo.findByStatus(status, pageable)).map(this::map);
-	}
-
-	public BillResponse getById(String billId) {
-		Bill bill = billRepo.findById(billId).orElseThrow(() -> new IllegalArgumentException("Bill not found"));
-		return map(bill);
-	}
-
-	public OutstandingBalanceResponse outstanding(String consumerId) {
-
-		List<Bill> bills = billRepo.findByConsumerIdAndStatusIn(consumerId,
-				List.of(BillStatus.DUE, BillStatus.OVERDUE));
-
-		BigDecimal totalOutstanding = bills.stream().map(Bill::getTotalAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
-
-		OutstandingBalanceResponse r = new OutstandingBalanceResponse();
-		r.setConsumerId(consumerId);
-		r.setOutstandingAmount(totalOutstanding);
-
-		return r;
-	}
-
-	public void markPaid(String billId) {
-		Bill bill = billRepo.findById(billId).orElseThrow(() -> new IllegalArgumentException("Bill not found"));
-		bill.setStatus(BillStatus.PAID);
-		bill.setLastUpdatedAt(Instant.now());
-		billRepo.save(bill);
 	}
 
 	private BigDecimal calculateEnergyCharge(double units, Iterable<TariffSlab> slabs) {
@@ -135,9 +104,8 @@ public class BillingService {
 			int slabUnits = slab.getToUnit() - slab.getFromUnit() + 1;
 			double used = Math.min(remaining, slabUnits);
 
-			BigDecimal slabCharge = BigDecimal.valueOf(used).multiply(BigDecimal.valueOf(slab.getRatePerUnit()));
+			amount = amount.add(BigDecimal.valueOf(used).multiply(BigDecimal.valueOf(slab.getRatePerUnit())));
 
-			amount = amount.add(slabCharge);
 			remaining -= used;
 		}
 
@@ -163,9 +131,5 @@ public class BillingService {
 		r.setGeneratedAt(bill.getGeneratedAt());
 		r.setDueDate(bill.getDueDate());
 		return r;
-	}
-
-	public List<BillResponse> allBills() {
-		return billRepo.findAll().stream().map(this::map).toList();
 	}
 }
