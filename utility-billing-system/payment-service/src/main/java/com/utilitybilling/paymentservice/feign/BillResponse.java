@@ -8,8 +8,7 @@ import lombok.Data;
 @Data
 public class BillResponse {
 
-	@Id
-	private String id;
+	private String billId;
 	private String consumerId;
 	private String meterNumber;
 	private String utilityType;

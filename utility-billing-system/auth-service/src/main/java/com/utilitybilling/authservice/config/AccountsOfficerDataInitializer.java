@@ -13,28 +13,64 @@ import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
-public class AccountsOfficerDataInitializer {
+public class AccountsOfficerDataInitializer{
 
-	private final UserRepository userRepository;
-	private final BCryptPasswordEncoder encoder;
+    private final UserRepository userRepository;
+    private final BCryptPasswordEncoder encoder;
 
-	@Bean
-	public CommandLineRunner seedBillinfOfficer() {
-		return args -> {
-			if (!userRepository.existsByUsername("accounts_officer")) {
+    @Bean
+    public CommandLineRunner seedAuthUsers(){
+        return args -> {
 
-				String rawPassword = "Admin@123";
+            String rawPassword="Admin@123";
 
-				if (rawPassword == null || rawPassword.isBlank()) {
-					throw new IllegalStateException("ADMIN_INITIAL_PASSWORD environment variable is not set");
-				}
+            if(rawPassword==null||rawPassword.isBlank()){
+                throw new IllegalStateException("ADMIN_INITIAL_PASSWORD environment variable is not set");
+            }
 
-				User accountsOfficer = User.builder().username("accounts_officer").email("22071a66d9@vnrvjiet.in")
-						.password(encoder.encode(rawPassword)).roles(List.of("ROLE_ACCOUNTS_OFFICER")).enabled(true)
-						.createdAt(Instant.now()).passwordUpdatedAt(Instant.now()).build();
+            Instant now=Instant.now();
 
-				userRepository.save(accountsOfficer);
-			}
-		};
-	}
+            if(!userRepository.existsByUsername("admin")){
+                userRepository.save(
+                        User.builder()
+                                .username("admin")
+                                .email("22071a66d9@vnrvjiet.in")
+                                .password(encoder.encode(rawPassword))
+                                .roles(List.of("ROLE_ADMIN"))
+                                .enabled(true)
+                                .createdAt(now)
+                                .passwordUpdatedAt(now)
+                                .build()
+                );
+            }
+
+            if(!userRepository.existsByUsername("billing_officer")){
+                userRepository.save(
+                        User.builder()
+                                .username("billing_officer")
+                                .email("22071a66d9@vnrvjiet.in")
+                                .password(encoder.encode(rawPassword))
+                                .roles(List.of("ROLE_BILLING_OFFICER"))
+                                .enabled(true)
+                                .createdAt(now)
+                                .passwordUpdatedAt(now)
+                                .build()
+                );
+            }
+
+            if(!userRepository.existsByUsername("accounts_officer")){
+                userRepository.save(
+                        User.builder()
+                                .username("accounts_officer")
+                                .email("22071a66d9@vnrvjiet.in")
+                                .password(encoder.encode(rawPassword))
+                                .roles(List.of("ROLE_ACCOUNTS_OFFICER"))
+                                .enabled(true)
+                                .createdAt(now)
+                                .passwordUpdatedAt(now)
+                                .build()
+                );
+            }
+        };
+    }
 }

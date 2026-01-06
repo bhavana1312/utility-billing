@@ -46,6 +46,7 @@ export class ManageRequests {
   consumerRequests: ConsumerRequest[] = [];
   connectionRequests: ConnectionRequest[] = [];
   filteredConnectionRequests: ConnectionRequest[] = [];
+  pagedConnectionRequests: ConnectionRequest[] = [];
 
   consumerMap: Record<string, Consumer> = {};
 
@@ -56,9 +57,13 @@ export class ManageRequests {
 
   loadingMap: Record<string, boolean> = {};
 
-  page = 0;
-  size = 10;
-  totalPages = 0;
+  consumerPage = 0;
+  consumerSize = 6;
+  consumerTotalPages = 0;
+
+  connectionPage = 0;
+  connectionSize = 6;
+  connectionTotalPages = 0;
 
   constructor(private http: HttpClient, private toast: ToastrService) {
     this.loadConsumerRequests();
@@ -67,15 +72,14 @@ export class ManageRequests {
 
   loadConsumerRequests() {
     const statusParam = this.selectedStatus === 'ALL' ? '' : `&status=${this.selectedStatus}`;
-
     this.http
       .get<any>(
-        `http://localhost:9090/consumer-requests?page=${this.page}&size=${this.size}${statusParam}`
+        `http://localhost:9090/consumer-requests?page=${this.consumerPage}&size=${this.consumerSize}${statusParam}`
       )
       .subscribe({
         next: (res) => {
           this.consumerRequests = this.sortRequests(res.content);
-          this.totalPages = res.totalPages;
+          this.consumerTotalPages = res.totalPages;
         },
         error: () => this.toast.error('Failed to load consumer requests'),
       });
@@ -97,41 +101,46 @@ export class ManageRequests {
   loadConsumersForConnections(requests: ConnectionRequest[]) {
     const ids = [...new Set(requests.map((r) => r.consumerId))];
     const missing = ids.filter((id) => !this.consumerMap[id]);
-
     if (!missing.length) return;
-
     forkJoin(
       missing.map((id) => this.http.get<Consumer>(`http://localhost:9090/consumers/${id}`))
     ).subscribe({
       next: (res) => {
-        res.forEach((c) => (this.consumerMap[c.id] = c));
+        const map = { ...this.consumerMap };
+        res.forEach((c) => (map[c.id] = c));
+        this.consumerMap = map;
       },
       error: () => this.toast.error('Failed to load consumer details'),
     });
   }
 
   onStatusChange() {
-    this.page = 0;
+    this.consumerPage = 0;
+    this.connectionPage = 0;
     this.loadConsumerRequests();
     this.applyConnectionFilters();
   }
 
   applyConnectionFilters() {
-    const filtered =
+    const list =
       this.selectedStatus === 'ALL'
         ? this.connectionRequests
         : this.connectionRequests.filter((r) => r.status === this.selectedStatus);
+    this.filteredConnectionRequests = this.sortRequests(list);
+    this.connectionTotalPages = Math.ceil(
+      this.filteredConnectionRequests.length / this.connectionSize
+    );
+    this.updateConnectionPage();
+  }
 
-    this.filteredConnectionRequests = this.sortRequests(filtered);
+  updateConnectionPage() {
+    const start = this.connectionPage * this.connectionSize;
+    const end = start + this.connectionSize;
+    this.pagedConnectionRequests = this.filteredConnectionRequests.slice(start, end);
   }
 
   sortRequests<T extends { status: RequestStatus; createdAt: string }>(list: T[]): T[] {
-    const order: Record<RequestStatus, number> = {
-      PENDING: 0,
-      APPROVED: 1,
-      REJECTED: 2,
-    };
-
+    const order = { PENDING: 0, APPROVED: 1, REJECTED: 2 };
     return [...list].sort((a, b) => {
       const s = order[a.status] - order[b.status];
       if (s !== 0) return s;
@@ -139,30 +148,50 @@ export class ManageRequests {
     });
   }
 
-  nextPage() {
-    if (this.page < this.totalPages - 1) {
-      this.page++;
+  nextConsumerPage() {
+    if (this.consumerPage < this.consumerTotalPages - 1) {
+      this.consumerPage++;
       this.loadConsumerRequests();
     }
   }
 
-  prevPage() {
-    if (this.page > 0) {
-      this.page--;
+  prevConsumerPage() {
+    if (this.consumerPage > 0) {
+      this.consumerPage--;
       this.loadConsumerRequests();
     }
   }
 
-  goToPage(p: number) {
-    if (p >= 0 && p < this.totalPages) {
-      this.page = p;
+  goToConsumerPage(p: number) {
+    if (p >= 0 && p < this.consumerTotalPages) {
+      this.consumerPage = p;
       this.loadConsumerRequests();
+    }
+  }
+
+  nextConnectionPage() {
+    if (this.connectionPage < this.connectionTotalPages - 1) {
+      this.connectionPage++;
+      this.updateConnectionPage();
+    }
+  }
+
+  prevConnectionPage() {
+    if (this.connectionPage > 0) {
+      this.connectionPage--;
+      this.updateConnectionPage();
+    }
+  }
+
+  goToConnectionPage(p: number) {
+    if (p >= 0 && p < this.connectionTotalPages) {
+      this.connectionPage = p;
+      this.updateConnectionPage();
     }
   }
 
   approveConsumer(id: string) {
     this.loadingMap[id] = true;
-
     this.http.post(`http://localhost:9090/consumers/from-request/${id}`, {}).subscribe({
       next: () => {
         this.loadingMap[id] = false;
@@ -178,7 +207,6 @@ export class ManageRequests {
 
   approveConnection(id: string) {
     this.loadingMap[id] = true;
-
     this.http.post(`http://localhost:9090/meters/connection-requests/${id}/approve`, {}).subscribe({
       next: () => {
         this.loadingMap[id] = false;
@@ -211,9 +239,7 @@ export class ManageRequests {
       this.toast.warning('Please enter rejection reason');
       return;
     }
-
     this.loadingMap[this.rejectId] = true;
-
     const req =
       this.rejectType === 'CONSUMER'
         ? this.http.put(`http://localhost:9090/consumer-requests/${this.rejectId}/reject`, {
@@ -223,7 +249,6 @@ export class ManageRequests {
             `http://localhost:9090/meters/connection-requests/${this.rejectId}/reject`,
             { reason: this.rejectReason }
           );
-
     req.subscribe({
       next: () => {
         this.loadingMap[this.rejectId!] = false;

@@ -64,6 +64,7 @@ public class PaymentController {
 
 		byte[] pdf = service.downloadInvoicePdf(paymentId);
 
+
 		return ResponseEntity.ok().contentType(MediaType.APPLICATION_PDF)
 				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=invoice-" + paymentId + ".pdf")
 				.body(pdf);

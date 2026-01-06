@@ -50,11 +50,13 @@ public class PaymentService {
 
 		if (!bill.getStatus().equals(BillStatus.DUE) && !bill.getStatus().equals(BillStatus.OVERDUE))
 			throw new IllegalStateException("Bill is not payable");
+		
+		System.out.println(bill);
 
 		String otp = String.valueOf(100000 + RANDOM.nextInt(900000));
 
 		Payment p = new Payment();
-		p.setBillId(bill.getId());
+		p.setBillId(bill.getBillId());
 		p.setUtilityType(bill.getUtilityType());
 		p.setConsumerId(bill.getConsumerId());
 		p.setAmount(bill.getTotalAmount());
@@ -71,7 +73,7 @@ public class PaymentService {
 		notificationClient.send(NotificationRequest.builder().email(consumer.getEmail()).type("PAYMENT_OTP")
 				.subject("OTP for " + p.getUtilityType() + " bill payment")
 				.message("Payment initiated with id: " + p.getId() + "\n" + "Your OTP for " + p.getUtilityType()
-						+ " paying bill with id " + bill.getId() + " is: " + otp + "\n\n"
+						+ " paying bill with id " + bill.getBillId() + " is: " + otp + "\n\n"
 						+ "This OTP is valid for 5 minutes.")
 				.build());
 
@@ -111,7 +113,7 @@ public class PaymentService {
 		Invoice inv = new Invoice();
 
 		inv.setPaymentId(p.getId());
-		inv.setBillId(bill.getId());
+		inv.setBillId(bill.getBillId());
 		inv.setConsumerId(bill.getConsumerId());
 		inv.setMeterNumber(bill.getMeterNumber());
 		inv.setUtilityType(bill.getUtilityType());
@@ -154,7 +156,7 @@ public class PaymentService {
 			throw new IllegalStateException("Bill is not payable");
 
 		Payment p = new Payment();
-		p.setBillId(bill.getId());
+		p.setBillId(bill.getBillId());
 		p.setConsumerId(bill.getConsumerId());
 		p.setAmount(bill.getTotalAmount());
 		p.setMode(request.getMode());
@@ -164,12 +166,12 @@ public class PaymentService {
 
 		paymentRepo.save(p);
 		ConsumerResponse consumer = consumerClient.get(bill.getConsumerId());
-		billingClient.markPaid(bill.getId());
+		billingClient.markPaid(bill.getBillId());
 
 		Invoice inv = new Invoice();
 
 		inv.setPaymentId(p.getId());
-		inv.setBillId(bill.getId());
+		inv.setBillId(bill.getBillId());
 		inv.setConsumerId(bill.getConsumerId());
 		inv.setMeterNumber(bill.getMeterNumber());
 		inv.setUtilityType(bill.getUtilityType());

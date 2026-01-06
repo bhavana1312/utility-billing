@@ -19,7 +19,6 @@ interface Bill {
 
 interface PageResponse<T> {
   content: T[];
-  totalPages: number;
 }
 
 @Component({
@@ -29,10 +28,11 @@ interface PageResponse<T> {
   styleUrl: './offline-payment.css',
 })
 export class OfflinePayment {
-  bills: Bill[] = [];
+  allBills: Bill[] = [];
   filteredBills: Bill[] = [];
-  selectedBill: Bill | null = null;
+  pagedBills: Bill[] = [];
 
+  selectedBill: Bill | null = null;
   paymentMode: 'CASH' | 'CHEQUE' = 'CASH';
   loading = false;
 
@@ -47,64 +47,71 @@ export class OfflinePayment {
     this.loadBills();
   }
 
-  loadBills(page: number = this.page) {
-    this.page = page;
+  loadBills() {
+    this.http.get<PageResponse<Bill>>('http://localhost:9090/billing?page=0&size=100').subscribe({
+      next: (res) => {
+        const dueBills = res.content.filter((b) => b.status === 'OVERDUE' || b.status === 'DUE');
 
-    this.http
-      .get<PageResponse<Bill>>(`http://localhost:9090/billing?page=${this.page}&size=${this.size}`)
-      .subscribe({
-        next: (res) => {
-          const dueBills = res.content.filter((b) => b.status === 'DUE' || b.status === 'OVERDUE');
+        if (dueBills.length === 0) {
+          this.allBills = [];
+          this.applyFilters(true);
+          return;
+        }
 
-          this.totalPages = res.totalPages;
-
-          if (dueBills.length === 0) {
-            this.bills = [];
-            this.applyFilters();
-            return;
-          }
-
-          const requests = dueBills.map((b) =>
-            this.http.get<any>(`http://localhost:9090/consumers/${b.consumerId}`).pipe(
-              map(
-                (c) =>
-                  ({
-                    ...b,
-                    consumerName: c.fullName,
-                    email: c.email,
-                  } as Bill)
-              )
+        const requests = dueBills.map((b) =>
+          this.http.get<any>(`http://localhost:9090/consumers/${b.consumerId}`).pipe(
+            map(
+              (c) =>
+                ({
+                  ...b,
+                  consumerName: c.fullName,
+                  email: c.email,
+                } as Bill)
             )
-          );
+          )
+        );
 
-          forkJoin<Bill[]>(requests).subscribe({
-            next: (data) => {
-              this.bills = data;
-              this.applyFilters();
-            },
-            error: () => this.toast.error('Failed to load consumers'),
-          });
-        },
-        error: () => this.toast.error('Failed to load bills'),
-      });
+        forkJoin<Bill[]>(requests).subscribe({
+          next: (data) => {
+            this.allBills = data;
+            this.applyFilters(true);
+          },
+          error: () => this.toast.error('Failed to load consumers'),
+        });
+      },
+      error: () => this.toast.error('Failed to load bills'),
+    });
   }
 
   applyFilters(resetPage: boolean = false) {
-    if (resetPage) {
-      this.loadBills(0);
-      return;
-    }
+    if (resetPage) this.page = 0;
 
-    this.filteredBills = this.bills.filter((b) => {
-      const matchesName =
-        !this.search ||
-        b.consumerName?.toLowerCase().includes(this.search.toLowerCase()) ||
-        b.email?.toLowerCase().includes(this.search.toLowerCase());
+    this.filteredBills = this.allBills
+      .filter((b) => {
+        const matchesSearch =
+          !this.search ||
+          b.consumerName?.toLowerCase().includes(this.search.toLowerCase()) ||
+          b.email?.toLowerCase().includes(this.search.toLowerCase());
 
-      const matchesStatus = this.statusFilter ? b.status === this.statusFilter : true;
+        const matchesStatus = this.statusFilter ? b.status === this.statusFilter : true;
 
-      return matchesName && matchesStatus;
-    });
+        return matchesSearch && matchesStatus;
+      })
+      .sort((a, b) => {
+        if (a.status === b.status) return 0;
+        if (a.status === 'OVERDUE') return -1;
+        if (b.status === 'OVERDUE') return 1;
+        return 0;
+      });
+
+    this.totalPages = Math.ceil(this.filteredBills.length / this.size);
+    this.updatePagedBills();
+  }
+
+  updatePagedBills() {
+    const start = this.page * this.size;
+    const end = start + this.size;
+    this.pagedBills = this.filteredBills.slice(start, end);
   }
 
   pages(): number[] {
@@ -113,19 +120,22 @@ export class OfflinePayment {
 
   goToPage(p: number) {
     if (p >= 0 && p < this.totalPages) {
-      this.loadBills(p);
+      this.page = p;
+      this.updatePagedBills();
     }
   }
 
   prevPage() {
     if (this.page > 0) {
-      this.loadBills(this.page - 1);
+      this.page--;
+      this.updatePagedBills();
     }
   }
 
   nextPage() {
     if (this.page + 1 < this.totalPages) {
-      this.loadBills(this.page + 1);
+      this.page++;
+      this.updatePagedBills();
     }
   }
 
@@ -149,7 +159,7 @@ export class OfflinePayment {
           this.toast.success('Payment completed');
           this.loading = false;
           this.selectedBill = null;
-          this.loadBills(this.page);
+          this.loadBills();
         },
         error: (e) => {
           this.loading = false;

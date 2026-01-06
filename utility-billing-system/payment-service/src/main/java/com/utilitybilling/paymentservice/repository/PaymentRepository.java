@@ -27,4 +27,5 @@ public interface PaymentRepository extends MongoRepository<Payment, String> {
 			}
 			""")
 	Page<Payment> search(String search, String mode, Pageable pageable);
+
 }

@@ -27,6 +27,8 @@ public class InvoicePdfService {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		Document doc = new Document(PageSize.A4, 36, 36, 36, 36);
 
+		System.out.print(d);
+
 		ConsumerResponse consumer = consumerClient.get(d.getConsumerId());
 
 		try {

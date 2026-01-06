@@ -8,13 +8,11 @@ import com.utilitybilling.consumerservice.feign.NotificationRequest;
 import com.utilitybilling.consumerservice.model.ConsumerRequest;
 import com.utilitybilling.consumerservice.repository.ConsumerRequestRepository;
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -43,8 +41,15 @@ public class ConsumerRequestService {
 	}
 
 	public Page<ConsumerRequest> getAll(String status, int page, int size) {
-		PageRequest pr = PageRequest.of(page, size, Sort.by("createdAt").descending());
-		return status == null ? repository.findAll(pr) : repository.findByStatus(status, pr);
+
+		PageRequest pr = PageRequest.of(page, size, Sort.by("createdAt"));
+
+		Page<ConsumerRequest> result = status == null ? repository.findAll(pr) : repository.findByStatus(status, pr);
+
+		List<ConsumerRequest> sorted = result.getContent().stream()
+				.sorted(statusComparator().thenComparing(ConsumerRequest::getCreatedAt).reversed()).toList();
+
+		return new PageImpl<>(sorted, pr, result.getTotalElements());
 	}
 
 	public ConsumerRequest getById(String id) {
@@ -52,6 +57,7 @@ public class ConsumerRequestService {
 	}
 
 	public void reject(String id, String reason) {
+
 		ConsumerRequest r = getById(id);
 
 		if (!STATUS_PENDING.equals(r.getStatus()))
@@ -63,8 +69,17 @@ public class ConsumerRequestService {
 
 		notificationClient.send(NotificationRequest.builder().email(r.getEmail()).type("CONSUMER_REJECTED")
 				.subject("Consumer Request rejected")
-				.message("Your request for consumer has been rejected" + "\n Reason for rejection: " + reason).build());
+				.message("Your request for consumer has been rejected\nReason for rejection: " + reason).build());
 
 		repository.save(r);
+	}
+
+	private Comparator<ConsumerRequest> statusComparator() {
+		return Comparator.comparingInt(r -> switch (r.getStatus()) {
+		case "PENDING" -> 0;
+		case "APPROVED" -> 1;
+		case "REJECTED" -> 2;
+		default -> 3;
+		});
 	}
 }

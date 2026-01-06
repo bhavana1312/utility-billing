@@ -26,7 +26,7 @@ public class OverdueBillScheduler {
 	private final NotificationClient notificationClient;
 	private final ConsumerClient consumerClient;
 
-	@Scheduled(cron = "0 30 09 * * *")
+	@Scheduled(cron = "0 00 21 * * *")
 	public void markOverdueBills() {
 
 		List<Bill> dueBills = new ArrayList<>();
@@ -42,7 +42,7 @@ public class OverdueBillScheduler {
 
 			BigDecimal penalty = PenaltyCalculator.calculatePenalty(bill.getTotalAmount(), overdueDays,
 					tariff.getOverduePenaltySlabs());
-			
+
 			ConsumerResponse consumer = consumerClient.get(bill.getConsumerId());
 
 			bill.setPenaltyAmount(penalty);

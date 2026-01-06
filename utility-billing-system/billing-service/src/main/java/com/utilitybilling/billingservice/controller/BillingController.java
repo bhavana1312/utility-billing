@@ -5,6 +5,9 @@ import com.utilitybilling.billingservice.model.BillStatus;
 import com.utilitybilling.billingservice.service.BillingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -33,5 +36,10 @@ public class BillingController {
 			@RequestParam(name = "page", defaultValue = "0") int page,
 			@RequestParam(name = "size", defaultValue = "10") int size) {
 		return billingService.all(status, page, size);
+	}
+	
+	@GetMapping("/all")
+	public List<BillResponse> allBillsInternal(){
+	    return billingService.allBills();
 	}
 }

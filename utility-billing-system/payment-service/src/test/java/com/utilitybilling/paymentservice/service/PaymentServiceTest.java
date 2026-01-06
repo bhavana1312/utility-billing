@@ -43,7 +43,7 @@ class PaymentServiceTest {
 	@Test
 	void initiate_success() {
 		BillResponse bill = new BillResponse();
-		bill.setId("B1");
+		bill.setBillId("B1");
 		bill.setStatus(BillStatus.DUE);
 		bill.setConsumerId("C1");
 		bill.setUtilityType("ELECTRICITY");
@@ -109,7 +109,7 @@ class PaymentServiceTest {
 		p.setBillId("B1");
 
 		BillResponse bill = new BillResponse();
-		bill.setId("B1");
+		bill.setBillId("B1");
 		bill.setConsumerId("C1");
 		bill.setUtilityType("ELECTRICITY");
 		bill.setMeterNumber("M1");
@@ -142,7 +142,7 @@ class PaymentServiceTest {
 	@Test
 	void offlinePay_success() {
 		BillResponse bill = new BillResponse();
-		bill.setId("B1");
+		bill.setBillId("B1");
 		bill.setStatus(BillStatus.DUE);
 		bill.setConsumerId("C1");
 		bill.setUtilityType("ELECTRICITY");

@@ -97,8 +97,9 @@ public class BillingService {
 		return (status == null ? billRepo.findAll(pageable) : billRepo.findByStatus(status, pageable)).map(this::map);
 	}
 
-	public Bill getById(String billId) {
-		return billRepo.findById(billId).orElseThrow(() -> new IllegalArgumentException("Bill not found"));
+	public BillResponse getById(String billId) {
+		Bill bill = billRepo.findById(billId).orElseThrow(() -> new IllegalArgumentException("Bill not found"));
+		return map(bill);
 	}
 
 	public OutstandingBalanceResponse outstanding(String consumerId) {
@@ -162,5 +163,9 @@ public class BillingService {
 		r.setGeneratedAt(bill.getGeneratedAt());
 		r.setDueDate(bill.getDueDate());
 		return r;
+	}
+
+	public List<BillResponse> allBills() {
+		return billRepo.findAll().stream().map(this::map).toList();
 	}
 }

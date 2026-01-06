@@ -40,11 +40,11 @@ export class AddReading {
         }
 
         forkJoin(requests).subscribe({
-          next: (consumers: any[]) => {
-            this.meters = activeMeters.map((meter, index) => ({
+          next: (consumers) => {
+            this.meters = activeMeters.map((meter, i) => ({
               ...meter,
-              consumerName: consumers[index].fullName,
-              email: consumers[index].email,
+              consumerName: consumers[i].fullName,
+              email: consumers[i].email,
             }));
             this.applyFilters();
           },
@@ -64,14 +64,14 @@ export class AddReading {
 
   applyFilters() {
     this.filteredMeters = this.meters.filter((m) => {
-      const matchesName =
+      const matchesSearch =
         !this.search ||
         m.consumerName?.toLowerCase().includes(this.search.toLowerCase()) ||
         m.meterNumber?.toLowerCase().includes(this.search.toLowerCase());
 
       const matchesUtility = !this.utilityFilter || m.utilityType === this.utilityFilter;
 
-      return matchesName && matchesUtility;
+      return matchesSearch && matchesUtility;
     });
   }
 
@@ -89,37 +89,36 @@ export class AddReading {
     this.loading = true;
 
     this.http
-      .post('http://localhost:9090/billing/generate', {
-        meterNumber: this.selectedMeter.meterNumber,
-        readingValue: this.readingValue,
-      })
-      .subscribe({
-        next: () => {
-          this.saveReading();
-        },
-        error: () => {
-          this.loading = false;
-          this.toast.error('Bill generation failed. Reading not saved.');
-        },
-      });
-  }
-
-  private saveReading() {
-    this.http
       .post('http://localhost:9090/meters/readings', {
         meterNumber: this.selectedMeter.meterNumber,
         readingValue: this.readingValue,
       })
       .subscribe({
         next: () => {
-          this.toast.success('Bill generated & reading saved');
+          this.generateBill();
+        },
+        error: (e) => {
+          this.loading = false;
+          this.toast.error(e?.error?.message || 'Failed to add reading');
+        },
+      });
+  }
+
+  private generateBill() {
+    this.http
+      .post('http://localhost:9090/billing/generate', {
+        meterNumber: this.selectedMeter.meterNumber,
+      })
+      .subscribe({
+        next: () => {
+          this.toast.success('Reading added & bill generated');
           this.loading = false;
           this.loadMeters();
           this.closePanel();
         },
-        error: () => {
+        error: (e) => {
           this.loading = false;
-          this.toast.error('Bill generated but failed to save reading');
+          this.toast.error(e?.error?.message || 'Reading saved but bill generation failed');
         },
       });
   }

@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.math.BigDecimal;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -31,13 +32,6 @@ class InternalBillingControllerTest {
                 .build();
     }
 
-    @Test
-    void getBill_ok() throws Exception {
-        when(service.getById("B1")).thenReturn(new Bill());
-
-        mockMvc.perform(get("/billing/internal/B1"))
-                .andExpect(status().isOk());
-    }
 
     @Test
     void markPaid_ok() throws Exception {

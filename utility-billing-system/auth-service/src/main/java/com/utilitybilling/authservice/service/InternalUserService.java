@@ -21,6 +21,7 @@ public class InternalUserService {
 		repository.findByEmail(r.getEmail()).ifPresent(u -> {
 			throw new IllegalStateException("User already exists");
 		});
+		System.out.println("user:"+ r.getUsername() +" password: "+ r.getPassword() );
 
 		User u = User.builder().username(r.getUsername()).email(r.getEmail())
 				.password(passwordEncoder.encode(r.getPassword())).roles(r.getRoles()).enabled(true)

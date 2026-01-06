@@ -87,6 +87,7 @@ export class Bills {
   initiate(b: any) {
     this.loading = true;
     this.selectedBill = b;
+    console.log(b.billId);
     this.http
       .post<any>('http://localhost:9090/payments/initiate', {
         billId: b.billId,

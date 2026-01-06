@@ -37,7 +37,7 @@
         </thead>
 
         <tbody>
-          <tr *ngFor="let b of filteredBills">
+          <tr *ngFor="let b of pagedBills">
             <td>{{b.billId}}</td>
             <td>
               <strong>{{b.consumerName}}</strong>
@@ -61,7 +61,7 @@
     </div>
 
     <div class="cards mobile" *ngIf="filteredBills.length > 0">
-      <div class="bill-card" *ngFor="let b of filteredBills">
+      <div class="bill-card" *ngFor="let b of pagedBills">
         <div class="top">
           <strong>{{b.consumerName}}</strong>
           <span class="badge" [ngClass]="b.status.toLowerCase()">{{b.status}}</span>

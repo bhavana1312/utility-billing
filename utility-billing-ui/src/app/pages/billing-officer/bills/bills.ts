@@ -44,7 +44,7 @@ export class Bills {
   statuses = ['DUE', 'PAID', 'OVERDUE'];
 
   page = 0;
-  size = 5;
+  size = 10;
   totalPages = 0;
 
   constructor(private http: HttpClient, private toast: ToastrService) {

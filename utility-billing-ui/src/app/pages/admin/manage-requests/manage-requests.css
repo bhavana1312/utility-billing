@@ -291,3 +291,11 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.btn-approve:disabled,
+.btn-reject:disabled,
+.btn-reject-confirm:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
