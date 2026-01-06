@@ -32,6 +32,7 @@
             <th>Units</th>
             <th>Total (₹)</th>
             <th>Status</th>
+            <th>Actions</th>
             <th></th>
           </tr>
         </thead>
@@ -54,6 +55,11 @@
             </td>
             <td>
               <button class="pay-btn" (click)="selectBill(b)">Pay</button>
+            </td>
+            <td>
+              <button class="remind-btn" (click)="sendReminder(b)">
+                Remind
+              </button>
             </td>
           </tr>
         </tbody>

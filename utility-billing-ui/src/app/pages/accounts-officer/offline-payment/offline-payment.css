@@ -126,7 +126,8 @@ tr:hover {
   color: var(--danger);
 }
 
-.pay-btn {
+.pay-btn,
+.remind-btn {
   background: var(--accent);
   color: white;
   border: none;
@@ -137,7 +138,8 @@ tr:hover {
   transition: background 0.2s;
 }
 
-.pay-btn:hover {
+.pay-btn:hover,
+.remind-btn:hover {
   background: var(--accent-hover);
 }
 
@@ -369,7 +371,8 @@ button:disabled {
   cursor: not-allowed;
 }
 
-.pay-btn {
+.pay-btn,
+.remind-btn {
   background: transparent;
   color: var(--accent);
   border: 1px solid var(--accent);
@@ -381,7 +384,8 @@ button:disabled {
   transition: all 0.2s;
 }
 
-.pay-btn:hover {
+.pay-btn:hover,
+.remind-btn:hover {
   background: var(--accent);
   color: white;
 }

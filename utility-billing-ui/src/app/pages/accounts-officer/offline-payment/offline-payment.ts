@@ -167,4 +167,17 @@ export class OfflinePayment {
         },
       });
   }
+  sendReminder(b: Bill) {
+    const billId = b.billId || (b as any).id;
+
+    if (!billId) {
+      this.toast.error('Invalid bill selected');
+      return;
+    }
+
+    this.http.post(`http://localhost:9090/payments/reminder/${billId}`, {}).subscribe({
+      next: () => this.toast.success('Payment reminder sent successfully'),
+      error: (err) => this.toast.error(err?.error?.message || 'Failed to send reminder'),
+    });
+  }
 }

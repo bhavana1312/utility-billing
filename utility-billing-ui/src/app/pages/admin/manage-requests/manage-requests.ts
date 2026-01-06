@@ -43,7 +43,10 @@ interface Consumer {
 export class ManageRequests {
   selectedStatus: 'ALL' | RequestStatus = 'ALL';
 
-  consumerRequests: ConsumerRequest[] = [];
+  allConsumerRequests: ConsumerRequest[] = [];
+  filteredConsumerRequests: ConsumerRequest[] = [];
+  pagedConsumerRequests: ConsumerRequest[] = [];
+
   connectionRequests: ConnectionRequest[] = [];
   filteredConnectionRequests: ConnectionRequest[] = [];
   pagedConnectionRequests: ConnectionRequest[] = [];
@@ -73,16 +76,27 @@ export class ManageRequests {
   loadConsumerRequests() {
     const statusParam = this.selectedStatus === 'ALL' ? '' : `&status=${this.selectedStatus}`;
     this.http
-      .get<any>(
-        `http://localhost:9090/consumer-requests?page=${this.consumerPage}&size=${this.consumerSize}${statusParam}`
-      )
+      .get<any>(`http://localhost:9090/consumer-requests?page=0&size=100${statusParam}`)
       .subscribe({
         next: (res) => {
-          this.consumerRequests = this.sortRequests(res.content);
-          this.consumerTotalPages = res.totalPages;
+          this.allConsumerRequests = this.sortRequests(res.content);
+          this.applyConsumerFilters(true);
         },
         error: () => this.toast.error('Failed to load consumer requests'),
       });
+  }
+
+  applyConsumerFilters(resetPage = false) {
+    if (resetPage) this.consumerPage = 0;
+    this.filteredConsumerRequests = this.allConsumerRequests;
+    this.consumerTotalPages = Math.ceil(this.filteredConsumerRequests.length / this.consumerSize);
+    this.updateConsumerPage();
+  }
+
+  updateConsumerPage() {
+    const start = this.consumerPage * this.consumerSize;
+    const end = start + this.consumerSize;
+    this.pagedConsumerRequests = this.filteredConsumerRequests.slice(start, end);
   }
 
   loadConnectionRequests() {
@@ -151,21 +165,21 @@ export class ManageRequests {
   nextConsumerPage() {
     if (this.consumerPage < this.consumerTotalPages - 1) {
       this.consumerPage++;
-      this.loadConsumerRequests();
+      this.updateConsumerPage();
     }
   }
 
   prevConsumerPage() {
     if (this.consumerPage > 0) {
       this.consumerPage--;
-      this.loadConsumerRequests();
+      this.updateConsumerPage();
     }
   }
 
   goToConsumerPage(p: number) {
     if (p >= 0 && p < this.consumerTotalPages) {
       this.consumerPage = p;
-      this.loadConsumerRequests();
+      this.updateConsumerPage();
     }
   }
 
@@ -192,7 +206,7 @@ export class ManageRequests {
 
   approveConsumer(id: string) {
     this.loadingMap[id] = true;
-    this.http.post(`http://localhost:9090/consumers/from-request/${id}`, {}).subscribe({
+    this.http.post(`http://localhost:9090/consumers/approve/${id}`, {}).subscribe({
       next: () => {
         this.loadingMap[id] = false;
         this.toast.success('Consumer approved');

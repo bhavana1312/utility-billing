@@ -137,7 +137,7 @@ h2 {
   border: 1px solid var(--cheque-border);
 }
 
-.download-btn {
+.download-btn{
   background: transparent;
   color: var(--accent);
   border: 1px solid var(--accent);
@@ -149,7 +149,8 @@ h2 {
   transition: all 0.2s;
 }
 
-.download-btn:hover {
+.download-btn:hover
+{
   background: var(--accent);
   color: white;
 }
